@@ -1933,7 +1933,7 @@ function renderBoard() {
     const ae = S.entries[_animState.entryIdx];
     if(ae) {
       // Travelling glow ring at current waypoint position
-      const pc = PAWN_COLORS[ae.colorIdx][0];
+      const pc = ae.color;
       svg.appendChild(svgEl('circle', {
         cx: _animState.x.toFixed(2), cy: _animState.y.toFixed(2),
         r: '10', fill: 'none', stroke: pc, 'stroke-width': '2', opacity: '0.45'
