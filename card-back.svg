@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 124 170">
+  <defs>
+    <!-- Deep purple radial background -->
+    <radialGradient id="bg" cx="50%" cy="45%" r="70%">
+      <stop offset="0%"   stop-color="#7040b0"/>
+      <stop offset="45%"  stop-color="#4a1878"/>
+      <stop offset="100%" stop-color="#140530"/>
+    </radialGradient>
+
+    <!-- Diagonal cross-hatch pattern (golden lattice) -->
+    <pattern id="lp" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#c88010" stroke-width="0.45" stroke-opacity="0.38"/>
+    </pattern>
+    <pattern id="lm" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#c88010" stroke-width="0.45" stroke-opacity="0.38"/>
+    </pattern>
+
+    <!-- Border gradient -->
+    <linearGradient id="bord" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#d49520"/>
+      <stop offset="50%"  stop-color="#ffd458"/>
+      <stop offset="100%" stop-color="#d49520"/>
+    </linearGradient>
+
+    <!-- Cell body -->
+    <radialGradient id="cell" cx="50%" cy="42%" r="65%">
+      <stop offset="0%"   stop-color="#7030bc"/>
+      <stop offset="100%" stop-color="#380858"/>
+    </radialGradient>
+
+    <!-- Orange nucleus -->
+    <radialGradient id="nuc" cx="36%" cy="32%" r="68%">
+      <stop offset="0%"   stop-color="#ffe048"/>
+      <stop offset="38%"  stop-color="#e07018"/>
+      <stop offset="100%" stop-color="#7a1808"/>
+    </radialGradient>
+
+    <!-- Silver metallic text -->
+    <linearGradient id="sil" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#ffffff"/>
+      <stop offset="20%"  stop-color="#ddd0e8"/>
+      <stop offset="50%"  stop-color="#a898b8"/>
+      <stop offset="80%"  stop-color="#ddd0e8"/>
+      <stop offset="100%" stop-color="#706080"/>
+    </linearGradient>
+
+    <!-- Gold Roman numeral -->
+    <linearGradient id="gld" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#fff4b0"/>
+      <stop offset="35%"  stop-color="#e8c030"/>
+      <stop offset="65%"  stop-color="#b88810"/>
+      <stop offset="100%" stop-color="#906808"/>
+    </linearGradient>
+
+    <!-- Orange/gold glow for cell body -->
+    <filter id="pglow" x="-45%" y="-45%" width="190%" height="190%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/>
+      <feFlood flood-color="#6020a8" flood-opacity="0.65" result="c"/>
+      <feComposite in="c" in2="b" operator="in" result="cb"/>
+      <feMerge><feMergeNode in="cb"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Orange nucleus glow -->
+    <filter id="oglow" x="-55%" y="-55%" width="210%" height="210%">
+      <feGaussianBlur stdDeviation="2.8" result="b"/>
+      <feFlood flood-color="#e06010" flood-opacity="0.75" result="c"/>
+      <feComposite in="c" in2="b" operator="in" result="cb"/>
+      <feMerge><feMergeNode in="cb"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Spark glow -->
+    <filter id="spark" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="1.8" result="b"/>
+      <feFlood flood-color="#ffcc44" flood-opacity="0.9" result="c"/>
+      <feComposite in="c" in2="b" operator="in" result="cb"/>
+      <feMerge><feMergeNode in="cb"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Text glow (amber) -->
+    <filter id="tglow" x="-18%" y="-25%" width="136%" height="150%">
+      <feGaussianBlur stdDeviation="1.6" result="b"/>
+      <feFlood flood-color="#c89020" flood-opacity="0.55" result="c"/>
+      <feComposite in="c" in2="b" operator="in" result="cb"/>
+      <feMerge><feMergeNode in="cb"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Clip to card shape -->
+    <clipPath id="card">
+      <rect width="124" height="170" rx="7" ry="7"/>
+    </clipPath>
+  </defs>
+
+  <!-- ── Background ── -->
+  <rect width="124" height="170" rx="7" ry="7" fill="url(#bg)"/>
+  <rect width="124" height="170" rx="7" ry="7" fill="url(#lp)" clip-path="url(#card)"/>
+  <rect width="124" height="170" rx="7" ry="7" fill="url(#lm)" clip-path="url(#card)"/>
+
+  <!-- ── Border ── -->
+  <rect x="4"  y="4"  width="116" height="162" rx="5"   ry="5"   fill="none" stroke="url(#bord)" stroke-width="1.6"/>
+  <rect x="7.5" y="7.5" width="109" height="155" rx="3.5" ry="3.5" fill="none" stroke="url(#bord)" stroke-width="0.8" stroke-opacity="0.65"/>
+
+  <!-- Corner flourishes -->
+  <path d="M8,19 L8,9 L19,9"   fill="none" stroke="#e8a820" stroke-width="1.1"/>
+  <path d="M105,9 L116,9 L116,19" fill="none" stroke="#e8a820" stroke-width="1.1"/>
+  <path d="M8,151 L8,161 L19,161" fill="none" stroke="#e8a820" stroke-width="1.1"/>
+  <path d="M105,161 L116,161 L116,151" fill="none" stroke="#e8a820" stroke-width="1.1"/>
+
+  <!-- ══════════ TOP CELL DIVISION SYMBOL (cy=37) ══════════ -->
+  <!-- Cell bodies -->
+  <ellipse cx="50" cy="37" rx="21" ry="19" fill="url(#cell)" filter="url(#pglow)" stroke="#8848d0" stroke-width="1.2"/>
+  <ellipse cx="74" cy="37" rx="21" ry="19" fill="url(#cell)" filter="url(#pglow)" stroke="#8848d0" stroke-width="1.2"/>
+  <!-- Nuclei -->
+  <circle  cx="46" cy="35" r="9"  fill="url(#nuc)"  filter="url(#oglow)"/>
+  <circle  cx="78" cy="35" r="9"  fill="url(#nuc)"  filter="url(#oglow)"/>
+  <!-- Centre connection flash -->
+  <ellipse cx="62" cy="37" rx="5"  ry="4"  fill="#fff9c0" opacity="0.92" filter="url(#spark)"/>
+  <line x1="56" y1="37" x2="68" y2="37" stroke="#ffdd44" stroke-width="1.2" opacity="0.75"/>
+
+  <!-- Sparkles -->
+  <g transform="translate(32,20)"  filter="url(#spark)"><ellipse rx="4"   ry="0.9" fill="#ffdd44" opacity="0.85"/><ellipse rx="0.9" ry="4"   fill="#ffdd44" opacity="0.85"/></g>
+  <g transform="translate(93,19)"  filter="url(#spark)"><ellipse rx="3.2" ry="0.8" fill="#ffdd44" opacity="0.80"/><ellipse rx="0.8" ry="3.2" fill="#ffdd44" opacity="0.80"/></g>
+  <g transform="translate(26,38)"  filter="url(#spark)"><ellipse rx="2.4" ry="0.6" fill="#ffdd44" opacity="0.65"/><ellipse rx="0.6" ry="2.4" fill="#ffdd44" opacity="0.65"/></g>
+  <g transform="translate(98,40)"  filter="url(#spark)"><ellipse rx="2.4" ry="0.6" fill="#ffdd44" opacity="0.65"/><ellipse rx="0.6" ry="2.4" fill="#ffdd44" opacity="0.65"/></g>
+  <g transform="translate(62,16)"  filter="url(#spark)"><ellipse rx="2"   ry="0.5" fill="#ffdd44" opacity="0.55"/><ellipse rx="0.5" ry="2"   fill="#ffdd44" opacity="0.55"/></g>
+
+  <!-- ══════════ TEXT (centred x=62) ══════════ -->
+
+  <!-- DIVIDE -->
+  <text x="62" y="93"
+        text-anchor="middle"
+        font-family="Georgia,'Times New Roman',serif"
+        font-size="27" font-weight="900" letter-spacing="2.5"
+        fill="url(#sil)" stroke="#20103a" stroke-width="0.9"
+        paint-order="stroke fill"
+        filter="url(#tglow)">DIVIDE</text>
+
+  <!-- Thin rules flanking II -->
+  <line x1="28" y1="101" x2="52" y2="101" stroke="#c8a030" stroke-width="0.55" opacity="0.7"/>
+  <line x1="72" y1="101" x2="96" y2="101" stroke="#c8a030" stroke-width="0.55" opacity="0.7"/>
+
+  <!-- II -->
+  <text x="62" y="113"
+        text-anchor="middle"
+        font-family="Georgia,'Times New Roman',serif"
+        font-size="15" font-weight="700" letter-spacing="5"
+        fill="url(#gld)" stroke="#201008" stroke-width="0.5"
+        paint-order="stroke fill">II</text>
+
+  <!-- Thin rules below II -->
+  <line x1="28" y1="118" x2="52" y2="118" stroke="#c8a030" stroke-width="0.55" opacity="0.7"/>
+  <line x1="72" y1="118" x2="96" y2="118" stroke="#c8a030" stroke-width="0.55" opacity="0.7"/>
+
+  <!-- CONQUER -->
+  <text x="62" y="143"
+        text-anchor="middle"
+        font-family="Georgia,'Times New Roman',serif"
+        font-size="23" font-weight="900" letter-spacing="1.2"
+        fill="url(#sil)" stroke="#20103a" stroke-width="0.9"
+        paint-order="stroke fill"
+        filter="url(#tglow)">CONQUER</text>
+
+  <!-- ══════════ BOTTOM CELL DIVISION SYMBOL (cy=155) ══════════ -->
+  <!-- Cell bodies -->
+  <ellipse cx="50" cy="155" rx="21" ry="19" fill="url(#cell)" filter="url(#pglow)" stroke="#8848d0" stroke-width="1.2"/>
+  <ellipse cx="74" cy="155" rx="21" ry="19" fill="url(#cell)" filter="url(#pglow)" stroke="#8848d0" stroke-width="1.2"/>
+  <!-- Nuclei -->
+  <circle  cx="46" cy="153" r="9"  fill="url(#nuc)"  filter="url(#oglow)"/>
+  <circle  cx="78" cy="153" r="9"  fill="url(#nuc)"  filter="url(#oglow)"/>
+  <!-- Centre connection flash -->
+  <ellipse cx="62" cy="155" rx="5"  ry="4"  fill="#fff9c0" opacity="0.92" filter="url(#spark)"/>
+  <line x1="56" y1="155" x2="68" y2="155" stroke="#ffdd44" stroke-width="1.2" opacity="0.75"/>
+
+  <!-- Sparkles -->
+  <g transform="translate(32,138)" filter="url(#spark)"><ellipse rx="4"   ry="0.9" fill="#ffdd44" opacity="0.85"/><ellipse rx="0.9" ry="4"   fill="#ffdd44" opacity="0.85"/></g>
+  <g transform="translate(93,137)" filter="url(#spark)"><ellipse rx="3.2" ry="0.8" fill="#ffdd44" opacity="0.80"/><ellipse rx="0.8" ry="3.2" fill="#ffdd44" opacity="0.80"/></g>
+  <g transform="translate(26,156)" filter="url(#spark)"><ellipse rx="2.4" ry="0.6" fill="#ffdd44" opacity="0.65"/><ellipse rx="0.6" ry="2.4" fill="#ffdd44" opacity="0.65"/></g>
+  <g transform="translate(98,158)" filter="url(#spark)"><ellipse rx="2.4" ry="0.6" fill="#ffdd44" opacity="0.65"/><ellipse rx="0.6" ry="2.4" fill="#ffdd44" opacity="0.65"/></g>
+  <g transform="translate(62,171)" filter="url(#spark)"><ellipse rx="2"   ry="0.5" fill="#ffdd44" opacity="0.55"/><ellipse rx="0.5" ry="2"   fill="#ffdd44" opacity="0.55"/></g>
+</svg>
