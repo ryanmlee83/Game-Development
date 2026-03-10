@@ -1215,7 +1215,7 @@ function draw(deckRef, source, deckName) {
 // ══════════════════════════════════════════════
 let S = {
   mode:'individual', entries:[], current:0, turnNumber:1,
-  answered:false,
+  answered:false, selectedOpt:null, stealPhase:false,
   questionType:null, currentQ:null,
   studyMode:false, relaxedMode:false,
   dnaTemplate:[], dnaAnswers:[], dnaCurrentSlot:0, dnaLocked:false,
@@ -2600,7 +2600,7 @@ function triggerVocab(){ showSplash('checkpoint-m'); }
 function launchVocab(){
   document.getElementById('aqType').textContent='🔬 M Checkpoint — Vocabulary Matching';
   document.getElementById('aqType').className='aq-type checkpoint';
-  S.vocabSet=shuffle([...draw(vocabDeck, VOCAB_SETS)]);
+  S.vocabSet=shuffle([...draw(vocabDeck, VOCAB_SETS)].map(v=>({...v,matched:false})));
   S.vocabDefOrder=shuffle(S.vocabSet.map((_,i)=>i)); // fixed display order for defs
   S.vocabSelectedTerm=null; S.vocabMatchedCount=0;
   S.vocabTimeLeft=30;
