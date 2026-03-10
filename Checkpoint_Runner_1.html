@@ -1850,12 +1850,6 @@ function renderBoard() {
 
   _placeLabel(labelLayer, g0, g0s.r, g0.angleDeg, 'G0 (Resting)', BOARD[0].desc, '#8888cc', true);
 
-  if(S.entries) {
-    const atG0 = S.entries.map((e,i)=>({e,i}))
-      .filter(({e,i}) => e.pos===0 && (!_animState || _animState.entryIdx !== i));
-    atG0.forEach(({e,i},gi) => drawToken(svg, e, gi, atG0.length, g0.x, g0.y, i===S.current));
-  }
-
   svg.appendChild(labelLayer);
 
   // ── Ring nodes (paint back-to-front for pseudo-3D depth) ──
@@ -1914,8 +1908,19 @@ function renderBoard() {
     // Label
     const nameShort = sp.name.replace(' Phase','').replace(' Checkpoint','★').replace('Cell Event','Event');
     _placeLabel(labelLayer, pos, r, ang, nameShort, sp.desc, style.labelColor);
+  });
 
-    // Tokens — exclude any player currently being animated between nodes
+  // ── Token pass — rendered AFTER all node circles so tokens are always on top ──
+  // G0 tokens
+  if(S.entries) {
+    const atG0 = S.entries.map((e,i)=>({e,i}))
+      .filter(({e,i}) => e.pos===0 && (!_animState || _animState.entryIdx !== i));
+    atG0.forEach(({e,i},gi) => drawToken(svg, e, gi, atG0.length, g0.x, g0.y, i===S.current));
+  }
+  // Ring node tokens (same back-to-front order)
+  allRing.forEach(ri => {
+    const boardIdx = ri + RING_START;
+    const pos = nodePos(boardIdx);
     if(S.entries){
       const grp = S.entries.map((e,i)=>({e,i}))
         .filter(({e,i}) => e.pos===boardIdx && (!_animState || _animState.entryIdx !== i));
