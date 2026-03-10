@@ -1712,11 +1712,11 @@ function renderBoard() {
   //   G2 Phase   :  95° → 171°  (midpoint S↔G2 → midpoint G2CP↔Prophase)
   //   Mitosis    : 171° → 353°  (midpoint G2CP↔Prophase → midpoint Cyto↔G0)
 
-  const G1_start  = 6;
-  const S_start   = 62;
-  const G2_start  = 95;
-  const MIT_start = 171;
-  const MIT_end   = 353;
+  const G1_start  = 12;
+  const S_start   = 81;
+  const G2_start  = 105;
+  const MIT_start = 170;
+  const MIT_end   = 348;
 
   const sectors = [
     {
@@ -1745,11 +1745,14 @@ function renderBoard() {
     },
   ];
 
-  // Helper: ellipse point for interior at given scale
-  const IR = 0.75;
+  // Interior diagram geometry — calibrated from actual RING_NODE_POS pixel positions.
+  // Ring center: x=(270.5+28.4)/2≈150, y=(7.9+153.1)/2≈80.5
+  // Ring outer semi-axes: RX≈121 (S/Anaphase nodes), RY≈72.6 (G0/Prophase nodes)
+  const DIAG_CX = 150, DIAG_CY = 80.5, DIAG_RX = 121, DIAG_RY = 72.6;
+  const IR = 0.86;  // fills to ~inner edge of track
   function iArc(angleDeg, scale=IR) {
     const a = (angleDeg - 90) * Math.PI / 180;
-    return { x: CX + RX * scale * Math.cos(a), y: CY + RY * scale * Math.sin(a) };
+    return { x: DIAG_CX + DIAG_RX * scale * Math.cos(a), y: DIAG_CY + DIAG_RY * scale * Math.sin(a) };
   }
 
   const diagramG = svgEl('g', {});
@@ -1757,7 +1760,7 @@ function renderBoard() {
   sectors.forEach(sec => {
     const steps = 64;
     const span  = sec.endAng - sec.startAng;
-    const pts   = [`M ${CX} ${CY}`];
+    const pts   = [`M ${DIAG_CX} ${DIAG_CY}`];
     for(let s = 0; s <= steps; s++){
       const p = iArc(sec.startAng + (s/steps)*span);
       pts.push(`L ${p.x.toFixed(2)} ${p.y.toFixed(2)}`);
@@ -1777,18 +1780,18 @@ function renderBoard() {
   // Divider spokes — one at each sector boundary
   [G1_start, S_start, G2_start, MIT_start, MIT_end].forEach(ang => {
     const p = iArc(ang, IR);
-    diagramG.appendChild(svgEl('line', { x1:CX, y1:CY, x2:p.x, y2:p.y,
+    diagramG.appendChild(svgEl('line', { x1:DIAG_CX, y1:DIAG_CY, x2:p.x, y2:p.y,
       stroke:'rgba(255,255,255,0.22)', 'stroke-width':'0.7' }));
   });
 
   // Inner boundary ellipse
-  diagramG.appendChild(svgEl('ellipse', { cx:CX, cy:CY, rx:(RX*IR).toFixed(1), ry:(RY*IR).toFixed(1),
+  diagramG.appendChild(svgEl('ellipse', { cx:DIAG_CX, cy:DIAG_CY, rx:(DIAG_RX*IR).toFixed(1), ry:(DIAG_RY*IR).toFixed(1),
     fill:'none', stroke:'rgba(255,255,255,0.12)', 'stroke-width':'0.5' }));
 
   // Centre hub
-  diagramG.appendChild(svgEl('circle', { cx:CX, cy:CY, r:'9',
+  diagramG.appendChild(svgEl('circle', { cx:DIAG_CX, cy:DIAG_CY, r:'9',
     fill:'rgba(8,6,20,0.9)', stroke:'rgba(255,255,255,0.15)', 'stroke-width':'0.5' }));
-  diagramG.appendChild(svgTxt(CX, CY+0.5, '🧬', { 'font-size':'8' }));
+  diagramG.appendChild(svgTxt(DIAG_CX, DIAG_CY+0.5, '🧬', { 'font-size':'8' }));
 
   svg.appendChild(diagramG);
   for(let t=0; t<RING_COUNT; t++){
