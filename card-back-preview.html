@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Card Back Preview</title>
+  <style>
+    body { background: #111; display: flex; gap: 40px; align-items: flex-start;
+           justify-content: center; padding: 40px; font-family: sans-serif; }
+    .label { color: #aaa; font-size: 12px; text-align: center; margin-top: 8px; }
+    img { display: block; image-rendering: pixelated; }
+  </style>
+</head>
+<body>
+  <!-- Actual size (124×170) -->
+  <div>
+    <img src="card-back.svg" width="124" height="170">
+    <div class="label">Actual size (124×170)</div>
+  </div>
+
+  <!-- 2× -->
+  <div>
+    <img src="card-back.svg" width="248" height="340">
+    <div class="label">2× (248×340)</div>
+  </div>
+
+  <!-- 4× -->
+  <div>
+    <img src="card-back.svg" width="496" height="680">
+    <div class="label">4× (496×680)</div>
+  </div>
+</body>
+</html>
