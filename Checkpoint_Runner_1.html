@@ -190,6 +190,7 @@ body {
 .game-bottombar {
   display: flex; align-items: center; gap: 0.6rem;
   padding: 0.4rem 0.75rem; margin-top: 0.35rem;
+  min-height: 54px;
 }
 .question-chooser { display:flex; gap:0.5rem; }
 .q-btn {
@@ -323,7 +324,7 @@ body {
 .tf-timer-text { font-family:'Cinzel',serif; font-size:0.8rem; color:var(--gold-light); text-align:center; margin-bottom:0.5rem; letter-spacing:0.1em; }
 .tf-score { font-family:'Cinzel',serif; font-size:0.7rem; color:var(--text-dim); text-align:center; margin-bottom:0.65rem; }
 .tf-score em { color:var(--green); font-style:normal; }
-.tf-question { font-family:'EB Garamond',serif; font-size:1rem; color:var(--parchment-text); line-height:1.5; min-height:50px; margin-bottom:0.75rem; }
+.tf-question { font-family:'EB Garamond',serif; font-size:1rem; color:var(--text); line-height:1.5; min-height:50px; margin-bottom:0.75rem; }
 .tf-btns { display:flex; gap:0.75rem; }
 .tf-btn { flex:1; padding:0.65rem; border-radius:6px; font-family:'Cinzel',serif; font-size:0.85rem; font-weight:700; cursor:pointer; transition:all 0.2s; border:2px solid; letter-spacing:0.1em; }
 .tf-true  { background:rgba(0,180,60,0.15); border-color:var(--green); color:var(--green); }
@@ -2240,8 +2241,7 @@ function handleTrivia(chosen){
   });
   const result = document.getElementById('aqResult');
   if(correct){
-    // Checkpoint card draw: always move 1 space past the checkpoint
-    const spaces = isCheckpointCard ? 1 : (S.questionType==='green' ? 1 : 2);
+    const spaces = S.questionType==='green' ? 1 : 2;
     setTimeout(()=>{
       closePopup();
       if(isCheckpointCard) cur.checkpointState = null;
@@ -2299,7 +2299,7 @@ function movePlayer(entry, spaces, idx, onDone){
       log(`⛔ ${entry.name} is stopped at ${BOARD[entry.pos].name} — checkpoint must be completed!`, 'info');
       finishMove(); return;
     }
-    setTimeout(doStep, 380);
+    setTimeout(doStep, 700);
   }
   function finishMove(){
     log(`✓ ${entry.name} moves to ${BOARD[entry.pos].name}!`, 'good');
