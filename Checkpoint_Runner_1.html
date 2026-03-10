@@ -518,6 +518,7 @@ body {
     <!-- Begin button + HTP link -->
     <div style="display:flex;align-items:center;gap:1rem;">
       <button class="btn-gold" style="flex:1;" onclick="startGame(false)">✦ Begin the Division ✦</button>
+      <button style="background:none;border:1px solid var(--gold-dark);color:var(--gold);font-family:'Cinzel',serif;font-size:0.65rem;cursor:pointer;letter-spacing:0.1em;white-space:nowrap;padding:0.5rem 0.75rem;border-radius:3px;" onclick="shuffleTurnOrder()" title="Randomly shuffle player order">🎲 Shuffle</button>
       <button style="background:none;border:none;color:var(--text-dim);font-family:'Cinzel',serif;font-size:0.65rem;cursor:pointer;letter-spacing:0.1em;white-space:nowrap;" onclick="showScreen('howtoplay')">← How to Play</button>
     </div>
 
@@ -677,7 +678,8 @@ body {
       <div class="win-name" id="winName"></div>
       <div class="win-flavor" id="winFlavor">"The cytoplasm divides and two daughter cells emerge—<br>genetically identical, perfectly formed."</div>
       <div class="divider"><span>⬦</span></div>
-      <div style="display:flex;gap:0.75rem;margin-top:1.5rem;">
+      <div id="winStats" style="margin-bottom:1rem;"></div>
+      <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
         <button class="btn-gold" style="flex:1;background:linear-gradient(135deg,#2a2a3a,#3a3a5a,#2a2a3a);color:var(--text-dim);font-size:0.85rem;" onclick="showScreen('setup')">⬥ Setup New Game</button>
         <button class="btn-gold" style="flex:1;" onclick="location.reload()">✦ Play Again ✦</button>
       </div>
@@ -1189,7 +1191,7 @@ function draw(deckRef, source, deckName) {
 // STATE
 // ══════════════════════════════════════════════
 let S = {
-  mode:'individual', entries:[], current:0,
+  mode:'individual', entries:[], current:0, turnNumber:1,
   answered:false,
   questionType:null, currentQ:null,
   studyMode:false, relaxedMode:false,
@@ -1244,6 +1246,31 @@ function setCount(n){
   numEntries=n;
   document.querySelectorAll('.cnt').forEach((b,i)=>b.classList.toggle('on',i+2===n));
   renderEntryInputs();
+}
+
+function shuffleTurnOrder(){
+  // Read current names, shuffle them, write back into inputs
+  const names = [];
+  const tokens = [];
+  for(let i=0;i<numEntries;i++){
+    const el = document.getElementById('en'+i);
+    names.push(el ? el.value : '');
+    tokens.push(playerTokens[i] ? {...playerTokens[i]} : null);
+  }
+  // Fisher-Yates shuffle applied to both arrays together
+  for(let i=names.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [names[i],names[j]]=[names[j],names[i]];
+    [tokens[i],tokens[j]]=[tokens[j],tokens[i]];
+  }
+  // Write shuffled tokens back
+  for(let i=0;i<numEntries;i++){ if(tokens[i]) playerTokens[i]=tokens[i]; }
+  renderEntryInputs();
+  // Write shuffled names into the freshly rebuilt inputs
+  for(let i=0;i<numEntries;i++){
+    const el=document.getElementById('en'+i);
+    if(el) el.value=names[i];
+  }
 }
 
 function renderEntryInputs(){
@@ -1314,17 +1341,17 @@ function startGame(studyMode=false){
   S.entries=[];
   if(studyMode){
     const col = TOKEN_COLORS[playerTokens[0]?.colorIdx ?? 0];
-    S.entries.push({name:'You',pos:0,color:col.hex,textColor:col.text,icon:playerTokens[0]?.icon||'trna',immune:false,skipTurn:false,checkpointState:null});
+    S.entries.push({name:'You',pos:0,color:col.hex,textColor:col.text,icon:playerTokens[0]?.icon||'trna',immune:false,skipTurn:false,checkpointState:null,correctCount:0,totalCount:0});
     S.mode='individual';
   } else {
     for(let i=0;i<numEntries;i++){
       const name=document.getElementById('en'+i).value.trim()||(S.mode==='teams'?`Team ${i+1}`:`Player ${i+1}`);
       const tok = playerTokens[i] || {};
       const col = TOKEN_COLORS[tok.colorIdx ?? i % TOKEN_COLORS.length];
-      S.entries.push({name,pos:0,color:col.hex,textColor:col.text,icon:tok.icon||TOKEN_ICONS[i%TOKEN_ICONS.length],immune:false,skipTurn:false,checkpointState:null});
+      S.entries.push({name,pos:0,color:col.hex,textColor:col.text,icon:tok.icon||TOKEN_ICONS[i%TOKEN_ICONS.length],immune:false,skipTurn:false,checkpointState:null,correctCount:0,totalCount:0});
     }
   }
-  S.current=0;
+  S.current=0; S.turnNumber=1;
   greenDeck=shuffle(GREEN_Q); violetDeck=shuffle(VIOLET_Q);
   tfDeck=shuffle(TF_QUESTIONS); vocabDeck=shuffle(VOCAB_SETS);
   dnaStrandDeck=shuffle(DNA_STRANDS); eventDeck=shuffle(EVENT_CARDS);
@@ -1355,7 +1382,7 @@ function showScreen(id){
 function renderGame(){
   const cur=S.entries[S.current];
   const badge=document.getElementById('topbarCenter');
-  if(badge) badge.innerHTML=`<div class="current-player-badge"><span style="color:${cur.color};font-size:0.9rem;">●</span><span class="cpb-name" style="color:${cur.color}">${cur.name}</span><span class="cpb-space">— ${BOARD[cur.pos].name}</span></div>`;
+  if(badge) badge.innerHTML=`<div class="current-player-badge"><span style="color:${cur.color};font-size:0.9rem;">●</span><span class="cpb-name" style="color:${cur.color}">${cur.name}</span><span class="cpb-space">— ${BOARD[cur.pos].name}</span><span style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--text-dim);margin-left:0.5rem;">Turn ${S.turnNumber}</span></div>`;
   renderBoard(); renderScores(); resetQuestionUI();
 }
 
@@ -2081,7 +2108,8 @@ function renderScores(){
   S.entries.forEach((e,i)=>{
     const div=document.createElement('div');
     div.className='score-card'+(i===S.current?' active-turn':'');
-    div.innerHTML=`<div class="sc-name">${e.name}</div><div class="sc-phase" style="color:${e.color}">${BOARD[e.pos].name}</div>${e.skipTurn?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#ff8080;">SKIP NEXT TURN</div>':''}${e.immune?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--green);">🛡 IMMUNE</div>':''}${e.checkpointState==='passed'?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#f7ff58;">📋 DRAW A CARD</div>':''}${e.checkpointState==='blocked'?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#ff6b9d;">⛔ RETRY CHECKPOINT</div>':''}`;
+    const statStr = e.totalCount>0 ? `<div style="font-family:Cinzel,serif;font-size:0.52rem;color:var(--text-dim);">✓ ${e.correctCount}/${e.totalCount}</div>` : '';
+    div.innerHTML=`<div class="sc-name">${e.name}</div><div class="sc-phase" style="color:${e.color}">${BOARD[e.pos].name}</div>${statStr}${e.skipTurn?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#ff8080;">SKIP NEXT TURN</div>':''}${e.immune?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--green);">🛡 IMMUNE</div>':''}${e.checkpointState==='passed'?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#f7ff58;">📋 DRAW A CARD</div>':''}${e.checkpointState==='blocked'?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#ff6b9d;">⛔ RETRY CHECKPOINT</div>':''}`;
     sg.appendChild(div);
   });
 }
@@ -2180,6 +2208,7 @@ function handleTrivia(chosen){
   const correct = chosen === S.currentQ.ans;
   const cur = S.entries[S.current];
   const isCheckpointCard = cur.checkpointState === 'passed';
+  cur.totalCount++; if(correct) cur.correctCount++;
   document.querySelectorAll('.opt-btn').forEach((b,i)=>{
     b.disabled=true;
     if(i===S.currentQ.ans) b.classList.add('correct');
@@ -2233,15 +2262,16 @@ function movePlayer(entry, spaces, idx){
   }
   log(`✓ ${entry.name} moves to ${BOARD[entry.pos].name}!`, 'good');
   renderBoard(); renderScores();
-  if(entry.pos === BOARD.length - 1){ triggerWin(idx); return; }
+  if(entry.pos === BOARD.length - 1){ triggerWin(idx); return true; }
 
   const landedType = BOARD[entry.pos].type;
-  if(landedType === 'event')         { triggerEvent();  return; }
-  if(landedType === 'checkpoint-g1') { triggerDNA();    return; }
-  if(landedType === 'checkpoint-g2') { triggerTF();     return; }
-  if(landedType === 'checkpoint-m')  { triggerVocab();  return; }
+  if(landedType === 'event')         { triggerEvent();  return true; }
+  if(landedType === 'checkpoint-g1') { triggerDNA();    return true; }
+  if(landedType === 'checkpoint-g2') { triggerTF();     return true; }
+  if(landedType === 'checkpoint-m')  { triggerVocab();  return true; }
 
   autoNextTurn();
+  return false;
 }
 
 // ══════════════════════════════════════════════
@@ -2397,6 +2427,7 @@ function pickBase(base){
   const slotIndex = S.dnaCurrentSlot; // capture before any async
   const templateBase = S.dnaTemplate[slotIndex];
   const correct = base === DNA_PAIRS[templateBase];
+  const dnaCur = S.entries[S.current]; dnaCur.totalCount++; if(correct) dnaCur.correctCount++;
 
   S.dnaAnswers[slotIndex] = base;
   renderDNA();
@@ -2482,6 +2513,7 @@ function tfAnswer(val){
   const correct=val===S.currentTF.ans;
   if(correct) S.tfCorrectCount++;
   S.tfTotalAnswered++;
+  const cur=S.entries[S.current]; cur.totalCount++; if(correct) cur.correctCount++;
   document.getElementById('tfCorrect').textContent=S.tfCorrectCount;
   const btn=val?document.getElementById('tfTrue'):document.getElementById('tfFalse');
   btn.style.filter=correct?'brightness(1.5)':'opacity(0.4)';
@@ -2589,6 +2621,7 @@ function selectVocabTerm(idx){
 function selectVocabDef(idx){
   if(S.vocabSelectedTerm===null) return;
   const correct=S.vocabSelectedTerm===idx;
+  const vcur=S.entries[S.current]; vcur.totalCount++; if(correct) vcur.correctCount++;
   if(correct){
     S.vocabSet[idx].matched=true; S.vocabMatchedCount++;
     S.vocabSelectedTerm=null;
@@ -2673,16 +2706,16 @@ function applyEvent(card, cur){
   }
 
   switch(card.effect){
-    case 'advance2':
-      movePlayer(cur,2,S.current);
-      showEventResult(`⚡ ${cur.name} advances 2 spaces!`,'ok');
-      finishEvent();
+    case 'advance2': {
+      const triggered = movePlayer(cur,2,S.current);
+      if(!triggered){ showEventResult(`⚡ ${cur.name} advances 2 spaces!`,'ok'); finishEvent(); }
       break;
-    case 'advance1':
-      movePlayer(cur,1,S.current);
-      showEventResult(`⚡ ${cur.name} advances 1 space!`,'ok');
-      finishEvent();
+    }
+    case 'advance1': {
+      const triggered = movePlayer(cur,1,S.current);
+      if(!triggered){ showEventResult(`⚡ ${cur.name} advances 1 space!`,'ok'); finishEvent(); }
       break;
+    }
     case 'immune':
       cur.immune=true;
       showEventResult(`🛡 ${cur.name} is now immune to the next negative event!`,'ok');
@@ -2745,7 +2778,8 @@ function nextTurn(){
     else break;
   }
   S.current=next;
-  log(`─── ${S.entries[S.current].name}'s turn ───`,'hi');
+  if(next === 0) S.turnNumber++;
+  log(`─── Turn ${S.turnNumber} · ${S.entries[S.current].name}'s turn ───`,'hi');
   renderGame();
 }
 
@@ -2756,8 +2790,18 @@ function triggerWin(idx){
   const name = S.entries[idx].name;
   document.getElementById('winName').textContent = S.studyMode ? '⚗ Study Complete!' : `${name} wins!`;
   document.getElementById('winFlavor').innerHTML = S.studyMode
-    ? `"${name} has navigated the full cell cycle from G0 to Cytokinesis.<br>The cell divides — mission accomplished."` 
+    ? `"${name} has navigated the full cell cycle from G0 to Cytokinesis.<br>The cell divides — mission accomplished."`
     : `"${name}'s cell crosses the finish line — the cytoplasm divides<br>and two daughter cells emerge, perfectly formed."`;
+  // Build stats table
+  const statsEl = document.getElementById('winStats');
+  if(statsEl && S.entries.length > 0){
+    const rows = S.entries.map(e=>{
+      const pct = e.totalCount>0 ? Math.round(e.correctCount/e.totalCount*100) : '—';
+      const pctStr = e.totalCount>0 ? `${pct}%` : '—';
+      return `<tr style="color:${e.color}"><td style="padding:0.2rem 0.6rem;font-family:'Cinzel',serif;font-size:0.7rem;">${e.name}</td><td style="padding:0.2rem 0.6rem;font-family:'EB Garamond',serif;font-size:0.85rem;text-align:center;">${e.correctCount}/${e.totalCount}</td><td style="padding:0.2rem 0.6rem;font-family:'EB Garamond',serif;font-size:0.85rem;text-align:center;">${pctStr}</td></tr>`;
+    }).join('');
+    statsEl.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--gold);letter-spacing:0.1em;margin-bottom:0.5rem;text-align:center;">— QUESTION RESULTS —</div><table style="width:100%;border-collapse:collapse;margin:0 auto;"><thead><tr style="color:var(--text-dim)"><th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;text-align:left;">Player</th><th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;">Correct</th><th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;">Score</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
   setTimeout(()=>{ showScreen('win'); startWinConfetti(); }, 700);
 }
 
