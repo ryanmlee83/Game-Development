@@ -265,6 +265,10 @@ body {
 .opt-btn.correct { background:rgba(0,180,60,0.25)!important; border-color:var(--green)!important; color:#003010!important; font-weight:600; }
 .opt-btn.wrong   { background:rgba(180,0,0,0.25)!important; border-color:#cc2222!important; color:#300000!important; }
 .opt-btn:disabled { cursor:default; }
+.opt-btn.selected { background:rgba(201,162,39,0.28); border-color:var(--gold); font-weight:600; box-shadow:0 0 0 2px rgba(201,162,39,0.3); }
+.btn-submit-answer { margin-top:0.6rem; padding:0.55rem 1.2rem; background:var(--gold-dark); border:1px solid var(--gold); border-radius:3px; color:#1a1000; font-family:'EB Garamond',serif; font-size:0.95rem; font-weight:700; cursor:pointer; width:100%; transition:all 0.2s; letter-spacing:0.03em; }
+.btn-submit-answer:disabled { opacity:0.35; cursor:default; }
+.btn-submit-answer:not(:disabled):hover { background:var(--gold); transform:translateY(-1px); }
 
 /* ══ LOG DRAWER ══ */
 .log-drawer {
@@ -593,6 +597,7 @@ body {
         <div class="aq-parchment">
           <div class="aq-text" id="aqText"></div>
           <div class="aq-options" id="aqOptions"></div>
+          <button class="btn-submit-answer" id="btnSubmitAnswer" disabled onclick="submitAnswer()">✦ Submit Answer</button>
         </div>
       </div>
 
@@ -2199,7 +2204,9 @@ function askQuestion(type){
   document.getElementById('aqResult').className='aq-result';
   document.getElementById('btnNext').className='btn-next';
   const opts=document.getElementById('aqOptions'); opts.innerHTML='';
-  S.currentQ.opts.forEach((o,i)=>{ const b=document.createElement('button'); b.className='opt-btn'; b.textContent=`${String.fromCharCode(65+i)}. ${o}`; b.onclick=()=>handleTrivia(i); opts.appendChild(b); });
+  S.selectedOpt = null;
+  S.currentQ.opts.forEach((o,i)=>{ const b=document.createElement('button'); b.className='opt-btn'; b.textContent=`${String.fromCharCode(65+i)}. ${o}`; b.onclick=()=>selectOption(i); opts.appendChild(b); });
+  document.getElementById('btnSubmitAnswer').disabled = true;
   showPanel('triviaPanel');
 }
 
@@ -2223,7 +2230,7 @@ function handleTrivia(chosen){
       if(isCheckpointCard) cur.checkpointState = null;
       movePlayer(cur, spaces, S.current);
       result.className='aq-result show ok';
-      result.textContent=`✓ Correct! ${cur.name} moves ${spaces} space(s) → ${BOARD[cur.pos].name}`;
+      result.textContent=`✓ Correct! ${cur.name} advances ${spaces} space(s)!`;
       // nextTurn is handled inside movePlayer (via autoNextTurn or special triggers)
     }, 700);
   } else {
@@ -2244,34 +2251,52 @@ function handleTrivia(chosen){
   }
 }
 
+function selectOption(i){
+  if(S.answered) return;
+  S.selectedOpt = i;
+  document.querySelectorAll('.opt-btn').forEach((b,j) => b.classList.toggle('selected', j===i));
+  document.getElementById('btnSubmitAnswer').disabled = false;
+}
+
+function submitAnswer(){
+  if(S.selectedOpt === null || S.answered) return;
+  document.getElementById('btnSubmitAnswer').disabled = true;
+  handleTrivia(S.selectedOpt);
+}
+
 const CHECKPOINT_TYPES = ['checkpoint-g1','checkpoint-g2','checkpoint-m'];
 
 function autoNextTurn(delay=2200){
   setTimeout(()=>{ nextTurn(); }, delay);
 }
 
-function movePlayer(entry, spaces, idx){
-  for(let i=0; i<spaces; i++){
+function movePlayer(entry, spaces, idx, onDone){
+  let step = 0;
+  function doStep(){
     const nextPos = entry.pos + 1;
-    if(nextPos >= BOARD.length) break;
+    if(step >= spaces || nextPos >= BOARD.length){ finishMove(); return; }
     entry.pos = nextPos;
+    renderBoard();
+    step++;
     if(CHECKPOINT_TYPES.includes(BOARD[entry.pos].type)){
       log(`⛔ ${entry.name} is stopped at ${BOARD[entry.pos].name} — checkpoint must be completed!`, 'info');
-      break;
+      finishMove(); return;
     }
+    setTimeout(doStep, 380);
   }
-  log(`✓ ${entry.name} moves to ${BOARD[entry.pos].name}!`, 'good');
-  renderBoard(); renderScores();
-  if(entry.pos === BOARD.length - 1){ triggerWin(idx); return true; }
-
-  const landedType = BOARD[entry.pos].type;
-  if(landedType === 'event')         { triggerEvent();  return true; }
-  if(landedType === 'checkpoint-g1') { triggerDNA();    return true; }
-  if(landedType === 'checkpoint-g2') { triggerTF();     return true; }
-  if(landedType === 'checkpoint-m')  { triggerVocab();  return true; }
-
-  autoNextTurn();
-  return false;
+  function finishMove(){
+    log(`✓ ${entry.name} moves to ${BOARD[entry.pos].name}!`, 'good');
+    renderScores();
+    if(entry.pos === BOARD.length - 1){ if(onDone) onDone(true); triggerWin(idx); return; }
+    const landedType = BOARD[entry.pos].type;
+    if(landedType === 'event')         { if(onDone) onDone(true); triggerEvent();  return; }
+    if(landedType === 'checkpoint-g1') { if(onDone) onDone(true); triggerDNA();    return; }
+    if(landedType === 'checkpoint-g2') { if(onDone) onDone(true); triggerTF();     return; }
+    if(landedType === 'checkpoint-m')  { if(onDone) onDone(true); triggerVocab();  return; }
+    if(onDone) onDone(false);
+    autoNextTurn();
+  }
+  doStep();
 }
 
 // ══════════════════════════════════════════════
@@ -2707,13 +2732,15 @@ function applyEvent(card, cur){
 
   switch(card.effect){
     case 'advance2': {
-      const triggered = movePlayer(cur,2,S.current);
-      if(!triggered){ showEventResult(`⚡ ${cur.name} advances 2 spaces!`,'ok'); finishEvent(); }
+      movePlayer(cur,2,S.current, triggered => {
+        if(!triggered){ showEventResult(`⚡ ${cur.name} advances 2 spaces!`,'ok'); finishEvent(); }
+      });
       break;
     }
     case 'advance1': {
-      const triggered = movePlayer(cur,1,S.current);
-      if(!triggered){ showEventResult(`⚡ ${cur.name} advances 1 space!`,'ok'); finishEvent(); }
+      movePlayer(cur,1,S.current, triggered => {
+        if(!triggered){ showEventResult(`⚡ ${cur.name} advances 1 space!`,'ok'); finishEvent(); }
+      });
       break;
     }
     case 'immune':
