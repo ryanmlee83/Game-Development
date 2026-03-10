@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XENOGEN — Alien Genetics Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#070912; --bg2:#0c1020; --bg3:#111828; --panel:#0c1528; --panel2:#131e30;
+  --border:#1e3458; --border2:#142848;
+  --accent:#00fff0; --accent2:#18caff; --accent3:#9040ff; --accent4:#ff4499;
+  --success:#44ffaa; --warn:#ffc820; --danger:#ff4477;
+  --text:#d8eeff; --text-dim:#5a7a96; --text-bright:#f0f8ff;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,255,231,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,231,0.015) 1px,transparent 1px);
+  background-size:50px 50px;}
+.screen{display:none;position:relative;z-index:1;}
+.screen.active{display:flex;flex-direction:column;min-height:100vh;}
+.hidden{display:none!important;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ── SHARED COMPONENTS ── */
+.x-btn{font-family:'Orbitron',sans-serif;letter-spacing:0.15em;cursor:pointer;text-transform:uppercase;transition:all 0.2s;border-radius:3px;}
+.x-btn-primary{background:linear-gradient(135deg,rgba(0,255,231,0.1),rgba(0,180,255,0.08));border:1px solid var(--accent);color:var(--accent);padding:0.65rem 1.4rem;font-size:0.7rem;}
+.x-btn-primary:hover:not(:disabled){box-shadow:0 0 25px rgba(0,255,231,0.2);transform:translateY(-1px);}
+.x-btn-primary:disabled{opacity:0.3;cursor:not-allowed;}
+.x-btn-sec{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:0.6rem 1rem;font-size:0.65rem;}
+.x-btn-sec:hover{border-color:var(--text-dim);color:var(--text);}
+.x-btn-accent3{background:linear-gradient(135deg,rgba(123,47,255,0.15),rgba(123,47,255,0.05));border:1px solid var(--accent3);color:var(--accent3);padding:0.65rem 1.4rem;font-size:0.7rem;}
+.x-btn-accent3:hover:not(:disabled){box-shadow:0 0 25px rgba(123,47,255,0.25);transform:translateY(-1px);}
+.x-btn-accent3:disabled{opacity:0.3;cursor:not-allowed;}
+.x-btn-success{background:linear-gradient(135deg,rgba(57,255,138,0.1),rgba(0,255,231,0.06));border:1px solid var(--success);color:var(--success);padding:0.65rem 1.4rem;font-size:0.7rem;}
+.x-btn-success:hover:not(:disabled){box-shadow:0 0 25px rgba(57,255,138,0.2);transform:translateY(-1px);}
+.x-btn-success:disabled{opacity:0.3;cursor:not-allowed;}
+.screen-title-bar{font-family:'Orbitron',sans-serif;font-size:0.6rem;letter-spacing:0.3em;color:var(--accent3);border-left:2px solid var(--accent3);padding-left:0.75rem;margin-bottom:1rem;}
+
+/* ══════════════════════
+   TITLE SCREEN
+══════════════════════ */
+#screen-title{align-items:center;justify-content:center;text-align:center;padding:2rem;
+  background:radial-gradient(ellipse at 50% 30%,rgba(0,255,231,0.06) 0%,transparent 65%);}
+.x-logo{font-family:'Orbitron',sans-serif;font-size:clamp(3.5rem,11vw,7.5rem);font-weight:900;letter-spacing:0.15em;
+  background:linear-gradient(135deg,#00ffe7,#00b4ff,#7b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:logopulse 3s ease-in-out infinite;}
+@keyframes logopulse{0%,100%{filter:drop-shadow(0 0 20px rgba(0,255,231,0.3));}50%{filter:drop-shadow(0 0 45px rgba(0,255,231,0.55));}}
+.logo-sub{font-family:'Orbitron',sans-serif;font-size:clamp(0.45rem,1.8vw,0.7rem);letter-spacing:0.45em;color:var(--text-dim);margin-top:-0.3rem;}
+.tagline{font-size:0.85rem;color:var(--accent2);letter-spacing:0.1em;margin:1.5rem 0 2.5rem;opacity:0.7;}
+.setup-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:2rem;width:100%;max-width:460px;
+  box-shadow:0 0 50px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.03);}
+.setup-card h2{font-family:'Orbitron',sans-serif;font-size:0.65rem;letter-spacing:0.3em;color:var(--accent);margin-bottom:1.5rem;text-align:left;}
+.cfg-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;gap:1rem;}
+.cfg-row label{font-size:0.72rem;color:var(--text-dim);letter-spacing:0.08em;flex-shrink:0;}
+.cfg-row select,.cfg-row input[type=number],.cfg-row input[type=text]{
+  background:var(--bg3);border:1px solid var(--border);border-radius:3px;color:var(--accent);
+  font-family:'Orbitron',sans-serif;font-size:0.7rem;padding:0.5rem 0.7rem;outline:none;cursor:pointer;width:185px;transition:border-color 0.2s;}
+.cfg-row select:focus,.cfg-row input:focus{border-color:var(--accent);box-shadow:0 0 10px rgba(0,255,231,0.12);}
+
+/* ══════════════════════
+   BUILD SCREEN
+══════════════════════ */
+#screen-build{align-items:center;padding:1.5rem 1rem;background:radial-gradient(ellipse at 50% 0%,rgba(0,255,231,0.04) 0%,transparent 55%);}
+.build-header{text-align:center;margin-bottom:1.5rem;}
+.build-header h1{font-family:'Orbitron',sans-serif;font-size:1rem;letter-spacing:0.3em;color:var(--accent);margin-bottom:0.35rem;}
+.build-header p{font-size:0.72rem;color:var(--text-dim);letter-spacing:0.06em;}
+.build-layout{display:flex;gap:1.5rem;width:100%;max-width:900px;align-items:flex-start;}
+.build-spinners{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:1rem;}
+.build-spinners h3{font-family:'Orbitron',sans-serif;font-size:0.58rem;letter-spacing:0.2em;color:var(--accent3);margin-bottom:0.8rem;}
+.spinner-row{display:flex;align-items:center;gap:0.6rem;padding:0.45rem 0;border-bottom:1px solid var(--border2);}
+.spinner-row:last-child{border-bottom:none;}
+.sr-name{font-size:0.65rem;color:var(--text-dim);width:115px;flex-shrink:0;letter-spacing:0.04em;}
+.sr-alleles{display:flex;gap:0.3rem;flex:1;}
+.allele-slot{width:36px;height:36px;border-radius:3px;background:var(--bg3);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--accent2);
+  transition:all 0.3s;position:relative;overflow:hidden;flex-shrink:0;}
+.allele-slot.spinning{animation:slotSpin 0.08s linear infinite;}
+.allele-slot.landed{border-color:var(--accent);box-shadow:0 0 8px rgba(0,255,231,0.3);animation:slotLand 0.3s ease-out;}
+@keyframes slotSpin{0%{transform:translateY(0);}50%{transform:translateY(-4px);}100%{transform:translateY(0);}}
+@keyframes slotLand{0%{transform:scale(1.2);background:rgba(0,255,231,0.15);}100%{transform:scale(1);background:var(--bg3);}}
+.sr-pheno{font-size:0.62rem;color:var(--text);flex:1;text-align:right;opacity:0.8;}
+.sr-spin-btn{padding:0.3rem 0.6rem;background:var(--bg3);border:1px solid var(--border);border-radius:2px;
+  color:var(--text-dim);font-family:'Orbitron',sans-serif;font-size:0.5rem;letter-spacing:0.08em;
+  cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
+.sr-spin-btn:hover{border-color:var(--accent3);color:var(--accent3);}
+.sr-spin-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.build-preview{width:180px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0.75rem;}
+.build-preview-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.85rem;width:100%;text-align:center;}
+.build-preview-card h3{font-family:'Orbitron',sans-serif;font-size:0.55rem;letter-spacing:0.2em;color:var(--text-dim);margin-bottom:0.6rem;}
+.build-actions{display:flex;flex-direction:column;gap:0.5rem;width:100%;}
+.spin-all-btn{width:100%;padding:0.6rem;background:rgba(123,47,255,0.12);border:1px solid var(--accent3);
+  border-radius:3px;color:var(--accent3);font-family:'Orbitron',sans-serif;font-size:0.58rem;
+  letter-spacing:0.12em;cursor:pointer;transition:all 0.2s;}
+.spin-all-btn:hover{background:rgba(123,47,255,0.22);box-shadow:0 0 15px rgba(123,47,255,0.2);}
+.build-progress{font-size:0.6rem;color:var(--text-dim);text-align:center;}
+.build-progress span{color:var(--accent);}
+
+/* ══════════════════════
+   PARTNER SELECT SCREEN
+══════════════════════ */
+#screen-partner{align-items:center;padding:1.5rem 1rem;background:radial-gradient(ellipse at 50% 0%,rgba(123,47,255,0.05) 0%,transparent 55%);}
+.partner-header{text-align:center;margin-bottom:1.5rem;}
+.partner-header h1{font-family:'Orbitron',sans-serif;font-size:1rem;letter-spacing:0.3em;color:var(--accent3);margin-bottom:0.35rem;}
+.partner-header p{font-size:0.72rem;color:var(--text-dim);letter-spacing:0.06em;}
+.partner-grid{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;max-width:1100px;width:100%;}
+.partner-candidate{background:var(--panel);border:2px solid var(--border);border-radius:6px;padding:1rem;
+  width:280px;cursor:pointer;transition:all 0.25s;position:relative;text-align:center;}
+.partner-candidate:hover{border-color:var(--accent3);box-shadow:0 0 25px rgba(123,47,255,0.2);transform:translateY(-3px);}
+.partner-candidate.selected{border-color:var(--accent3);box-shadow:0 0 30px rgba(123,47,255,0.3);}
+.partner-candidate::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent3),transparent);opacity:0;transition:opacity 0.2s;}
+.partner-candidate:hover::before,.partner-candidate.selected::before{opacity:1;}
+.pc-id{font-family:'Orbitron',sans-serif;font-size:0.55rem;letter-spacing:0.2em;color:var(--accent3);margin-bottom:0.6rem;}
+.pc-svg-wrap{display:flex;justify-content:center;margin:0.4rem 0 0.75rem;}
+.pc-traits{display:flex;flex-direction:column;gap:0;text-align:left;margin-bottom:0.75rem;}
+.pc-trait-row{display:flex;justify-content:space-between;font-size:0.58rem;padding:0.12rem 0;border-bottom:1px solid var(--border2);}
+.pc-trait-row:last-child{border-bottom:none;}
+.pc-trait-name{color:var(--text-dim);flex-shrink:0;margin-right:0.4rem;}
+.pc-trait-pheno{color:var(--text);text-align:right;font-size:0.56rem;}
+.pc-select-btn{width:100%;padding:0.5rem;background:rgba(123,47,255,0.1);border:1px solid var(--accent3);
+  border-radius:3px;color:var(--accent3);font-family:'Orbitron',sans-serif;font-size:0.58rem;
+  letter-spacing:0.1em;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.pc-select-btn:hover,.partner-candidate.selected .pc-select-btn{background:rgba(123,47,255,0.25);box-shadow:0 0 15px rgba(123,47,255,0.2);}
+
+/* ══════════════════════
+   GAME SCREEN (Observe + Predict + Fertilize + Reveal)
+══════════════════════ */
+#screen-game{flex-direction:column;padding:0;}
+.game-header{display:flex;align-items:center;justify-content:space-between;padding:0.55rem 1.1rem;
+  border-bottom:1px solid var(--border2);background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);flex-shrink:0;}
+.gh-left{display:flex;align-items:center;gap:1rem;}
+.gh-title{font-family:'Orbitron',sans-serif;font-size:0.75rem;font-weight:900;letter-spacing:0.2em;color:var(--accent);}
+.gh-round{font-size:0.65rem;color:var(--text-dim);letter-spacing:0.08em;}
+.gh-round em{color:var(--accent2);font-style:normal;}
+.gh-diff{font-size:0.55rem;padding:0.1rem 0.45rem;border-radius:2px;letter-spacing:0.1em;}
+.gh-diff.beginner{background:rgba(57,255,138,0.1);border:1px solid var(--success);color:var(--success);}
+.gh-diff.advanced{background:rgba(0,180,255,0.1);border:1px solid var(--accent2);color:var(--accent2);}
+.gh-diff.expert{background:rgba(255,58,110,0.1);border:1px solid var(--danger);color:var(--danger);}
+.streak-badge{background:rgba(255,184,0,0.12);border:1px solid var(--warn);border-radius:2px;
+  padding:0.1rem 0.45rem;font-size:0.58rem;color:var(--warn);letter-spacing:0.08em;}
+.gh-right{display:flex;align-items:center;gap:1.2rem;}
+.gh-score-block{text-align:right;}
+.gh-score-label{font-size:0.5rem;color:var(--text-dim);letter-spacing:0.15em;display:block;}
+.gh-score-val{font-family:'Orbitron',sans-serif;font-size:1.05rem;font-weight:700;color:var(--warn);}
+
+.game-body{display:grid;grid-template-columns:1fr 160px;flex:1;overflow:hidden;}
+.game-main{padding:0.85rem;overflow-y:auto;display:flex;flex-direction:column;gap:0.8rem;}
+.phase-bar{font-family:'Orbitron',sans-serif;font-size:0.58rem;letter-spacing:0.25em;
+  border-left:2px solid var(--accent3);padding-left:0.65rem;color:var(--accent3);}
+
+/* Arena */
+.alien-arena{display:grid;grid-template-columns:1fr 72px 1fr;gap:0.7rem;align-items:start;}
+.alien-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.7rem;position:relative;overflow:hidden;}
+.alien-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent2),transparent);opacity:0.25;}
+.alien-card.player::after{background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.35;}
+.ac-label{font-size:0.52rem;letter-spacing:0.12em;color:var(--text-dim);text-transform:uppercase;margin-bottom:0.35rem;}
+.ac-label em{color:var(--accent);font-style:normal;}
+.ac-svg{display:flex;justify-content:center;margin:0.2rem 0;}
+.geno-table{width:100%;border-collapse:collapse;font-size:0.6rem;margin-top:0.3rem;}
+.geno-table tr{border-bottom:1px solid rgba(26,45,74,0.6);}
+.geno-table tr:last-child{border-bottom:none;}
+.geno-table td{padding:0.2rem 0.25rem;vertical-align:middle;}
+.td-name{color:var(--text-dim);width:40%;}
+.td-geno{color:var(--accent2);font-weight:bold;width:22%;text-align:center;}
+.td-pheno{color:var(--text);width:38%;text-align:right;font-size:0.56rem;}
+
+/* Egg column */
+.egg-col{display:flex;flex-direction:column;align-items:center;gap:0.35rem;padding-top:1rem;}
+.egg-wrap{position:relative;width:66px;height:82px;}
+.egg-svg{width:100%;height:100%;}
+.egg-allele-disp{position:absolute;top:14px;left:5px;right:5px;bottom:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;overflow:hidden;}
+.egg-chip{font-size:0.38rem;color:var(--accent);text-align:center;white-space:nowrap;
+  opacity:0;transform:translateY(-5px);transition:opacity 0.25s,transform 0.25s;}
+.egg-chip.vis{opacity:1;transform:translateY(0);}
+.btn-fert{padding:0.3rem;background:rgba(123,47,255,0.12);border:1px solid var(--accent3);
+  border-radius:2px;color:var(--accent3);font-family:'Orbitron',sans-serif;font-size:0.45rem;
+  letter-spacing:0.06em;cursor:pointer;text-transform:uppercase;transition:all 0.2s;width:66px;text-align:center;}
+.btn-fert:hover:not(:disabled){background:rgba(123,47,255,0.28);box-shadow:0 0 12px rgba(123,47,255,0.3);}
+.btn-fert:disabled{opacity:0.3;cursor:not-allowed;}
+.egg-label{font-size:0.48rem;color:var(--text-dim);letter-spacing:0.1em;text-align:center;}
+.egg-geno-list{width:66px;background:rgba(0,0,0,0.4);border:1px solid rgba(0,255,231,0.2);border-radius:2px;padding:0.3rem 0.25rem;margin-top:0.2rem;}
+.egg-geno-row{display:flex;justify-content:space-between;font-size:0.45rem;padding:0.08rem 0;border-bottom:1px solid rgba(26,45,74,0.5);white-space:nowrap;}
+.egg-geno-row:last-child{border-bottom:none;}
+.egg-geno-tid{color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;max-width:32px;}
+.egg-geno-val{color:var(--accent);font-weight:700;}
+
+/* Prediction panel */
+.pred-panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.75rem;}
+.pred-panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem;}
+.pred-panel-hdr h3{font-family:'Orbitron',sans-serif;font-size:0.58rem;letter-spacing:0.18em;color:var(--accent2);}
+.pred-phase-tag{font-size:0.52rem;padding:0.1rem 0.45rem;border-radius:10px;letter-spacing:0.08em;}
+.pred-phase-tag.pre{background:rgba(255,184,0,0.1);border:1px solid var(--warn);color:var(--warn);}
+.pred-phase-tag.post{background:rgba(57,255,138,0.08);border:1px solid var(--success);color:var(--success);}
+.pred-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:0.4rem;}
+.pred-item{background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:0.42rem 0.5rem;}
+.pred-item-lbl{font-size:0.55rem;color:var(--text-dim);letter-spacing:0.06em;margin-bottom:0.28rem;}
+.pred-item select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:2px;
+  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.58rem;padding:0.25rem 0.3rem;outline:none;cursor:pointer;}
+.pred-item select:focus{border-color:var(--accent2);}
+.prob-row{margin-top:0.28rem;display:flex;gap:0.2rem;}
+.prob-btn{padding:0.15rem 0.3rem;background:var(--bg2);border:1px solid var(--border);border-radius:2px;
+  color:var(--text-dim);font-size:0.55rem;cursor:pointer;transition:all 0.15s;flex:1;text-align:center;}
+.prob-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.prob-btn.sel{background:rgba(0,180,255,0.12);border-color:var(--accent2);color:var(--accent2);}
+.pred-item.cor{border-color:var(--success);background:rgba(57,255,138,0.04);}
+.pred-item.inc{border-color:var(--danger);background:rgba(255,58,110,0.04);}
+.fb-tag{display:none;font-size:0.5rem;margin-top:0.22rem;}
+.pred-item.cor .fb-tag{display:block;color:var(--success);}
+.pred-item.inc .fb-tag{display:block;color:var(--danger);}
+.corr-ans{display:none;font-size:0.55rem;color:var(--success);margin-top:0.15rem;}
+.pred-item.inc .corr-ans{display:block;}
+.pred-note{font-size:0.6rem;color:var(--text-dim);margin-bottom:0.5rem;padding:0.35rem 0.5rem;
+  background:rgba(255,184,0,0.05);border:1px solid rgba(255,184,0,0.15);border-radius:2px;}
+
+/* Offspring reveal */
+.off-reveal{background:var(--panel);border:1px solid var(--accent3);border-radius:4px;padding:0.75rem;}
+.off-reveal h3{font-family:'Orbitron',sans-serif;font-size:0.58rem;letter-spacing:0.18em;color:var(--accent3);margin-bottom:0.6rem;}
+.off-grid{display:flex;gap:0.85rem;align-items:flex-start;}
+
+/* Round overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:200;display:none;align-items:center;justify-content:center;}
+.overlay.show{display:flex;}
+.score-box{background:var(--panel);border:1px solid var(--accent3);border-radius:5px;padding:2rem;
+  text-align:center;max-width:360px;width:90%;box-shadow:0 0 60px rgba(123,47,255,0.3);}
+.score-box h2{font-family:'Orbitron',sans-serif;font-size:0.68rem;letter-spacing:0.3em;color:var(--accent3);margin-bottom:1rem;}
+.round-pts{font-family:'Orbitron',sans-serif;font-size:2.5rem;font-weight:900;color:var(--warn);margin:0.25rem 0;}
+.round-pts-lbl{font-size:0.6rem;color:var(--text-dim);letter-spacing:0.15em;margin-bottom:1.25rem;}
+.bk-table{text-align:left;font-size:0.6rem;margin-bottom:1.25rem;background:var(--bg3);border-radius:3px;padding:0.6rem;}
+.bk-row{display:flex;justify-content:space-between;padding:0.16rem 0;border-bottom:1px solid var(--border2);}
+.bk-row:last-child{border-bottom:none;}
+.bk-pts{color:var(--success);font-weight:bold;}
+.bk-streak{margin-bottom:1rem;font-size:0.65rem;color:var(--warn);}
+
+/* Lineage sidebar */
+.lineage-panel{border-left:1px solid var(--border2);background:rgba(0,0,0,0.35);
+  padding:0.55rem 0.45rem;overflow-y:auto;display:flex;flex-direction:column;gap:0.3rem;}
+.lin-title{font-family:'Orbitron',sans-serif;font-size:0.46rem;letter-spacing:0.2em;
+  color:var(--text-dim);text-align:center;margin-bottom:0.3rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border2);}
+.lin-entry{background:var(--panel);border:1px solid var(--border2);border-radius:3px;
+  padding:0.3rem;text-align:center;transition:border-color 0.2s;}
+.lin-entry.cur{border-color:var(--accent);}
+.lin-gen{font-size:0.45rem;color:var(--text-dim);letter-spacing:0.06em;}
+.lin-gen em{color:var(--accent2);font-style:normal;}
+
+/* ══════════════════════
+   REFERENCE TABLE POPUP
+══════════════════════ */
+.ref-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
+.ref-overlay.show{display:flex;}
+.ref-box{background:var(--panel);border:1px solid var(--accent);border-radius:6px;padding:1.5rem;width:100%;max-width:780px;position:relative;}
+.ref-box-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+.ref-box-hdr h2{font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:0.3em;color:var(--accent);}
+.ref-close{background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--text-dim);font-family:'Orbitron',sans-serif;font-size:0.6rem;padding:0.3rem 0.7rem;cursor:pointer;letter-spacing:0.1em;transition:all 0.15s;}
+.ref-close:hover{border-color:var(--accent);color:var(--accent);}
+.ref-section{margin-bottom:1.2rem;}
+.ref-section-title{font-family:'Orbitron',sans-serif;font-size:0.55rem;letter-spacing:0.25em;color:var(--accent3);margin-bottom:0.5rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border2);}
+.ref-table{width:100%;border-collapse:collapse;font-size:0.62rem;}
+.ref-table th{font-family:'Orbitron',sans-serif;font-size:0.5rem;letter-spacing:0.15em;color:var(--text-dim);text-align:left;padding:0.3rem 0.4rem;border-bottom:1px solid var(--border);}
+.ref-table td{padding:0.28rem 0.4rem;border-bottom:1px solid var(--border2);vertical-align:middle;}
+.ref-table tr:last-child td{border-bottom:none;}
+.ref-table tr:hover td{background:rgba(255,255,255,0.02);}
+.ref-td-trait{color:var(--text-dim);width:18%;}
+.ref-td-allele{font-family:'Orbitron',sans-serif;font-size:0.58rem;font-weight:700;color:var(--accent2);width:14%;text-align:center;}
+.ref-td-geno{font-family:'Orbitron',sans-serif;font-size:0.55rem;color:var(--accent);width:20%;text-align:center;}
+.ref-td-pheno{color:var(--text);width:22%;}
+.ref-td-type{font-size:0.5rem;color:var(--text-dim);width:10%;text-align:center;letter-spacing:0.05em;}
+.ref-badge-dom{background:rgba(0,255,240,0.1);border:1px solid var(--accent);border-radius:2px;padding:0.05rem 0.3rem;font-size:0.48rem;color:var(--accent);letter-spacing:0.08em;}
+.ref-badge-rec{background:rgba(90,122,150,0.12);border:1px solid var(--text-dim);border-radius:2px;padding:0.05rem 0.3rem;font-size:0.48rem;color:var(--text-dim);letter-spacing:0.08em;}
+.ref-badge-cod{background:rgba(144,64,255,0.12);border:1px solid var(--accent3);border-radius:2px;padding:0.05rem 0.3rem;font-size:0.48rem;color:var(--accent3);letter-spacing:0.08em;}
+.ref-note{font-size:0.6rem;color:var(--text-dim);padding:0.6rem 0.75rem;background:rgba(0,255,240,0.03);border:1px solid rgba(0,255,240,0.1);border-radius:3px;line-height:1.6;}
+.ref-btn{background:rgba(0,255,240,0.06);border:1px solid var(--accent);border-radius:3px;color:var(--accent);font-family:'Orbitron',sans-serif;font-size:0.52rem;padding:0.3rem 0.7rem;cursor:pointer;letter-spacing:0.12em;transition:all 0.2s;text-transform:uppercase;}
+.ref-btn:hover{background:rgba(0,255,240,0.14);box-shadow:0 0 12px rgba(0,255,240,0.15);}
+
+
+#screen-end{align-items:center;justify-content:center;padding:2rem;text-align:center;
+  background:radial-gradient(ellipse at 50% 45%,rgba(123,47,255,0.07) 0%,transparent 60%);}
+.end-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.5rem,5vw,2.8rem);font-weight:900;
+  letter-spacing:0.12em;color:var(--accent);margin-bottom:0.4rem;}
+.end-score{font-family:'Orbitron',sans-serif;font-size:clamp(2.5rem,8vw,4.5rem);font-weight:900;color:var(--warn);margin:0.75rem 0 0.2rem;}
+.end-score-lbl{font-size:0.68rem;color:var(--text-dim);letter-spacing:0.2em;margin-bottom:1.75rem;}
+.end-stats{display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.75rem;flex-wrap:wrap;}
+.end-stat{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.9rem 1.4rem;}
+.end-stat-val{font-family:'Orbitron',sans-serif;font-size:1.7rem;font-weight:700;color:var(--accent2);}
+.end-stat-lbl{font-size:0.55rem;color:var(--text-dim);letter-spacing:0.1em;}
+.end-lin-title{font-family:'Orbitron',sans-serif;font-size:0.58rem;letter-spacing:0.2em;color:var(--accent3);margin-bottom:0.85rem;}
+.end-strip{display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem;}
+.end-alien{display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.48rem;color:var(--text-dim);}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+  SCREEN 1: TITLE / SETUP
+══════════════════════════════════════ -->
+<div id="screen-title" class="screen active">
+  <div class="x-logo">XENOGEN</div>
+  <div class="logo-sub">ALIEN GENETICS LABORATORY</div>
+  <div class="tagline">// breed · predict · inherit · evolve //</div>
+  <div class="setup-card">
+    <h2>// LAB CONFIGURATION</h2>
+    <div class="cfg-row">
+      <label>DIFFICULTY</label>
+      <select id="cfg-diff">
+        <option value="beginner">BEGINNER — 4 TRAITS</option>
+        <option value="advanced" selected>ADVANCED — 8 TRAITS</option>
+        <option value="expert">EXPERT — ALL 13</option>
+      </select>
+    </div>
+    <div class="cfg-row">
+      <label>GENERATIONS</label>
+      <input type="number" id="cfg-rounds" min="3" max="20" value="5">
+    </div>
+    <div class="cfg-row">
+      <label>SUBJECT ID</label>
+      <input type="text" id="cfg-name" placeholder="ENTER NAME" maxlength="18">
+    </div>
+    <button class="x-btn x-btn-primary" style="width:100%;margin-top:1.5rem;" onclick="goToBuild()">INITIALIZE EXPERIMENT</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  SCREEN 2: BUILD YOUR ALIEN
+══════════════════════════════════════ -->
+<div id="screen-build" class="screen">
+  <div class="build-header">
+    <h1>BUILD YOUR ALIEN</h1>
+    <p>SPIN EACH TRAIT TO DETERMINE YOUR SPECIMEN'S GENOTYPE</p>
+  </div>
+  <div class="build-layout">
+    <div class="build-spinners">
+      <h3>// TRAIT SPINNERS — ALLELE DETERMINATION</h3>
+      <div id="spinner-list"></div>
+    </div>
+    <div class="build-preview">
+      <div class="build-preview-card">
+        <h3>SPECIMEN PREVIEW</h3>
+        <div id="build-svg-wrap" style="display:flex;justify-content:center;"></div>
+        <div id="build-name" style="font-family:'Orbitron',sans-serif;font-size:0.55rem;color:var(--text-dim);margin-top:0.4rem;letter-spacing:0.1em;text-align:center;">—</div>
+      </div>
+      <div class="build-actions">
+        <button class="spin-all-btn" onclick="spinAll()">⟳ SPIN ALL</button>
+        <div class="build-progress">TRAITS SPUN: <span id="build-progress">0</span> / <span id="build-total">4</span></div>
+        <button class="x-btn x-btn-primary" id="build-proceed-btn" style="width:100%;" onclick="goToPartnerSelect()" disabled>CONFIRM SPECIMEN →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  SCREEN 3: PARTNER SELECT
+══════════════════════════════════════ -->
+<div id="screen-partner" class="screen">
+  <div class="partner-header">
+    <h1>SELECT A PARTNER</h1>
+    <p>CHOOSE ONE ALIEN TO BREED WITH YOUR SPECIMEN</p>
+    <button class="ref-btn" onclick="toggleRef()" style="margin-top:0.75rem;font-size:0.5rem;">⊞ TRAIT REFERENCE</button>
+  </div>
+  <div class="partner-grid" id="partner-grid"></div>
+  <div style="margin-top:1.25rem;">
+    <button class="x-btn x-btn-accent3" id="partner-confirm-btn" onclick="confirmPartner()" disabled>PROCEED TO LAB →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  SCREEN 4: GAME (Observe + Predict + Fertilize + Reveal)
+══════════════════════════════════════ -->
+<div id="screen-game" class="screen">
+  <div class="game-header">
+    <div class="gh-left">
+      <span class="gh-title">XENOGEN</span>
+      <span class="gh-round">GEN <em id="gh-round">1</em> / <em id="gh-total">5</em></span>
+      <span class="gh-diff beginner" id="gh-diff">BEGINNER</span>
+      <span class="streak-badge hidden" id="streak-badge">🔥 ×<span id="streak-mult">1</span></span>
+    </div>
+    <div class="gh-right">
+      <button class="ref-btn" onclick="toggleRef()">⊞ TRAIT REF</button>
+      <div class="gh-score-block">
+        <span class="gh-score-label">SCORE</span>
+        <span class="gh-score-val" id="gh-score">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-body">
+    <div class="game-main" id="game-main">
+
+      <!-- Phase bar -->
+      <div class="phase-bar" id="phase-bar">PHASE 1 — OBSERVE PARENTS &amp; PREDICT OFFSPRING</div>
+
+      <!-- Arena: player | egg | partner -->
+      <div class="alien-arena">
+        <div class="alien-card player" id="player-card">
+          <div class="ac-label">YOUR ALIEN — <em id="player-gen-lbl">GEN 1</em></div>
+          <div class="ac-svg" id="player-svg-wrap"></div>
+          <table class="geno-table" id="player-geno-tbl"></table>
+        </div>
+
+        <div class="egg-col">
+          <div class="egg-label">ZORG EGG</div>
+          <div class="egg-wrap">
+            <svg class="egg-svg" viewBox="0 0 68 84">
+              <defs>
+                <radialGradient id="egG" cx="38%" cy="32%" r="68%">
+                  <stop offset="0%" stop-color="#0f2030"/>
+                  <stop offset="100%" stop-color="#04080f"/>
+                </radialGradient>
+                <radialGradient id="egGA" cx="38%" cy="32%" r="68%">
+                  <stop offset="0%" stop-color="#0f2a18"/>
+                  <stop offset="100%" stop-color="#040c08"/>
+                </radialGradient>
+              </defs>
+              <ellipse id="egg-body" cx="34" cy="45" rx="28" ry="34" fill="url(#egG)" stroke="#7b2fff" stroke-width="1.2" opacity="0.9"/>
+              <ellipse cx="34" cy="45" rx="28" ry="34" fill="none" stroke="rgba(123,47,255,0.18)" stroke-width="5"/>
+              <ellipse cx="26" cy="33" rx="7" ry="10" fill="none" stroke="rgba(123,47,255,0.08)" stroke-width="0.8"/>
+              <circle id="egg-nucleus" cx="34" cy="46" r="10" fill="none" stroke="rgba(0,255,231,0.08)" stroke-dasharray="2,2"/>
+            </svg>
+            <div class="egg-allele-disp" id="egg-disp"></div>
+          </div>
+          <button class="btn-fert" id="btn-fert" onclick="doFertilize()">FERTILIZE</button>
+          <div id="egg-geno-list" class="egg-geno-list hidden"></div>
+        </div>
+
+        <div class="alien-card" id="partner-card">
+          <div class="ac-label">PARTNER — <em id="partner-lbl">SPECIMEN</em></div>
+          <div class="ac-svg" id="partner-svg-wrap"></div>
+          <table class="geno-table" id="partner-geno-tbl"></table>
+        </div>
+      </div>
+
+      <!-- PRE-FERTILIZATION PREDICTION -->
+      <div id="pre-panel" class="pred-panel">
+        <div class="pred-panel-hdr">
+          <h3>PREDICT OFFSPRING PHENOTYPES</h3>
+          <span class="pred-phase-tag pre">PRE-FERTILIZATION</span>
+        </div>
+        <div class="pred-note">Study both parent genotypes above. Predict the offspring's phenotype and the probability for each trait. <strong>This prediction is not scored</strong> — confirm your thinking before fertilization.</div>
+        <div class="pred-grid" id="pre-grid"></div>
+        <div class="action-row" style="display:flex;gap:0.6rem;margin-top:0.65rem;">
+          <button class="x-btn x-btn-accent3" onclick="confirmPre()">FERTILIZE →</button>
+        </div>
+      </div>
+
+      <!-- POST-FERTILIZATION PREDICTION (hidden until fertilized) -->
+      <div id="post-panel" class="pred-panel hidden">
+        <div class="pred-panel-hdr">
+          <h3>CONFIRM OFFSPRING PREDICTION</h3>
+          <span class="pred-phase-tag post">POST-FERTILIZATION</span>
+        </div>
+        <div class="pred-note">The egg genotype is revealed. Confirm or revise your phenotype prediction and probability for each trait. <strong>This prediction IS scored.</strong></div>
+        <div class="pred-grid" id="post-grid"></div>
+        <div style="display:flex;gap:0.6rem;margin-top:0.65rem;align-items:center;">
+          <button class="x-btn x-btn-success" id="btn-submit" onclick="submitPredictions()" disabled>SUBMIT PREDICTIONS</button>
+        </div>
+      </div>
+
+      <!-- OFFSPRING REVEAL (hidden until scored) -->
+      <div id="off-reveal" class="off-reveal hidden">
+        <h3>// OFFSPRING — GEN <span id="off-gen">—</span></h3>
+        <div class="off-grid" id="off-grid"></div>
+        <div style="margin-top:0.75rem;display:flex;gap:0.6rem;">
+          <button class="x-btn x-btn-primary" onclick="nextRound()">NEXT GENERATION →</button>
+        </div>
+      </div>
+
+    </div><!-- /game-main -->
+
+    <!-- Lineage sidebar -->
+    <div class="lineage-panel" id="lineage-panel">
+      <div class="lin-title">LINEAGE</div>
+      <div id="lineage-list"></div>
+    </div>
+  </div><!-- /game-body -->
+</div><!-- /screen-game -->
+
+<!-- ══════════════════════════════════════
+  ROUND SCORE OVERLAY
+══════════════════════════════════════ -->
+<div class="overlay" id="score-overlay">
+  <div class="score-box">
+    <h2>// ROUND COMPLETE</h2>
+    <div class="round-pts" id="r-pts">0</div>
+    <div class="round-pts-lbl">POINTS EARNED</div>
+    <div class="bk-streak hidden" id="bk-streak"></div>
+    <div class="bk-table" id="r-breakdown"></div>
+    <button class="x-btn x-btn-accent3" onclick="closeOverlay()">VIEW OFFSPRING</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  SCREEN 5: END
+══════════════════════════════════════ -->
+<div id="screen-end" class="screen">
+  <div class="end-title">SEQUENCE COMPLETE</div>
+  <div style="font-size:0.72rem;color:var(--text-dim);letter-spacing:0.12em;margin-bottom:1.5rem;">
+    LINEAGE OF <em id="end-name" style="color:var(--accent);font-style:normal;">—</em>
+  </div>
+  <div class="end-score" id="end-score">0</div>
+  <div class="end-score-lbl">FINAL SCORE</div>
+  <div class="end-stats">
+    <div class="end-stat"><div class="end-stat-val" id="end-correct">0</div><div class="end-stat-lbl">CORRECT</div></div>
+    <div class="end-stat"><div class="end-stat-val" id="end-acc">0%</div><div class="end-stat-lbl">ACCURACY</div></div>
+    <div class="end-stat"><div class="end-stat-val" id="end-streak">0</div><div class="end-stat-lbl">BEST STREAK</div></div>
+  </div>
+  <div class="end-lin-title">YOUR LINEAGE</div>
+  <div class="end-strip" id="end-strip"></div>
+  <button class="x-btn x-btn-primary" onclick="location.reload()">NEW EXPERIMENT</button>
+</div>
+
+<!-- ══════════════════════════════════════
+  REFERENCE TABLE POPUP
+══════════════════════════════════════ -->
+<div class="ref-overlay" id="ref-overlay" onclick="refOverlayClick(event)">
+  <div class="ref-box" id="ref-box">
+    <div class="ref-box-hdr">
+      <h2>// XENOGEN TRAIT REFERENCE</h2>
+      <button class="ref-close" onclick="toggleRef()">✕ CLOSE</button>
+    </div>
+    <div id="ref-content"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// TRAIT DATA
+// ═══════════════════════════════════════════════════════
+const TRAITS = [
+  {id:'skin',   name:'Skin Color',    alleles:['G','g'], dom:'Glowing Green',   rec:'Dull Gray',       type:'dr'},
+  {id:'eyes',   name:'Eye Number',    alleles:['E','e'], dom:'Three Eyes',       rec:'One Eye',         type:'dr'},
+  {id:'ant',    name:'Antenna Shape', alleles:['A','a'], dom:'Curled Antennae', rec:'Straight Antennae',type:'dr'},
+  {id:'legs',   name:'Limb Number',   alleles:['L','l'], dom:'Six Limbs',        rec:'Four Limbs',       type:'dr'},
+  {id:'tex',    name:'Body Texture',  alleles:['S','s'], dom:'Smooth Skin',      rec:'Scaly Skin',       type:'dr'},
+  {id:'tail',   name:'Tail Type',     alleles:['T','t'], dom:'Long Tail',        rec:'Stubby Tail',      type:'dr'},
+  {id:'ears',   name:'Ear Shape',     alleles:['P','p'], dom:'Pointed Ears',     rec:'Round Ears',       type:'dr'},
+  {id:'tongue', name:'Tongue Shape',  alleles:['B','b'], dom:'Forked Tongue',    rec:'Straight Tongue',  type:'dr'},
+  {id:'fingers',name:'Finger Number', alleles:['F','f'], dom:'Five Fingers',     rec:'Three Fingers',    type:'dr'},
+  {id:'wings',  name:'Wing Presence', alleles:['W','w'], dom:'Has Wings',        rec:'No Wings',         type:'dr'},
+  {id:'nose',   name:'Nose Shape',    alleles:['Nh','Nd','Nc','Nt'],
+    phenotypes:{Nh:'Square Nose',Nd:'No Nose',Nc:'Tubular Nose',Nt:'Triangular Nose'}, type:'ma'},
+  {id:'horns',  name:'Horns',         alleles:['Hh','Hd','Hc','Ht'],
+    phenotypes:{Hh:'Curved Horns',Hd:'Spiked Crest',Hc:'Glowing Antlers',Ht:'No Horns'}, type:'ma'},
+  {id:'biolum', name:'Bioluminescence',alleles:['Bh','Bd','Bc','Bt'],
+    phenotypes:{Bh:'Pulsating Glow',Bd:'Patterned Glow',Bc:'Multi-Color Glow',Bt:'No Glow'}, type:'ma'},
+];
+
+const DIFF_COUNTS = {beginner:4, advanced:8, expert:13};
+const DIFF_MULT   = {beginner:1, advanced:2, expert:3};
+const NAME_A = ['Xel','Vor','Zyg','Kreth','Nox','Aev','Thul','Drix','Phem','Ulk','Zov','Qeth'];
+const NAME_B = ['arak','ozin','ephon','ixis','ulor','adren','omex','ivast','ylon','ethra','orex','imul'];
+const randName = () => NAME_A[Math.random()*NAME_A.length|0]+NAME_B[Math.random()*NAME_B.length|0];
+const pick = arr => arr[Math.random()*arr.length|0];
+const genoStr = g => g[0]+g[1];
+
+// ═══════════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════════
+let G = {};
+
+function initG(){
+  const diff  = document.getElementById('cfg-diff').value;
+  const rounds= parseInt(document.getElementById('cfg-rounds').value)||5;
+  const name  = document.getElementById('cfg-name').value.trim()||'Researcher';
+  const traitCount = DIFF_COUNTS[diff];
+  G = {
+    diff, rounds, name,
+    traits: TRAITS.slice(0,traitCount),
+    round:1, score:0, streak:0, bestStreak:0,
+    totalQ:0, totalCorrect:0,
+    player:null, partner:null, offGeno:null, pendingOff:null,
+    lineage:[],
+    buildGeno:{}, buildSpun:0,
+    candidates:[], selectedCandidate:null,
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+// PHENOTYPE RESOLUTION
+// ═══════════════════════════════════════════════════════
+function getPhenotype(t, geno){
+  if(t.type==='dr'){
+    return (geno[0]===t.alleles[0]||geno[1]===t.alleles[0]) ? t.dom : t.rec;
+  }
+  // Multiple allele / codominant
+  const [a1,a2] = geno;
+  if(a1===a2) return t.phenotypes[a1];
+  const p1=t.phenotypes[a1], p2=t.phenotypes[a2];
+  const noTerms=['No Nose','No Horns','No Glow'];
+  if(noTerms.includes(p1)) return p2;
+  if(noTerms.includes(p2)) return p1;
+  return p1+' / '+p2;
+}
+
+function calcProbs(t, ga, gb){
+  // ga, gb = [allele1, allele2] for each parent
+  const combos=[[ga[0],gb[0]],[ga[0],gb[1]],[ga[1],gb[0]],[ga[1],gb[1]]];
+  const counts={};
+  for(const c of combos){const ph=getPhenotype(t,c);counts[ph]=(counts[ph]||0)+1;}
+  const result={};
+  for(const [ph,n] of Object.entries(counts)) result[ph]=n*25;
+  return result;
+}
+
+function randomGeno(t){
+  return [pick(t.alleles), pick(t.alleles)];
+}
+
+function makeAlien(existingGeno, gen){
+  const geno={};
+  for(const t of G.traits) geno[t.id]=existingGeno ? existingGeno[t.id] : randomGeno(t);
+  return {name:randName(), gen:gen||1, geno};
+}
+
+function crossAliens(a, b){
+  const geno={};
+  for(const t of G.traits){
+    const ga=a.geno[t.id], gb=b.geno[t.id];
+    geno[t.id]=[pick(ga), pick(gb)];
+  }
+  return geno;
+}
+
+// ═══════════════════════════════════════════════════════
+// REFERENCE TABLE POPUP
+// ═══════════════════════════════════════════════════════
+function toggleRef(){
+  const ov=document.getElementById('ref-overlay');
+  const showing=ov.classList.contains('show');
+  if(!showing) buildRefTable();
+  ov.classList.toggle('show');
+}
+function refOverlayClick(e){
+  if(e.target===document.getElementById('ref-overlay')) toggleRef();
+}
+
+function buildRefTable(){
+  const ALL_TRAITS = [
+    {id:'skin',   name:'Skin Color',    alleles:['G','g'], dom:'Glowing Green',    rec:'Dull Gray',          type:'dr'},
+    {id:'eyes',   name:'Eye Number',    alleles:['E','e'], dom:'Three Eyes',        rec:'One Eye',            type:'dr'},
+    {id:'ant',    name:'Antenna Shape', alleles:['A','a'], dom:'Curled Antennae',   rec:'Straight Antennae',  type:'dr'},
+    {id:'legs',   name:'Limb Number',   alleles:['L','l'], dom:'Six Limbs',         rec:'Four Limbs',         type:'dr'},
+    {id:'tex',    name:'Body Texture',  alleles:['S','s'], dom:'Smooth Skin',       rec:'Scaly Skin',         type:'dr'},
+    {id:'tail',   name:'Tail Type',     alleles:['T','t'], dom:'Long Tail',         rec:'Stubby Tail',        type:'dr'},
+    {id:'ears',   name:'Ear Shape',     alleles:['P','p'], dom:'Pointed Ears',      rec:'Round Ears',         type:'dr'},
+    {id:'tongue', name:'Tongue Shape',  alleles:['B','b'], dom:'Forked Tongue',     rec:'Straight Tongue',    type:'dr'},
+    {id:'fingers',name:'Finger Number', alleles:['F','f'], dom:'Five Fingers',      rec:'Three Fingers',      type:'dr'},
+    {id:'wings',  name:'Wing Presence', alleles:['W','w'], dom:'Has Wings',         rec:'No Wings',           type:'dr'},
+    {id:'nose',   name:'Nose Shape',    alleles:['Nh','Nd','Nc','Nt'],
+      phenotypes:{Nh:'Square Nose',Nd:'No Nose',Nc:'Tubular Nose',Nt:'Triangular Nose'}, type:'ma'},
+    {id:'horns',  name:'Horns',         alleles:['Hh','Hd','Hc','Ht'],
+      phenotypes:{Hh:'Curved Horns',Hd:'Spiked Crest',Hc:'Glowing Antlers',Ht:'No Horns'}, type:'ma'},
+    {id:'biolum', name:'Bioluminescence',alleles:['Bh','Bd','Bc','Bt'],
+      phenotypes:{Bh:'Pulsating Glow',Bd:'Patterned Glow',Bc:'Multi-Color Glow',Bt:'No Glow'}, type:'ma'},
+  ];
+
+  const drTraits = ALL_TRAITS.filter(t=>t.type==='dr');
+  const maTraits = ALL_TRAITS.filter(t=>t.type==='ma');
+
+  // Dominant/Recessive section
+  let drRows = drTraits.map(t=>`
+    <tr>
+      <td class="ref-td-trait">${t.name}</td>
+      <td class="ref-td-allele">${t.alleles[0]}</td>
+      <td class="ref-td-geno">${t.alleles[0]}${t.alleles[0]}, ${t.alleles[0]}${t.alleles[1]}</td>
+      <td class="ref-td-pheno">${t.dom}</td>
+      <td class="ref-td-type"><span class="ref-badge-dom">DOM</span></td>
+    </tr>
+    <tr>
+      <td class="ref-td-trait"></td>
+      <td class="ref-td-allele">${t.alleles[1]}</td>
+      <td class="ref-td-geno">${t.alleles[1]}${t.alleles[1]}</td>
+      <td class="ref-td-pheno">${t.rec}</td>
+      <td class="ref-td-type"><span class="ref-badge-rec">REC</span></td>
+    </tr>`).join('');
+
+  // Multiple allele section
+  let maRows = maTraits.map(t=>{
+    const alleles=t.alleles;
+    const rows=[];
+    // Homozygous rows
+    for(const a of alleles){
+      rows.push(`<tr>
+        <td class="ref-td-trait">${rows.length===0?t.name:''}</td>
+        <td class="ref-td-allele">${a}</td>
+        <td class="ref-td-geno">${a}${a}</td>
+        <td class="ref-td-pheno">${t.phenotypes[a]}</td>
+        <td class="ref-td-type"><span class="ref-badge-cod">HOМ</span></td>
+      </tr>`);
+    }
+    // Heterozygous pairs
+    for(let i=0;i<alleles.length;i++) for(let j=i+1;j<alleles.length;j++){
+      const p1=t.phenotypes[alleles[i]], p2=t.phenotypes[alleles[j]];
+      const noTerms=['No Nose','No Horns','No Glow'];
+      let pheno;
+      if(noTerms.includes(p1)) pheno=p2;
+      else if(noTerms.includes(p2)) pheno=p1;
+      else pheno=p1+' / '+p2;
+      rows.push(`<tr>
+        <td class="ref-td-trait"></td>
+        <td class="ref-td-allele">${alleles[i]}/${alleles[j]}</td>
+        <td class="ref-td-geno">${alleles[i]}${alleles[j]}</td>
+        <td class="ref-td-pheno">${pheno}</td>
+        <td class="ref-td-type"><span class="ref-badge-cod">COD</span></td>
+      </tr>`);
+    }
+    return rows.join('');
+  }).join('');
+
+  document.getElementById('ref-content').innerHTML=`
+    <div class="ref-section">
+      <div class="ref-section-title">DOMINANT / RECESSIVE TRAITS (10)</div>
+      <table class="ref-table">
+        <thead><tr>
+          <th>TRAIT</th><th>ALLELE</th><th>GENOTYPE(S)</th><th>PHENOTYPE</th><th>TYPE</th>
+        </tr></thead>
+        <tbody>${drRows}</tbody>
+      </table>
+    </div>
+    <div class="ref-section">
+      <div class="ref-section-title">MULTIPLE ALLELE / CODOMINANT TRAITS (3)</div>
+      <table class="ref-table">
+        <thead><tr>
+          <th>TRAIT</th><th>ALLELE</th><th>GENOTYPE(S)</th><th>PHENOTYPE</th><th>TYPE</th>
+        </tr></thead>
+        <tbody>${maRows}</tbody>
+      </table>
+    </div>
+    <div class="ref-note">
+      <strong style="color:var(--accent)">DOM</strong> = Dominant (expressed when at least one dominant allele present) &nbsp;|&nbsp;
+      <strong style="color:var(--text-dim)">REC</strong> = Recessive (only expressed when homozygous recessive) &nbsp;|&nbsp;
+      <strong style="color:var(--accent3)">COD</strong> = Codominant (both alleles expressed simultaneously) &nbsp;|&nbsp;
+      <strong style="color:var(--accent3)">HOM</strong> = Homozygous codominant (single phenotype expressed)
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// SVG ALIEN RENDERER — bold lines, clear shapes, bright colors
+// ═══════════════════════════════════════════════════════
+function alienSVG(alien, size){
+  const geno=alien.geno;
+  const gp = (id) => {
+    const t=G.traits.find(x=>x.id===id);
+    return t ? getPhenotype(t,geno[id]) : null;
+  };
+
+  const skinPh    = gp('skin');
+  const eyesPh    = gp('eyes');
+  const antPh     = gp('ant');
+  const legsPh    = gp('legs');
+  const texPh     = gp('tex');
+  const tailPh    = gp('tail');
+  const earsPh    = gp('ears');
+  const tonguePh  = gp('tongue');
+  const fingersPh = gp('fingers');
+  const wingsPh   = gp('wings');
+  const hornPh    = gp('horns');
+  const nosePh    = gp('nose');
+  const biolumPh  = gp('biolum');
+
+  const green  = skinPh === 'Glowing Green';
+  const BODY   = green ? '#1e7a30' : '#4a4560';
+  const BODY_H = green ? '#26a040' : '#5a5575';
+  const BODY_S = green ? '#0d4018' : '#2a2540';
+  const LINE   = green ? '#5dff80' : '#9090c0';
+  const TAIL_C = green ? '#c87800' : '#8855cc';
+  const TAIL_L = green ? '#ffaa22' : '#cc88ff';
+  const SW     = Math.max(2, size * 0.025);
+
+  const threeEyes = eyesPh === 'Three Eyes';
+  const wings   = wingsPh === 'Has Wings';
+  const longT   = tailPh === 'Long Tail';
+  const sixL    = legsPh === 'Six Limbs';
+  const curled  = antPh === 'Curled Antennae';
+  const scaly   = texPh === 'Scaly Skin';
+  const pEars   = earsPh === 'Pointed Ears';
+  const forked  = tonguePh === 'Forked Tongue';
+  const fiveF   = fingersPh === 'Five Fingers';
+  const nF      = fiveF ? 5 : 3;
+  const nLegs   = sixL ? 6 : 4;
+
+  const s  = size || 80;
+  const cx = s * 0.5;
+  const cy = s * 0.52;  // unified torso center for both limb counts
+
+  // Layout landmarks
+  const headCY  = cy - s*0.295;
+  const headRX  = s*0.195;
+  const headRY  = s*0.165;
+  const bodyRX  = s*0.19;
+  const bodyRY  = s*0.255;
+  const antBase = headCY - headRY;
+  const armY    = cy - s*0.04;
+
+  // Face zones - clear bands with good spacing
+  const faceTop    = headCY - headRY * 0.60;  // eye band center
+  const faceNoseY  = headCY + headRY * 0.08;  // nose center
+  const faceMouthY = headCY + headRY * 0.70;  // mouth center
+
+  const EYE_R = s * 0.044;
+  const PUPIL = s * 0.025;
+
+  let d = '';
+
+  // BIOLUMINESCENCE AURA
+  if(biolumPh && !biolumPh.includes('No Glow')){
+    const gc = biolumPh.includes('Pulsating') ? '#00ffaa'
+             : biolumPh.includes('Patterned') ? '#cc66ff'
+             : '#ffaa00';
+    d += `<ellipse cx="${cx}" cy="${cy}" rx="${s*0.42}" ry="${s*0.48}" fill="${gc}" opacity="0.13"/>`;
+  }
+
+  // WINGS
+  if(wings){
+    const wy = cy - s*0.08;
+    d += `<ellipse cx="${cx-s*0.36}" cy="${wy}" rx="${s*0.18}" ry="${s*0.25}" fill="rgba(120,180,255,0.18)" stroke="#80c0ff" stroke-width="${SW*0.8}" transform="rotate(-22 ${cx-s*0.36} ${wy})"/>`;
+    d += `<ellipse cx="${cx+s*0.36}" cy="${wy}" rx="${s*0.18}" ry="${s*0.25}" fill="rgba(120,180,255,0.18)" stroke="#80c0ff" stroke-width="${SW*0.8}" transform="rotate(22 ${cx+s*0.36} ${wy})"/>`;
+  }
+
+  // TAIL - distinct color
+  if(longT){
+    const tx1=cx+bodyRX*0.85, ty1=cy+bodyRY*0.6;
+    const tx2=cx+s*0.42,      ty2=cy+bodyRY+s*0.08;
+    const tx3=cx+s*0.30,      ty3=cy+bodyRY+s*0.18;
+    d += `<path d="M${tx1} ${ty1} Q${tx2} ${ty2} ${tx3} ${ty3}" stroke="${TAIL_L}" stroke-width="${SW*1.3}" fill="none" stroke-linecap="round"/>`;
+    d += `<ellipse cx="${tx3}" cy="${ty3+s*0.025}" rx="${s*0.055}" ry="${s*0.04}" fill="${TAIL_C}" stroke="${TAIL_L}" stroke-width="${SW*0.9}"/>`;
+  } else {
+    d += `<ellipse cx="${cx+bodyRX*0.9}" cy="${cy+bodyRY*0.5}" rx="${s*0.055}" ry="${s*0.042}" fill="${TAIL_C}" stroke="${TAIL_L}" stroke-width="${SW*0.85}"/>`;
+  }
+
+  // LIMBS - unified upright body, same torso regardless of count
+  const legW    = SW * 1.45;
+  const legTopY = cy + bodyRY - s*0.05;
+  const knee    = legTopY + s*0.11;
+  const foot    = knee + s*0.095;
+
+  if(nLegs === 4){
+    // Two legs - narrow biped stance
+    const lx = cx - bodyRX*0.38, rx = cx + bodyRX*0.38;
+    d += `<line x1="${lx}" y1="${legTopY}" x2="${lx-s*0.018}" y2="${knee}" stroke="${LINE}" stroke-width="${legW*1.15}" stroke-linecap="round"/>`;
+    d += `<line x1="${lx-s*0.018}" y1="${knee}" x2="${lx-s*0.036}" y2="${foot}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
+    d += `<rect x="${lx-s*0.078}" y="${foot}" width="${s*0.082}" height="${s*0.032}" rx="${s*0.012}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.7}"/>`;
+    d += `<line x1="${rx}" y1="${legTopY}" x2="${rx+s*0.018}" y2="${knee}" stroke="${LINE}" stroke-width="${legW*1.15}" stroke-linecap="round"/>`;
+    d += `<line x1="${rx+s*0.018}" y1="${knee}" x2="${rx+s*0.036}" y2="${foot}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
+    d += `<rect x="${rx-s*0.004}" y="${foot}" width="${s*0.082}" height="${s*0.032}" rx="${s*0.012}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.7}"/>`;
+  } else {
+    // Three legs per side - wider spread, same upright body
+    const leftXs  = [cx - bodyRX*0.62, cx - bodyRX*0.26, cx - bodyRX*0.02];
+    const rightXs = [cx + bodyRX*0.62, cx + bodyRX*0.26, cx + bodyRX*0.02];
+    const legYOffs = [0, s*0.028, s*0.048];
+    leftXs.forEach((lx, i)=>{
+      const ly = legYOffs[i];
+      d += `<line x1="${lx}" y1="${legTopY+ly}" x2="${lx-s*0.014}" y2="${knee+ly}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
+      d += `<line x1="${lx-s*0.014}" y1="${knee+ly}" x2="${lx-s*0.018}" y2="${foot+ly}" stroke="${LINE}" stroke-width="${legW*0.9}" stroke-linecap="round"/>`;
+      d += `<ellipse cx="${lx-s*0.018}" cy="${foot+ly+s*0.015}" rx="${s*0.032}" ry="${s*0.013}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.65}"/>`;
+    });
+    rightXs.forEach((rx, i)=>{
+      const ly = legYOffs[i];
+      d += `<line x1="${rx}" y1="${legTopY+ly}" x2="${rx+s*0.014}" y2="${knee+ly}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
+      d += `<line x1="${rx+s*0.014}" y1="${knee+ly}" x2="${rx+s*0.018}" y2="${foot+ly}" stroke="${LINE}" stroke-width="${legW*0.9}" stroke-linecap="round"/>`;
+      d += `<ellipse cx="${rx+s*0.018}" cy="${foot+ly+s*0.015}" rx="${s*0.032}" ry="${s*0.013}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.65}"/>`;
+    });
+  }
+
+  // BODY (torso)
+  d += `<ellipse cx="${cx}" cy="${cy}" rx="${bodyRX}" ry="${bodyRY}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+  d += `<ellipse cx="${cx-bodyRX*0.25}" cy="${cy-bodyRY*0.3}" rx="${bodyRX*0.44}" ry="${bodyRY*0.28}" fill="${BODY_H}" opacity="0.35"/>`;
+
+  if(scaly){
+    for(let r=0;r<3;r++) for(let c=0;c<3;c++){
+      const sx=cx+(c-1)*bodyRX*0.58;
+      const sy=cy-bodyRY*0.28+r*bodyRY*0.30+(c%2)*bodyRY*0.14;
+      d+=`<polygon points="${sx},${sy-s*0.038} ${sx+s*0.048},${sy} ${sx},${sy+s*0.038} ${sx-s*0.048},${sy}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.5}" opacity="0.7"/>`;
+    }
+  }
+
+  // ARMS + FINGERS
+  const armEndLx = cx - bodyRX - s*0.11;
+  const armEndRx = cx + bodyRX + s*0.11;
+  const armEndY  = armY + s*0.095;
+  d += `<line x1="${cx-bodyRX}" y1="${armY}" x2="${armEndLx}" y2="${armEndY}" stroke="${LINE}" stroke-width="${SW*1.2}" stroke-linecap="round"/>`;
+  d += `<line x1="${cx+bodyRX}" y1="${armY}" x2="${armEndRx}" y2="${armEndY}" stroke="${LINE}" stroke-width="${SW*1.2}" stroke-linecap="round"/>`;
+  const fW = SW * 0.85;
+  const fSpread = s * 0.036;
+  for(let f=0;f<nF;f++){
+    const fi = f-(nF-1)/2;
+    d+=`<line x1="${armEndLx}" y1="${armEndY}" x2="${armEndLx+fi*fSpread}" y2="${armEndY+s*0.075}" stroke="${LINE}" stroke-width="${fW}" stroke-linecap="round"/>`;
+    d+=`<line x1="${armEndRx}" y1="${armEndY}" x2="${armEndRx+fi*fSpread}" y2="${armEndY+s*0.075}" stroke="${LINE}" stroke-width="${fW}" stroke-linecap="round"/>`;
+  }
+
+  // HEAD
+  d += `<ellipse cx="${cx}" cy="${headCY}" rx="${headRX}" ry="${headRY}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+  d += `<ellipse cx="${cx-headRX*0.3}" cy="${headCY-headRY*0.35}" rx="${headRX*0.42}" ry="${headRY*0.28}" fill="${BODY_H}" opacity="0.4"/>`;
+
+  // EARS
+  if(pEars){
+    const earBaseY1 = headCY - headRY * 0.38;
+    const earBaseY2 = headCY + headRY * 0.22;
+    const earTipY   = headCY - headRY * 0.20;
+    d += `<polygon points="${cx-headRX*0.94},${earBaseY1} ${cx-headRX*1.82},${earTipY} ${cx-headRX*0.94},${earBaseY2}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+    d += `<polygon points="${cx+headRX*0.94},${earBaseY1} ${cx+headRX*1.82},${earTipY} ${cx+headRX*0.94},${earBaseY2}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+  } else {
+    d += `<ellipse cx="${cx-headRX*1.06}" cy="${headCY-headRY*0.06}" rx="${headRX*0.33}" ry="${headRY*0.38}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+    d += `<ellipse cx="${cx+headRX*1.06}" cy="${headCY-headRY*0.06}" rx="${headRX*0.33}" ry="${headRY*0.38}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+  }
+
+  // ANTENNAE
+  const antL = cx - headRX*0.44;
+  const antR = cx + headRX*0.44;
+  const antTipY = headCY - headRY - s*0.17;
+  if(curled){
+    d += `<path d="M${antL} ${antBase} Q${antL-s*0.11} ${antBase-s*0.13} ${antL-s*0.04} ${antTipY}" stroke="${LINE}" stroke-width="${SW}" fill="none" stroke-linecap="round"/>`;
+    d += `<circle cx="${antL-s*0.04}" cy="${antTipY}" r="${s*0.038}" fill="${LINE}"/>`;
+    d += `<path d="M${antR} ${antBase} Q${antR+s*0.11} ${antBase-s*0.13} ${antR+s*0.04} ${antTipY}" stroke="${LINE}" stroke-width="${SW}" fill="none" stroke-linecap="round"/>`;
+    d += `<circle cx="${antR+s*0.04}" cy="${antTipY}" r="${s*0.038}" fill="${LINE}"/>`;
+  } else {
+    d += `<line x1="${antL}" y1="${antBase}" x2="${antL-s*0.055}" y2="${antTipY}" stroke="${LINE}" stroke-width="${SW}" stroke-linecap="round"/>`;
+    d += `<circle cx="${antL-s*0.055}" cy="${antTipY}" r="${s*0.035}" fill="${LINE}"/>`;
+    d += `<line x1="${antR}" y1="${antBase}" x2="${antR+s*0.055}" y2="${antTipY}" stroke="${LINE}" stroke-width="${SW}" stroke-linecap="round"/>`;
+    d += `<circle cx="${antR+s*0.055}" cy="${antTipY}" r="${s*0.035}" fill="${LINE}"/>`;
+  }
+
+  // HORNS
+  if(hornPh && !hornPh.includes('No Horns')){
+    const hBase = headCY - headRY + s*0.02;
+    if(hornPh.includes('Curved')){
+      d += `<path d="M${cx-headRX*0.58} ${hBase} Q${cx-headRX*1.05} ${hBase-s*0.13} ${cx-headRX*0.68} ${hBase-s*0.21}" stroke="#ffcc00" stroke-width="${SW*1.35}" fill="none" stroke-linecap="round"/>`;
+      d += `<path d="M${cx+headRX*0.58} ${hBase} Q${cx+headRX*1.05} ${hBase-s*0.13} ${cx+headRX*0.68} ${hBase-s*0.21}" stroke="#ffcc00" stroke-width="${SW*1.35}" fill="none" stroke-linecap="round"/>`;
+    } else if(hornPh.includes('Spiked')){
+      d += `<polygon points="${cx-headRX*0.52},${hBase} ${cx-headRX*0.86},${hBase-s*0.21} ${cx-headRX*0.18},${hBase-s*0.04}" fill="#ff6600" stroke="#ffaa44" stroke-width="${SW*0.8}"/>`;
+      d += `<polygon points="${cx+headRX*0.52},${hBase} ${cx+headRX*0.86},${hBase-s*0.21} ${cx+headRX*0.18},${hBase-s*0.04}" fill="#ff6600" stroke="#ffaa44" stroke-width="${SW*0.8}"/>`;
+    } else if(hornPh.includes('Glowing')){
+      d += `<line x1="${cx-headRX*0.48}" y1="${hBase}" x2="${cx-headRX*0.58}" y2="${hBase-s*0.23}" stroke="#00ffee" stroke-width="${SW*1.45}" stroke-linecap="round"/>`;
+      d += `<circle cx="${cx-headRX*0.58}" cy="${hBase-s*0.23}" r="${s*0.042}" fill="#00ffee"/>`;
+      d += `<line x1="${cx+headRX*0.48}" y1="${hBase}" x2="${cx+headRX*0.58}" y2="${hBase-s*0.23}" stroke="#00ffee" stroke-width="${SW*1.45}" stroke-linecap="round"/>`;
+      d += `<circle cx="${cx+headRX*0.58}" cy="${hBase-s*0.23}" r="${s*0.042}" fill="#00ffee"/>`;
+    }
+  }
+
+  // EYES - blue iris
+  // 1 eye: centered. 3 eyes: concave parabola — center eye highest, outer two lower
+  let eyePos;
+  if(threeEyes){
+    const eyeCenterY = faceTop;                    // top eye high in face
+    const eyeOuterY  = faceTop + headRY * 0.42;   // outer two eyes drop down
+    eyePos = [
+      [cx - headRX*0.44, eyeOuterY],
+      [cx + headRX*0.44, eyeOuterY],
+      [cx,               eyeCenterY],
+    ];
+  } else {
+    eyePos = [[cx, faceTop]];
+  }
+
+  for(const [ex,ey] of eyePos){
+    d += `<circle cx="${ex}" cy="${ey}" r="${EYE_R}" fill="#ddf4ff" stroke="${LINE}" stroke-width="${SW*0.65}"/>`;
+    d += `<circle cx="${ex}" cy="${ey}" r="${PUPIL*1.35}" fill="#1166ee"/>`;
+    d += `<circle cx="${ex}" cy="${ey}" r="${PUPIL*0.68}" fill="#00060f"/>`;
+    d += `<circle cx="${ex+EYE_R*0.27}" cy="${ey-EYE_R*0.27}" r="${PUPIL*0.32}" fill="white" opacity="0.9"/>`;
+  }
+
+  // NOSE - centered between eyes and mouth
+  if(nosePh && !nosePh.includes('No Nose')){
+    if(nosePh.includes('Square')){
+      d+=`<rect x="${cx-s*0.033}" y="${faceNoseY-s*0.024}" width="${s*0.066}" height="${s*0.046}" fill="${BODY_H}" stroke="${LINE}" stroke-width="${SW*0.75}" rx="${s*0.01}"/>`;
+      d+=`<circle cx="${cx-s*0.015}" cy="${faceNoseY+s*0.005}" r="${s*0.01}" fill="${BODY_S}"/>`;
+      d+=`<circle cx="${cx+s*0.015}" cy="${faceNoseY+s*0.005}" r="${s*0.01}" fill="${BODY_S}"/>`;
+    } else if(nosePh.includes('Tubular')){
+      d+=`<ellipse cx="${cx}" cy="${faceNoseY}" rx="${s*0.020}" ry="${s*0.036}" fill="${BODY_H}" stroke="${LINE}" stroke-width="${SW*0.75}"/>`;
+      d+=`<ellipse cx="${cx}" cy="${faceNoseY+s*0.017}" rx="${s*0.013}" ry="${s*0.013}" fill="${BODY_S}"/>`;
+    } else if(nosePh.includes('Triangular')){
+      d+=`<polygon points="${cx},${faceNoseY-s*0.030} ${cx-s*0.040},${faceNoseY+s*0.022} ${cx+s*0.040},${faceNoseY+s*0.022}" fill="${BODY_H}" stroke="${LINE}" stroke-width="${SW*0.75}"/>`;
+    }
+    if(nosePh.includes(' / ')){
+      d+=`<text x="${cx}" y="${faceNoseY+s*0.055}" text-anchor="middle" font-family="Share Tech Mono" font-size="${s*0.042}" fill="${LINE}" opacity="0.6">+</text>`;
+    }
+  }
+
+  // MOUTH + TONGUE
+  d += `<path d="M${cx-s*0.046} ${faceMouthY} Q${cx} ${faceMouthY+s*0.021} ${cx+s*0.046} ${faceMouthY}" stroke="${LINE}" stroke-width="${SW*0.75}" fill="none" stroke-linecap="round"/>`;
+  if(forked){
+    const tby = faceMouthY + s*0.011;
+    d += `<path d="M${cx} ${tby} L${cx-s*0.025} ${tby+s*0.046}" stroke="#ff2244" stroke-width="${SW*1.05}" fill="none" stroke-linecap="round"/>`;
+    d += `<path d="M${cx} ${tby} L${cx+s*0.025} ${tby+s*0.046}" stroke="#ff2244" stroke-width="${SW*1.05}" fill="none" stroke-linecap="round"/>`;
+    d += `<ellipse cx="${cx}" cy="${tby}" rx="${s*0.019}" ry="${s*0.011}" fill="#ff2244"/>`;
+  } else {
+    d += `<rect x="${cx-s*0.015}" y="${faceMouthY+s*0.007}" width="${s*0.030}" height="${s*0.042}" rx="${s*0.011}" fill="#ff2244"/>`;
+  }
+
+  return `<svg viewBox="0 0 ${s} ${s}" width="${s}" height="${s}" xmlns="http://www.w3.org/2000/svg">${d}</svg>`;
+}
+
+
+// ═══════════════════════════════════════════════════════
+// SCREEN MANAGEMENT
+// ═══════════════════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+// SCREEN 1 → 2: SETUP → BUILD
+// ═══════════════════════════════════════════════════════
+function goToBuild(){
+  initG();
+  buildSpinnerUI();
+  showScreen('screen-build');
+}
+
+// ═══════════════════════════════════════════════════════
+// SCREEN 2: BUILD — SPINNER UI
+// ═══════════════════════════════════════════════════════
+function buildSpinnerUI(){
+  document.getElementById('build-total').textContent = G.traits.length;
+  document.getElementById('build-progress').textContent = 0;
+  G.buildGeno = {};
+  G.buildSpun = 0;
+  document.getElementById('build-proceed-btn').disabled = true;
+  document.getElementById('build-name').textContent = '—';
+  document.getElementById('build-svg-wrap').innerHTML='<svg width="80" height="80" viewBox="0 0 80 80"><ellipse cx="40" cy="42" rx="18" ry="24" fill="#0a1a10" stroke="#1a4a28" stroke-width="1"/><ellipse cx="40" cy="22" rx="15" ry="14" fill="#0a1a10" stroke="#1a4a28" stroke-width="1"/></svg>';
+
+  const list = document.getElementById('spinner-list');
+  list.innerHTML='';
+  for(const t of G.traits){
+    const row=document.createElement('div');
+    row.className='spinner-row';
+    row.dataset.tid=t.id;
+
+    let slotHtml='';
+    for(let i=0;i<2;i++) slotHtml+=`<div class="allele-slot" id="slot-${t.id}-${i}">?</div>`;
+
+    row.innerHTML=`
+      <div class="sr-name">${t.name}</div>
+      <div class="sr-alleles">${slotHtml}</div>
+      <div class="sr-pheno" id="pheno-${t.id}">—</div>
+      <button class="sr-spin-btn" id="spinbtn-${t.id}" onclick="spinTrait('${t.id}')">⟳ SPIN</button>`;
+    list.appendChild(row);
+  }
+  // Build player name for later
+  G._buildName = randName();
+}
+
+async function spinTrait(tid, fast){
+  const t = G.traits.find(x=>x.id===tid);
+  const btn = document.getElementById(`spinbtn-${tid}`);
+  btn.disabled=true;
+
+  const FRAMES=fast?4:12;
+  const DELAY=fast?40:60;
+
+  for(let i=0;i<2;i++){
+    const slot=document.getElementById(`slot-${tid}-${i}`);
+    slot.classList.remove('landed');
+    for(let f=0;f<FRAMES;f++){
+      slot.classList.add('spinning');
+      slot.textContent=pick(t.alleles);
+      await new Promise(r=>setTimeout(r,DELAY));
+    }
+    slot.classList.remove('spinning');
+  }
+
+  // Final alleles
+  const a1=pick(t.alleles), a2=pick(t.alleles);
+  const s0=document.getElementById(`slot-${tid}-0`);
+  const s1=document.getElementById(`slot-${tid}-1`);
+  s0.textContent=a1; s0.classList.add('landed');
+  s1.textContent=a2; s1.classList.add('landed');
+
+  G.buildGeno[tid]=[a1,a2];
+
+  const pheno=getPhenotype(t,[a1,a2]);
+  document.getElementById(`pheno-${tid}`).textContent=pheno;
+
+  // Track spun count
+  G.buildSpun=Object.keys(G.buildGeno).length;
+  document.getElementById('build-progress').textContent=G.buildSpun;
+
+  updateBuildPreview();
+  if(G.buildSpun===G.traits.length){
+    document.getElementById('build-proceed-btn').disabled=false;
+  }
+}
+
+async function spinAll(){
+  for(const t of G.traits){
+    if(!G.buildGeno[t.id]){
+      spinTrait(t.id, false);
+      await new Promise(r=>setTimeout(r,80));
+    }
+  }
+}
+
+function updateBuildPreview(){
+  if(Object.keys(G.buildGeno).length===0) return;
+  // Build a partial alien — fill unspun traits randomly for preview
+  const fullGeno={};
+  for(const t of G.traits){
+    fullGeno[t.id]=G.buildGeno[t.id]||randomGeno(t);
+  }
+  const previewAlien={name:G._buildName,gen:0,geno:fullGeno};
+  document.getElementById('build-svg-wrap').innerHTML=alienSVG(previewAlien,80);
+  document.getElementById('build-name').textContent=G._buildName;
+}
+
+// ═══════════════════════════════════════════════════════
+// SCREEN 2 → 3: BUILD → PARTNER SELECT
+// ═══════════════════════════════════════════════════════
+function goToPartnerSelect(){
+  // Finalize player alien — fill any unspun traits (shouldn't happen if btn only enables when all spun)
+  const finalGeno={};
+  for(const t of G.traits) finalGeno[t.id]=G.buildGeno[t.id]||randomGeno(t);
+  G.player={name:G._buildName,gen:0,geno:finalGeno};
+  G.lineage=[G.player];
+
+  // Generate 3 candidates
+  G.candidates=[makeAlien(null,1),makeAlien(null,1),makeAlien(null,1)];
+  G.selectedCandidate=null;
+
+  renderPartnerGrid();
+  document.getElementById('partner-confirm-btn').disabled=true;
+  showScreen('screen-partner');
+}
+
+function renderPartnerGrid(){
+  const grid=document.getElementById('partner-grid');
+  grid.innerHTML='';
+  G.candidates.forEach((c,i)=>{
+    const card=document.createElement('div');
+    card.className='partner-candidate';
+    card.dataset.idx=i;
+    card.onclick=()=>selectCandidate(i);
+
+    // Show all active traits on partner card (no genotype shown)
+    const traitRows=G.traits.map(t=>`
+      <div class="pc-trait-row">
+        <span class="pc-trait-name">${t.name}</span>
+        <span class="pc-trait-pheno">${getPhenotype(t,c.geno[t.id])}</span>
+      </div>`).join('');
+
+    card.innerHTML=`
+      <div class="pc-id">SPECIMEN #${String(i+1).padStart(2,'0')}</div>
+      <div class="pc-svg-wrap">${alienSVG(c,90)}</div>
+      <div class="pc-traits">${traitRows}</div>
+      <button class="pc-select-btn">SELECT PARTNER</button>`;
+    grid.appendChild(card);
+  });
+}
+
+function selectCandidate(idx){
+  document.querySelectorAll('.partner-candidate').forEach(c=>c.classList.remove('selected'));
+  document.querySelector(`.partner-candidate[data-idx="${idx}"]`).classList.add('selected');
+  G.selectedCandidate=idx;
+  document.getElementById('partner-confirm-btn').disabled=false;
+}
+
+// ═══════════════════════════════════════════════════════
+// SCREEN 3 → 4: PARTNER SELECT → GAME
+// ═══════════════════════════════════════════════════════
+function confirmPartner(){
+  if(G.selectedCandidate===null) return;
+  G.partner=G.candidates[G.selectedCandidate];
+  // Only set round to 1 on first selection (not mid-game returns)
+  if(G.round===undefined || G.round<1) G.round=1;
+  renderGameScreen();
+  showScreen('screen-game');
+}
+
+// ═══════════════════════════════════════════════════════
+// GAME SCREEN RENDER
+// ═══════════════════════════════════════════════════════
+function renderGameScreen(){
+  // Header
+  document.getElementById('gh-round').textContent=G.round;
+  document.getElementById('gh-total').textContent=G.rounds;
+  const db=document.getElementById('gh-diff');
+  db.className='gh-diff '+G.diff;
+  db.textContent=G.diff.toUpperCase();
+  document.getElementById('gh-score').textContent=G.score.toLocaleString();
+  updateStreak();
+
+  // Phase bar
+  document.getElementById('phase-bar').textContent='PHASE 1 — OBSERVE PARENTS & PREDICT OFFSPRING';
+
+  // Player card
+  document.getElementById('player-gen-lbl').textContent='GEN '+G.player.gen;
+  document.getElementById('player-svg-wrap').innerHTML=alienSVG(G.player,90);
+  renderGenoTable('player-geno-tbl', G.player);
+
+  // Partner card
+  document.getElementById('partner-lbl').textContent=G.partner.name;
+  document.getElementById('partner-svg-wrap').innerHTML=alienSVG(G.partner,90);
+  renderGenoTable('partner-geno-tbl', G.partner);
+
+  // Reset egg
+  document.getElementById('egg-disp').innerHTML='';
+  document.getElementById('egg-body').setAttribute('fill','url(#egG)');
+  document.getElementById('btn-fert').disabled=true;
+  const egl=document.getElementById('egg-geno-list');
+  egl.classList.add('hidden'); egl.innerHTML=''; // enabled after pre-predict confirmed
+
+  // Panels
+  document.getElementById('pre-panel').classList.remove('hidden');
+  document.getElementById('post-panel').classList.add('hidden');
+  document.getElementById('off-reveal').classList.add('hidden');
+
+  // Build pre-predict grid
+  buildPredGrid('pre-grid', false);
+
+  // Lineage
+  renderLineage();
+}
+
+function renderGenoTable(tableId, alien){
+  const tbl=document.getElementById(tableId);
+  tbl.innerHTML=G.traits.map(t=>`
+    <tr>
+      <td class="td-name">${t.name}</td>
+      <td class="td-geno">${genoStr(alien.geno[t.id])}</td>
+      <td class="td-pheno">${getPhenotype(t,alien.geno[t.id])}</td>
+    </tr>`).join('');
+}
+
+function buildPredGrid(gridId, locked){
+  const grid=document.getElementById(gridId);
+  grid.innerHTML='';
+  for(const t of G.traits){
+    const div=document.createElement('div');
+    div.className='pred-item';
+    div.dataset.tid=t.id;
+
+    // Build phenotype options
+    let opts='<option value="">— select —</option>';
+    if(t.type==='dr'){
+      opts+=`<option value="${t.dom}">${t.dom}</option><option value="${t.rec}">${t.rec}</option>`;
+    } else {
+      const base=Object.values(t.phenotypes);
+      const noT=base.find(p=>p.startsWith('No '));
+      const expr=base.filter(p=>!p.startsWith('No '));
+      for(const p of base) opts+=`<option value="${p}">${p}</option>`;
+      for(let i=0;i<expr.length;i++)for(let j=i+1;j<expr.length;j++)
+        opts+=`<option value="${expr[i]+' / '+expr[j]}">${expr[i]+' / '+expr[j]}</option>`;
+    }
+
+    let probBtns='';
+    for(const pv of [25,50,75,100])
+      probBtns+=`<button class="prob-btn" data-p="${pv}" onclick="selProb(this)">${pv}%</button>`;
+
+    div.innerHTML=`
+      <div class="pred-item-lbl">${t.name.toUpperCase()}</div>
+      <select ${locked?'disabled':''}>${opts}</select>
+      <div class="prob-row">${probBtns}</div>
+      <div class="fb-tag"></div>
+      <div class="corr-ans"></div>`;
+    grid.appendChild(div);
+  }
+  if(!locked) checkPostReady();
+}
+
+function selProb(btn){
+  btn.closest('.prob-row').querySelectorAll('.prob-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  checkPostReady();
+}
+
+function checkPostReady(){
+  if(document.getElementById('post-panel').classList.contains('hidden')) return;
+  const grid=document.getElementById('post-grid');
+  const allDone=[...grid.querySelectorAll('.pred-item')].every(item=>{
+    const sel=item.querySelector('select').value;
+    const prob=item.querySelector('.prob-btn.sel');
+    return sel && prob;
+  });
+  document.getElementById('btn-submit').disabled=!allDone;
+}
+
+// ═══════════════════════════════════════════════════════
+// PRE → FERTILIZE
+// ═══════════════════════════════════════════════════════
+function confirmPre(){
+  document.getElementById('pre-panel').classList.add('hidden');
+  document.getElementById('post-panel').classList.remove('hidden');
+  document.getElementById('phase-bar').textContent='PHASE 2 — FERTILIZE & CONFIRM PREDICTION';
+  document.getElementById('btn-fert').disabled=false;
+  buildPredGrid('post-grid', false);
+  // Copy pre selections into post
+  copyPreToPost();
+  checkPostReady();
+}
+
+function copyPreToPost(){
+  const preItems=document.querySelectorAll('#pre-grid .pred-item');
+  const postItems=document.querySelectorAll('#post-grid .pred-item');
+  preItems.forEach((pi,idx)=>{
+    const sel=pi.querySelector('select').value;
+    const probBtn=pi.querySelector('.prob-btn.sel');
+    if(sel) postItems[idx].querySelector('select').value=sel;
+    if(probBtn){
+      const pv=probBtn.dataset.p;
+      postItems[idx].querySelectorAll('.prob-btn').forEach(b=>{
+        if(b.dataset.p===pv) b.classList.add('sel');
+      });
+    }
+  });
+  checkPostReady();
+}
+
+// ═══════════════════════════════════════════════════════
+// FERTILIZE
+// ═══════════════════════════════════════════════════════
+async function doFertilize(){
+  document.getElementById('btn-fert').disabled=true;
+  G.offGeno=crossAliens(G.player, G.partner);
+  const disp=document.getElementById('egg-disp');
+  disp.innerHTML='';
+  document.getElementById('egg-body').setAttribute('fill','url(#egGA)');
+
+  for(let i=0;i<G.traits.length;i++){
+    const t=G.traits[i];
+    const chip=document.createElement('div');
+    chip.className='egg-chip';
+    chip.textContent=genoStr(G.offGeno[t.id]);
+    disp.appendChild(chip);
+    await new Promise(r=>setTimeout(r,90));
+    chip.classList.add('vis');
+  }
+
+  // Populate genotype list below button
+  const list=document.getElementById('egg-geno-list');
+  list.classList.remove('hidden');
+  list.innerHTML=G.traits.map(t=>`
+    <div class="egg-geno-row">
+      <span class="egg-geno-tid">${t.name.split(' ')[0]}</span>
+      <span class="egg-geno-val">${genoStr(G.offGeno[t.id])}</span>
+    </div>`).join('');
+
+  document.getElementById('phase-bar').textContent='PHASE 3 — CONFIRM YOUR PREDICTION';
+}
+
+// ═══════════════════════════════════════════════════════
+// SCORING
+// ═══════════════════════════════════════════════════════
+function diffMult(){return DIFF_MULT[G.diff]||1;}
+function streakMult(){if(G.streak>=8)return 3;if(G.streak>=5)return 2;if(G.streak>=3)return 1.5;return 1;}
+function updateStreak(){
+  const badge=document.getElementById('streak-badge');
+  if(G.streak>=3){
+    badge.classList.remove('hidden');
+    document.getElementById('streak-mult').textContent=streakMult().toFixed(1).replace('.0','');
+  } else badge.classList.add('hidden');
+}
+
+function submitPredictions(){
+  if(!G.offGeno){return;}
+  const grid=document.getElementById('post-grid');
+  const items=grid.querySelectorAll('.pred-item');
+  let roundPts=0; const bk=[];
+  let allCorrect=true;
+
+  items.forEach(item=>{
+    const tid=item.dataset.tid;
+    const t=G.traits.find(x=>x.id===tid);
+    const correctPheno=getPhenotype(t,G.offGeno[tid]);
+    const probs=calcProbs(t,G.player.geno[tid],G.partner.geno[tid]);
+    const correctProb=probs[correctPheno]||0;
+    const playerPheno=item.querySelector('select').value;
+    const probBtn=item.querySelector('.prob-btn.sel');
+    const playerProb=probBtn?parseInt(probBtn.dataset.p):null;
+    const dm=diffMult(), sm=streakMult();
+    const pC=playerPheno===correctPheno;
+    const prC=playerProb===correctProb;
+    let pts=0;
+    if(pC){pts+=5*dm;G.totalCorrect++;}
+    if(prC){pts+=10*dm;G.totalCorrect++;}
+    G.totalQ+=2;
+    pts=Math.round(pts*sm);
+    roundPts+=pts;
+    if(!(pC&&prC)) allCorrect=false;
+    item.classList.add(pC&&prC?'cor':'inc');
+    item.querySelector('.fb-tag').textContent=pC&&prC?`✓ CORRECT +${pts}pts`:'✗ INCORRECT';
+    if(!pC||!prC) item.querySelector('.corr-ans').textContent=`→ ${correctPheno} (${correctProb}%)`;
+    bk.push({name:t.name,pts,pC,prC});
+  });
+
+  if(allCorrect){G.streak++;G.bestStreak=Math.max(G.bestStreak,G.streak);}
+  else G.streak=0;
+  G.score+=roundPts;
+  document.getElementById('gh-score').textContent=G.score.toLocaleString();
+  updateStreak();
+  document.getElementById('btn-submit').disabled=true;
+
+  showOffspring();
+  showRoundOverlay(roundPts, bk, allCorrect);
+}
+
+function showOffspring(){
+  const off=makeAlien(G.offGeno, G.player.gen+1);
+  G.pendingOff=off;
+  const panel=document.getElementById('off-reveal');
+  panel.classList.remove('hidden');
+  document.getElementById('off-gen').textContent=off.gen;
+  const og=document.getElementById('off-grid');
+  og.innerHTML=`
+    <div style="flex-shrink:0;">${alienSVG(off,76)}<div style="font-size:0.48rem;color:var(--text-dim);text-align:center;margin-top:0.2rem;font-family:'Orbitron',sans-serif;letter-spacing:0.08em;">GEN ${off.gen}</div></div>
+    <table class="geno-table" style="flex:1;">${G.traits.map(t=>`
+      <tr>
+        <td class="td-name">${t.name}</td>
+        <td class="td-geno">${genoStr(off.geno[t.id])}</td>
+        <td class="td-pheno">${getPhenotype(t,off.geno[t.id])}</td>
+      </tr>`).join('')}</table>`;
+}
+
+function showRoundOverlay(pts, bk, allCorrect){
+  document.getElementById('r-pts').textContent=pts.toLocaleString();
+  document.getElementById('r-breakdown').innerHTML=bk.map(b=>
+    `<div class="bk-row"><span>${b.name}</span><span class="bk-pts">${b.pts>0?'+'+b.pts:'—'}</span></div>`
+  ).join('');
+  const streakEl=document.getElementById('bk-streak');
+  if(G.streak>=3){streakEl.classList.remove('hidden');streakEl.textContent=`🔥 STREAK ×${streakMult()} — ${G.streak} in a row!`;}
+  else streakEl.classList.add('hidden');
+  document.getElementById('score-overlay').classList.add('show');
+}
+
+function closeOverlay(){
+  document.getElementById('score-overlay').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════
+// NEXT ROUND
+// ═══════════════════════════════════════════════════════
+function nextRound(){
+  G.player=G.pendingOff;
+  G.lineage.push(G.player);
+  G.round++;
+
+  if(G.round>G.rounds){endGame();return;}
+
+  // Go back to partner select for each new generation
+  G.candidates=[makeAlien(null,G.round),makeAlien(null,G.round),makeAlien(null,G.round)];
+  G.selectedCandidate=null;
+
+  // Update partner screen header to show generation
+  document.querySelector('.partner-header h1').textContent='SELECT A PARTNER — GEN '+G.round;
+  renderPartnerGrid();
+  document.getElementById('partner-confirm-btn').disabled=true;
+  showScreen('screen-partner');
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════════════════
+// LINEAGE SIDEBAR
+// ═══════════════════════════════════════════════════════
+function renderLineage(){
+  const list=document.getElementById('lineage-list');
+  list.innerHTML='';
+  G.lineage.forEach((a,i)=>{
+    const div=document.createElement('div');
+    div.className='lin-entry'+(i===G.lineage.length-1?' cur':'');
+    div.innerHTML=`<div class="lin-gen">GEN <em>${a.gen}</em></div>${alienSVG(a,46)}`;
+    list.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// END GAME
+// ═══════════════════════════════════════════════════════
+function endGame(){
+  document.getElementById('end-name').textContent=G.name||'Researcher';
+  document.getElementById('end-score').textContent=G.score.toLocaleString();
+  document.getElementById('end-correct').textContent=G.totalCorrect;
+  document.getElementById('end-acc').textContent=(G.totalQ>0?Math.round(G.totalCorrect/G.totalQ*100):0)+'%';
+  document.getElementById('end-streak').textContent=G.bestStreak;
+  const strip=document.getElementById('end-strip');
+  strip.innerHTML='';
+  G.lineage.forEach(a=>{
+    const d=document.createElement('div');d.className='end-alien';
+    d.innerHTML=alienSVG(a,58)+`<span>GEN ${a.gen}</span>`;
+    strip.appendChild(d);
+  });
+  showScreen('screen-end');
+}
+</script>
+</body>
+</html>
