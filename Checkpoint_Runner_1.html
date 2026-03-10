@@ -1401,6 +1401,23 @@ const RING_NODE_POS = [
   { x: 105.8, y:  19.6 },  // 15: Cytokinesis
 ];
 
+// ── Path waypoints — 2 intermediate travel nodes between each consecutive board node ──
+// Precomputed at t=0.33 and t=0.67 along each segment for path markers and animation
+const PATH_WAYPOINTS = (() => {
+  const wp = [];
+  for(let i = 0; i < RING_NODE_POS.length - 1; i++){
+    const a = RING_NODE_POS[i], b = RING_NODE_POS[i + 1];
+    wp.push([
+      { x: a.x * 0.67 + b.x * 0.33, y: a.y * 0.67 + b.y * 0.33 },
+      { x: a.x * 0.33 + b.x * 0.67, y: a.y * 0.33 + b.y * 0.67 },
+    ]);
+  }
+  return wp;
+})();
+
+// ── Animation state for token travel between nodes ──
+let _animState = null; // { entryIdx: number, x: number, y: number } | null
+
 // Helper: get position for board index (0=G0, 1-15=ring)
 function nodePos(boardIdx) {
   if(boardIdx === 0) return { ...RING_NODE_POS[0], angleDeg: 0 };
@@ -1701,6 +1718,23 @@ function renderBoard() {
   });
   svg.appendChild(ringImg);
 
+  // ── Path travel nodes — small markers at the 2 waypoints between each board space ──
+  // These are the intermediate "stepping stones" tokens pass through during animation
+  const pathDotsG = svgEl('g', { opacity: '0.72' });
+  PATH_WAYPOINTS.forEach((pair, segIdx) => {
+    pair.forEach((wp, wi) => {
+      // Dim diamond marker on the track
+      const d = 1.5;
+      pathDotsG.appendChild(svgEl('polygon', {
+        points: `${wp.x},${wp.y - d} ${wp.x + d},${wp.y} ${wp.x},${wp.y + d} ${wp.x - d},${wp.y}`,
+        fill: 'rgba(180,190,255,0.55)',
+        stroke: 'rgba(120,140,255,0.80)',
+        'stroke-width': '0.4'
+      }));
+    });
+  });
+  svg.appendChild(pathDotsG);
+
   // ── Phase diagram in the ellipse interior ──
   // Ellipse parametric angles from pixel-mapped node positions (Board_black_16.png):
   // G0≈0°, G1≈13°, G1CP≈46°, S≈77°, G2≈112°, G2CP≈162°,
@@ -1817,8 +1851,9 @@ function renderBoard() {
   _placeLabel(labelLayer, g0, g0s.r, g0.angleDeg, 'G0 (Resting)', BOARD[0].desc, '#8888cc', true);
 
   if(S.entries) {
-    S.entries.filter(e=>e.pos===0).forEach((e,gi,arr) =>
-      drawToken(svg, e, gi, arr.length, g0.x, g0.y, S.entries.indexOf(e)===S.current));
+    const atG0 = S.entries.map((e,i)=>({e,i}))
+      .filter(({e,i}) => e.pos===0 && (!_animState || _animState.entryIdx !== i));
+    atG0.forEach(({e,i},gi) => drawToken(svg, e, gi, atG0.length, g0.x, g0.y, i===S.current));
   }
 
   svg.appendChild(labelLayer);
@@ -1880,12 +1915,31 @@ function renderBoard() {
     const nameShort = sp.name.replace(' Phase','').replace(' Checkpoint','★').replace('Cell Event','Event');
     _placeLabel(labelLayer, pos, r, ang, nameShort, sp.desc, style.labelColor);
 
-    // Tokens
+    // Tokens — exclude any player currently being animated between nodes
     if(S.entries){
-      const grp = S.entries.map((e,i)=>({e,i})).filter(({e})=>e.pos===boardIdx);
+      const grp = S.entries.map((e,i)=>({e,i}))
+        .filter(({e,i}) => e.pos===boardIdx && (!_animState || _animState.entryIdx !== i));
       grp.forEach(({e,i},gi) => drawToken(svg, e, gi, grp.length, pos.x, pos.y, i===S.current));
     }
   });
+
+  // ── Animated token overlay — drawn last so it appears above all nodes ──
+  if(_animState && S.entries) {
+    const ae = S.entries[_animState.entryIdx];
+    if(ae) {
+      // Travelling glow ring at current waypoint position
+      const pc = PAWN_COLORS[ae.colorIdx][0];
+      svg.appendChild(svgEl('circle', {
+        cx: _animState.x.toFixed(2), cy: _animState.y.toFixed(2),
+        r: '10', fill: 'none', stroke: pc, 'stroke-width': '2', opacity: '0.45'
+      }));
+      svg.appendChild(svgEl('circle', {
+        cx: _animState.x.toFixed(2), cy: _animState.y.toFixed(2),
+        r: '5', fill: 'none', stroke: pc, 'stroke-width': '1', opacity: '0.3'
+      }));
+      drawToken(svg, ae, 0, 1, _animState.x, _animState.y, _animState.entryIdx === S.current);
+    }
+  }
 }
 
 // ── Label placement using ellipse geometry ──
@@ -2221,27 +2275,74 @@ function autoNextTurn(delay=2200){
   setTimeout(()=>{ nextTurn(); }, delay);
 }
 
+// ── Token travel animation ──
+// Moves a token visually through PATH_WAYPOINTS between each board step, then calls onComplete.
+// entry.pos must already be set to the final destination before calling this.
+function _animateMoveToken(idx, fromPos, stepsVisited, onComplete) {
+  if(stepsVisited.length === 0){ onComplete(); return; }
+
+  // Build ordered waypoint list: 2 travel nodes between each consecutive board position
+  const waypoints = [];
+  let prevPos = fromPos;
+  stepsVisited.forEach(toPos => {
+    const seg = prevPos; // PATH_WAYPOINTS[seg] = waypoints between node[seg] and node[seg+1]
+    if(PATH_WAYPOINTS[seg]) {
+      waypoints.push(PATH_WAYPOINTS[seg][0]); // t=0.33
+      waypoints.push(PATH_WAYPOINTS[seg][1]); // t=0.67
+    }
+    // Snap to destination node
+    const dest = RING_NODE_POS[toPos] || RING_NODE_POS[0];
+    waypoints.push({ x: dest.x, y: dest.y });
+    prevPos = toPos;
+  });
+
+  let wpIdx = 0;
+  const MS_PER_WP = 160; // ms per waypoint — 3 waypoints per space = ~480 ms/space
+
+  function tick() {
+    if(wpIdx >= waypoints.length) {
+      _animState = null;
+      onComplete();
+      return;
+    }
+    _animState = { entryIdx: idx, x: waypoints[wpIdx].x, y: waypoints[wpIdx].y };
+    renderBoard();
+    wpIdx++;
+    setTimeout(tick, MS_PER_WP);
+  }
+  tick();
+}
+
 function movePlayer(entry, spaces, idx){
+  const fromPos = entry.pos;
+  const stepsVisited = [];
+
   for(let i=0; i<spaces; i++){
     const nextPos = entry.pos + 1;
     if(nextPos >= BOARD.length) break;
     entry.pos = nextPos;
+    stepsVisited.push(entry.pos);
     if(CHECKPOINT_TYPES.includes(BOARD[entry.pos].type)){
       log(`⛔ ${entry.name} is stopped at ${BOARD[entry.pos].name} — checkpoint must be completed!`, 'info');
       break;
     }
   }
   log(`✓ ${entry.name} moves to ${BOARD[entry.pos].name}!`, 'good');
-  renderBoard(); renderScores();
-  if(entry.pos === BOARD.length - 1){ triggerWin(idx); return; }
+  renderScores();
 
-  const landedType = BOARD[entry.pos].type;
-  if(landedType === 'event')         { triggerEvent();  return; }
-  if(landedType === 'checkpoint-g1') { triggerDNA();    return; }
-  if(landedType === 'checkpoint-g2') { triggerTF();     return; }
-  if(landedType === 'checkpoint-m')  { triggerVocab();  return; }
+  // Animate token through travel nodes, then resolve game logic
+  _animateMoveToken(idx, fromPos, stepsVisited, () => {
+    renderBoard(); renderScores();
+    if(entry.pos === BOARD.length - 1){ triggerWin(idx); return; }
 
-  autoNextTurn();
+    const landedType = BOARD[entry.pos].type;
+    if(landedType === 'event')         { triggerEvent();  return; }
+    if(landedType === 'checkpoint-g1') { triggerDNA();    return; }
+    if(landedType === 'checkpoint-g2') { triggerTF();     return; }
+    if(landedType === 'checkpoint-m')  { triggerVocab();  return; }
+
+    autoNextTurn();
+  });
 }
 
 // ══════════════════════════════════════════════
