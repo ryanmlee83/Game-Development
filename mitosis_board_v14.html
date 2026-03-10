@@ -1702,21 +1702,21 @@ function renderBoard() {
   svg.appendChild(ringImg);
 
   // ── Phase diagram in the ellipse interior ──
-  // Board angles: START_ANGLE=20°, 15 spaces × 24° each
-  // G0=20°(loop), G1=20°, G1CP=68°, S=92°, G2=116°, G2CP=164°,
-  // Prophase=188°, Metaphase=236°, MCP=260°, Anaphase=284°, Telophase=332°, Cytokinesis=356°
+  // Ellipse parametric angles from pixel-mapped node positions (Board_black_16.png):
+  // G0≈0°, G1≈13°, G1CP≈46°, S≈77°, G2≈112°, G2CP≈162°,
+  // Prophase≈181°, Metaphase≈218°, MCP≈248°, Anaphase≈283°, Telophase≈334°, Cytokinesis≈346°
   //
-  // 4 wedges:
-  //   G1 Phase   : 8°  → 80°   (before G1 → midpoint G1CP↔S)
-  //   S Phase    : 80° → 104°  (midpoint G1CP↔S → midpoint S↔G2)
-  //   G2 Phase   : 104°→ 176°  (midpoint S↔G2 → midpoint G2CP↔Prophase)
-  //   Mitosis    : 176°→ 344°  (midpoint G2CP↔Prophase → midpoint Telo↔Cyto)
+  // 4 wedges (boundaries = midpoints between adjacent phase nodes):
+  //   G1 Phase   :   6° → 62°   (midpoint G0↔G1 → midpoint G1CP↔S)
+  //   S Phase    :  62° → 95°   (midpoint G1CP↔S → midpoint S↔G2)
+  //   G2 Phase   :  95° → 171°  (midpoint S↔G2 → midpoint G2CP↔Prophase)
+  //   Mitosis    : 171° → 353°  (midpoint G2CP↔Prophase → midpoint Cyto↔G0)
 
-  const G1_start  = 8;
-  const S_start   = 80;
-  const G2_start  = 104;
-  const MIT_start = 176;
-  const MIT_end   = 344;
+  const G1_start  = 6;
+  const S_start   = 62;
+  const G2_start  = 95;
+  const MIT_start = 171;
+  const MIT_end   = 353;
 
   const sectors = [
     {
@@ -1803,42 +1803,6 @@ function renderBoard() {
 
   // ── Label layer (rendered before nodes) ──
   const labelLayer = svgEl('g', {});
-
-  // ── G0 loop — small teardrop loop branching between Cytokinesis and G1 ──
-  // Anchor point: midpoint between last ring space (Cytokinesis ~356°) and G1 (20°)
-  // Midpoint going clockwise: (356 + 360 + 20) / 2 % 360 = 8° (just before G1 at top)
-  const g0ang = 8; // sits in the gap between Cytokinesis and G1
-  const g0RadA = (g0ang - 90) * Math.PI / 180;
-  const g1 = ePos(g0ang);
-  const tang = { x: -Math.sin(g0RadA), y: Math.cos(g0RadA) }; // tangent to ellipse
-
-  // Loop apex sits outward from G1
-  const loopDist = 24;
-  const loopApex = { x: g1.x + Math.cos(g0RadA)*loopDist, y: g1.y + Math.sin(g0RadA)*loopDist };
-  const loopW = 8; // half-width of loop at widest
-
-  // Cubic bezier: depart G1 tangentially, arc wide, converge at apex, mirror back
-  const loopPath = [
-    `M ${g1.x.toFixed(2)} ${g1.y.toFixed(2)}`,
-    `C ${(g1.x + tang.x*loopW + Math.cos(g0RadA)*loopDist*0.35).toFixed(2)} ${(g1.y + tang.y*loopW + Math.sin(g0RadA)*loopDist*0.35).toFixed(2)},`,
-    `  ${(loopApex.x + tang.x*loopW*1.6).toFixed(2)} ${(loopApex.y + tang.y*loopW*1.6).toFixed(2)},`,
-    `  ${loopApex.x.toFixed(2)} ${loopApex.y.toFixed(2)}`,
-    `C ${(loopApex.x - tang.x*loopW*1.6).toFixed(2)} ${(loopApex.y - tang.y*loopW*1.6).toFixed(2)},`,
-    `  ${(g1.x - tang.x*loopW + Math.cos(g0RadA)*loopDist*0.35).toFixed(2)} ${(g1.y - tang.y*loopW + Math.sin(g0RadA)*loopDist*0.35).toFixed(2)},`,
-    `  ${g1.x.toFixed(2)} ${g1.y.toFixed(2)}`
-  ].join(' ');
-
-  svg.appendChild(svgEl('path', { d: loopPath,
-    fill:'rgba(136,136,204,0.09)', stroke:'#8888cc',
-    'stroke-width':'0.85', 'stroke-dasharray':'2.5 2', opacity:'0.8' }));
-
-  // Arrow tip on re-entry — small triangle near G1
-  const arrowOff = 2.5;
-  const ax = g1.x - tang.x * arrowOff, ay = g1.y - tang.y * arrowOff;
-  svg.appendChild(svgEl('polygon', {
-    points: `${ax},${ay} ${(ax + tang.x*3.5 - Math.cos(g0RadA)*2).toFixed(2)},${(ay + tang.y*3.5 - Math.sin(g0RadA)*2).toFixed(2)} ${(ax - Math.cos(g0RadA)*3).toFixed(2)},${(ay - Math.sin(g0RadA)*3).toFixed(2)}`,
-    fill:'#8888cc', opacity:'0.6'
-  }));
 
   // G0 node — use pixel-mapped position from ring image
   const g0 = nodePos(0);
