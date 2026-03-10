@@ -1403,7 +1403,7 @@ const RING_NODE_POS = [
 
 // Helper: get position for board index (0=G0, 1-15=ring)
 function nodePos(boardIdx) {
-  if(boardIdx === 0) return { ...RING_NODE_POS[0], angleDeg: 8 };
+  if(boardIdx === 0) return { ...RING_NODE_POS[0], angleDeg: 0 };
   // Ring indices 1-15 map to RING_NODE_POS[1-15]
   const p = RING_NODE_POS[boardIdx] || RING_NODE_POS[1];
   // Approximate angle for label placement (clockwise from top)
@@ -1811,7 +1811,7 @@ function renderBoard() {
     fill:g0s.fill, stroke:g0s.stroke, 'stroke-width':g0s.strokeW, 'stroke-dasharray':'2 2' }));
   svg.appendChild(svgTxt(g0.x, g0.y, BOARD[0].emoji, { 'font-size':'4.8' }));
 
-  _placeLabel(labelLayer, g0, g0s.r, g0ang, 'G0 (Resting)', BOARD[0].desc, '#8888cc', true);
+  _placeLabel(labelLayer, g0, g0s.r, g0.angleDeg, 'G0 (Resting)', BOARD[0].desc, '#8888cc', true);
 
   if(S.entries) {
     S.entries.filter(e=>e.pos===0).forEach((e,gi,arr) =>
