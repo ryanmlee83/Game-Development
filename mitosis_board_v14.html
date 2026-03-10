@@ -1314,14 +1314,14 @@ function startGame(studyMode=false){
   S.entries=[];
   if(studyMode){
     const col = TOKEN_COLORS[playerTokens[0]?.colorIdx ?? 0];
-    S.entries.push({name:'You',pos:0,color:col.hex,textColor:col.text,icon:playerTokens[0]?.icon||'trna',immune:false,skipTurn:false});
+    S.entries.push({name:'You',pos:0,color:col.hex,textColor:col.text,icon:playerTokens[0]?.icon||'trna',immune:false,skipTurn:false,checkpointState:null});
     S.mode='individual';
   } else {
     for(let i=0;i<numEntries;i++){
       const name=document.getElementById('en'+i).value.trim()||(S.mode==='teams'?`Team ${i+1}`:`Player ${i+1}`);
       const tok = playerTokens[i] || {};
       const col = TOKEN_COLORS[tok.colorIdx ?? i % TOKEN_COLORS.length];
-      S.entries.push({name,pos:0,color:col.hex,textColor:col.text,icon:tok.icon||TOKEN_ICONS[i%TOKEN_ICONS.length],immune:false,skipTurn:false});
+      S.entries.push({name,pos:0,color:col.hex,textColor:col.text,icon:tok.icon||TOKEN_ICONS[i%TOKEN_ICONS.length],immune:false,skipTurn:false,checkpointState:null});
     }
   }
   S.current=0;
@@ -2078,7 +2078,7 @@ function renderScores(){
   S.entries.forEach((e,i)=>{
     const div=document.createElement('div');
     div.className='score-card'+(i===S.current?' active-turn':'');
-    div.innerHTML=`<div class="sc-name">${e.name}</div><div class="sc-phase" style="color:${e.color}">${BOARD[e.pos].name}</div>${e.skipTurn?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#ff8080;">SKIP NEXT TURN</div>':''}${e.immune?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--green);">🛡 IMMUNE</div>':''}`;
+    div.innerHTML=`<div class="sc-name">${e.name}</div><div class="sc-phase" style="color:${e.color}">${BOARD[e.pos].name}</div>${e.skipTurn?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#ff8080;">SKIP NEXT TURN</div>':''}${e.immune?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--green);">🛡 IMMUNE</div>':''}${e.checkpointState==='passed'?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#f7ff58;">📋 DRAW A CARD</div>':''}${e.checkpointState==='blocked'?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#ff6b9d;">⛔ RETRY CHECKPOINT</div>':''}`;
     sg.appendChild(div);
   });
 }
@@ -2087,14 +2087,29 @@ function renderScores(){
 // QUESTION UI
 // ══════════════════════════════════════════════
 function resetQuestionUI(){
-  const space = BOARD[S.entries[S.current].pos];
-  const isSpecial = ['checkpoint-g1','checkpoint-g2','checkpoint-m','finish'].includes(space.type);
-  document.getElementById('qChooser').style.display = isSpecial ? 'none' : 'flex';
+  const cur = S.entries[S.current];
+  const space = BOARD[cur.pos];
+  // Hide card chooser on checkpoint spaces UNLESS the player passed and now needs to draw a card
+  const hideChooser = ['checkpoint-g1','checkpoint-g2','checkpoint-m','finish'].includes(space.type)
+                      && cur.checkpointState !== 'passed';
+  document.getElementById('qChooser').style.display = hideChooser ? 'none' : 'flex';
   document.getElementById('aqResult').className='aq-result';
   document.getElementById('btnNext').className='btn-next';
   closePopup();
   S.answered=false;
 
+  // If player failed checkpoint last turn, re-trigger it this turn
+  if(cur.checkpointState === 'blocked'){
+    cur.checkpointState = null;
+    log(`⛔ ${cur.name} must retry the ${space.name} checkpoint!`, 'info');
+    setTimeout(()=>{
+      if(space.type === 'checkpoint-g1') triggerDNA();
+      else if(space.type === 'checkpoint-g2') triggerTF();
+      else if(space.type === 'checkpoint-m') triggerVocab();
+    }, 1200);
+  } else if(cur.checkpointState === 'passed'){
+    log(`📋 ${cur.name} passed the checkpoint — draw a card to advance!`, 'info');
+  }
 }
 
 function hideAllPanels(){
@@ -2161,6 +2176,7 @@ function handleTrivia(chosen){
   if(S.answered) return; S.answered=true;
   const correct = chosen === S.currentQ.ans;
   const cur = S.entries[S.current];
+  const isCheckpointCard = cur.checkpointState === 'passed';
   document.querySelectorAll('.opt-btn').forEach((b,i)=>{
     b.disabled=true;
     if(i===S.currentQ.ans) b.classList.add('correct');
@@ -2168,10 +2184,11 @@ function handleTrivia(chosen){
   });
   const result = document.getElementById('aqResult');
   if(correct){
-    const spaces = S.questionType==='green' ? 1 : 2;
-    // Brief delay so player sees correct answer highlighted, then close popup and move
+    // Checkpoint card draw: always move 1 space past the checkpoint
+    const spaces = isCheckpointCard ? 1 : (S.questionType==='green' ? 1 : 2);
     setTimeout(()=>{
       closePopup();
+      if(isCheckpointCard) cur.checkpointState = null;
       movePlayer(cur, spaces, S.current);
       result.className='aq-result show ok';
       result.textContent=`✓ Correct! ${cur.name} moves ${spaces} space(s) → ${BOARD[cur.pos].name}`;
@@ -2181,8 +2198,14 @@ function handleTrivia(chosen){
     setTimeout(()=>{
       closePopup();
       result.className='aq-result show bad';
-      result.textContent=`✗ Incorrect. ${cur.name} stays put.`;
-      log(`✗ ${cur.name} answered incorrectly.`,'bad');
+      if(isCheckpointCard){
+        cur.checkpointState = 'blocked';
+        result.textContent=`✗ Incorrect. ${cur.name} must retry the checkpoint!`;
+        log(`✗ ${cur.name} answered incorrectly — must retry checkpoint.`,'bad');
+      } else {
+        result.textContent=`✗ Incorrect. ${cur.name} stays put.`;
+        log(`✗ ${cur.name} answered incorrectly.`,'bad');
+      }
       renderBoard(); renderScores();
       autoNextTurn();
     }, 700);
@@ -2308,6 +2331,7 @@ function launchDNA(){
       result.className = 'aq-result show bad';
       result.textContent = `✗ Time's up! ${S.entries[S.current].name} loses their turn.`;
       log(`✗ ${S.entries[S.current].name} ran out of time on the G1 Checkpoint.`,'bad');
+      S.entries[S.current].checkpointState = 'blocked';
       autoNextTurn();
     }
   }, 100);
@@ -2381,6 +2405,7 @@ function pickBase(base){
     result.className = 'aq-result show bad';
     result.textContent = `✗ "${base}" doesn't pair with "${templateBase}" — correct is "${DNA_PAIRS[templateBase]}". Turn lost.`;
     log(`✗ ${S.entries[S.current].name} failed the G1 Checkpoint.`, 'bad');
+    S.entries[S.current].checkpointState = 'blocked';
     autoNextTurn();
     return;
   }
@@ -2397,15 +2422,12 @@ function pickBase(base){
     clearInterval(S.dnaTimer);
     closePopup();
     renderDNA();
-    result.className = 'aq-result show ok';
-    result.textContent = `✓ Perfect strand! ${S.entries[S.current].name} passes the G1 Checkpoint — move forward 1!`;
-    log(`✓ ${S.entries[S.current].name} passed the G1 Checkpoint!`, 'good');
     const cur = S.entries[S.current];
-    cur.pos = Math.min(cur.pos + 1, BOARD.length - 1);
-    log(`✓ ${cur.name} moves to ${BOARD[cur.pos].name}!`, 'good');
-    renderBoard();
-    renderScores();
-    if(cur.pos === BOARD.length - 1){ triggerWin(S.current); return; }
+    cur.checkpointState = 'passed';
+    result.className = 'aq-result show ok';
+    result.textContent = `✓ Perfect strand! ${cur.name} passes the G1 Checkpoint — draw a card next turn to advance!`;
+    log(`✓ ${cur.name} passed the G1 Checkpoint!`, 'good');
+    renderBoard(); renderScores();
     autoNextTurn();
   }
 }
@@ -2477,14 +2499,18 @@ function endTF(){
   const result=document.getElementById('aqResult');
   closePopup();
   if(passed){
+    const cur = S.entries[S.current];
+    cur.checkpointState = 'passed';
     result.className='aq-result show ok';
-    result.textContent=`✓ Passed! ${S.tfCorrectCount} correct. ${S.entries[S.current].name} moves forward!`;
-    log(`✓ ${S.entries[S.current].name} passed the G2 Checkpoint (${S.tfCorrectCount}/${S.tfTotalAnswered})!`,'good');
-    movePlayer(S.entries[S.current],1,S.current);
+    result.textContent=`✓ Passed! ${S.tfCorrectCount} correct. ${cur.name} passes the G2 Checkpoint — draw a card next turn to advance!`;
+    log(`✓ ${cur.name} passed the G2 Checkpoint (${S.tfCorrectCount}/${S.tfTotalAnswered})!`,'good');
+    renderBoard(); renderScores();
+    autoNextTurn();
   } else {
     result.className='aq-result show bad';
     result.textContent=`✗ Only ${S.tfCorrectCount} correct — need 3. Turn lost.`;
     log(`✗ ${S.entries[S.current].name} failed the G2 Checkpoint (${S.tfCorrectCount}/${S.tfTotalAnswered}).`,'bad');
+    S.entries[S.current].checkpointState = 'blocked';
     autoNextTurn();
   }
 }
@@ -2523,6 +2549,7 @@ function launchVocab(){
       result.className = 'aq-result show bad';
       result.textContent = `✗ Time's up! ${S.entries[S.current].name} loses their turn.`;
       log(`✗ ${S.entries[S.current].name} ran out of time on the M Checkpoint.`,'bad');
+      S.entries[S.current].checkpointState = 'blocked';
       autoNextTurn();
     }
   }, 100);
@@ -2566,10 +2593,13 @@ function selectVocabDef(idx){
       clearInterval(S.vocabTimer);
       closePopup();
       const result=document.getElementById('aqResult');
+      const cur = S.entries[S.current];
+      cur.checkpointState = 'passed';
       result.className='aq-result show ok';
-      result.textContent=`✓ All matched! ${S.entries[S.current].name} passes — move forward 1!`;
-      log(`✓ ${S.entries[S.current].name} passed the M Checkpoint!`,'good');
-      movePlayer(S.entries[S.current],1,S.current);
+      result.textContent=`✓ All matched! ${cur.name} passes the M Checkpoint — draw a card next turn to advance!`;
+      log(`✓ ${cur.name} passed the M Checkpoint!`,'good');
+      renderBoard(); renderScores();
+      autoNextTurn();
       return;
     }
     renderVocab();
@@ -2585,6 +2615,7 @@ function selectVocabDef(idx){
       result.className='aq-result show bad';
       result.textContent=`✗ Incorrect match. ${S.entries[S.current].name} loses their turn.`;
       log(`✗ ${S.entries[S.current].name} failed the M Checkpoint.`,'bad');
+      S.entries[S.current].checkpointState = 'blocked';
       document.querySelectorAll('.vocab-term,.vocab-def').forEach(e=>{e.classList.remove('wrong-flash');e.onclick=null;});
       autoNextTurn();
     },700);
