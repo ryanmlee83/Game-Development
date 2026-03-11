@@ -527,10 +527,21 @@ body {
       <div class="mode-row" style="margin-bottom:0;">
         <button class="mode-btn on" onclick="setMode('individual')" id="modeInd">⚔ Individual</button>
         <button class="mode-btn" onclick="setMode('teams')" id="modeTeam">🛡 Teams</button>
+        <button class="mode-btn" onclick="setMode('colonize')" id="modeColonize">🧫 Colonize!</button>
       </div>
       <div style="display:flex;align-items:center;gap:0.5rem;">
         <span style="font-family:'Cinzel',serif;font-size:0.82rem;color:var(--text-dim);letter-spacing:0.08em;" id="countLabel">PLAYERS</span>
         <div class="count-row" id="countRow" style="margin-bottom:0;flex-wrap:nowrap;"></div>
+      </div>
+    </div>
+
+    <!-- Colonize target picker (shown only in Colonize mode) -->
+    <div id="colonizeTargetRow" style="display:none;align-items:center;gap:0.75rem;background:rgba(6,214,160,0.06);border:1px solid rgba(6,214,160,0.25);border-radius:6px;padding:0.6rem 0.9rem;">
+      <span style="font-family:'Cinzel',serif;font-size:0.82rem;color:var(--green);letter-spacing:0.08em;">🧫 CELLS TO WIN</span>
+      <div style="display:flex;gap:0.4rem;">
+        <button class="cnt" id="cTarget2" onclick="setColonizeTarget(2)">2</button>
+        <button class="cnt on" id="cTarget3" onclick="setColonizeTarget(3)">3</button>
+        <button class="cnt" id="cTarget5" onclick="setColonizeTarget(5)">5</button>
       </div>
     </div>
 
@@ -1216,7 +1227,7 @@ let S = {
   mode:'individual', entries:[], current:0, turnNumber:1,
   answered:false, selectedOpt:null, stealPhase:false,
   questionType:null, currentQ:null,
-  studyMode:false, relaxedMode:false,
+  studyMode:false, relaxedMode:false, colonizeMode:false, colonizeTarget:3,
   dnaTemplate:[], dnaAnswers:[], dnaCurrentSlot:0, dnaLocked:false,
   dnaTimer:null, dnaTimeLeft:30,
   tfTimer:null, tfTimeLeft:30, tfCorrectCount:0, tfTotalAnswered:0,
@@ -1256,11 +1267,23 @@ let numEntries=2;
   setCount(2);
 })();
 
+let colonizeTarget = 3;
+function setColonizeTarget(n){
+  colonizeTarget = n;
+  [2,3,5].forEach(v => {
+    const b = document.getElementById('cTarget'+v);
+    if(b) b.classList.toggle('on', v===n);
+  });
+}
+
 function setMode(m){
   S.mode=m;
   document.getElementById('modeInd').classList.toggle('on',m==='individual');
   document.getElementById('modeTeam').classList.toggle('on',m==='teams');
+  document.getElementById('modeColonize').classList.toggle('on',m==='colonize');
   document.getElementById('countLabel').textContent=m==='teams'?'NUMBER OF TEAMS':'NUMBER OF PLAYERS';
+  const ctr = document.getElementById('colonizeTargetRow');
+  if(ctr) ctr.style.display = m==='colonize' ? 'flex' : 'none';
   renderEntryInputs();
 }
 
@@ -1360,17 +1383,19 @@ function renderEntryInputs(){
 function startGame(studyMode=false){
   S.studyMode = studyMode;
   S.relaxedMode = document.getElementById('relaxedToggle')?.checked || false;
+  S.colonizeMode = !studyMode && S.mode === 'colonize';
+  S.colonizeTarget = colonizeTarget;
   S.entries=[];
   if(studyMode){
     const col = TOKEN_COLORS[playerTokens[0]?.colorIdx ?? 0];
-    S.entries.push({name:'You',pos:0,color:col.hex,textColor:col.text,icon:playerTokens[0]?.icon||'trna',immune:false,skipTurn:false,checkpointState:null,correctCount:0,totalCount:0});
+    S.entries.push({name:'You',pos:0,color:col.hex,textColor:col.text,icon:playerTokens[0]?.icon||'trna',immune:false,skipTurn:false,checkpointState:null,correctCount:0,totalCount:0,cells:0});
     S.mode='individual';
   } else {
     for(let i=0;i<numEntries;i++){
       const name=document.getElementById('en'+i).value.trim()||(S.mode==='teams'?`Team ${i+1}`:`Player ${i+1}`);
       const tok = playerTokens[i] || {};
       const col = TOKEN_COLORS[tok.colorIdx ?? i % TOKEN_COLORS.length];
-      S.entries.push({name,pos:0,color:col.hex,textColor:col.text,icon:tok.icon||TOKEN_ICONS[i%TOKEN_ICONS.length],immune:false,skipTurn:false,checkpointState:null,correctCount:0,totalCount:0});
+      S.entries.push({name,pos:0,color:col.hex,textColor:col.text,icon:tok.icon||TOKEN_ICONS[i%TOKEN_ICONS.length],immune:false,skipTurn:false,checkpointState:null,correctCount:0,totalCount:0,cells:0});
     }
   }
   S.current=0; S.turnNumber=1;
@@ -2131,7 +2156,8 @@ function renderScores(){
     const div=document.createElement('div');
     div.className='score-card'+(i===S.current?' active-turn':'');
     const statStr = e.totalCount>0 ? `<div style="font-family:Cinzel,serif;font-size:0.52rem;color:var(--text-dim);">✓ ${e.correctCount}/${e.totalCount}</div>` : '';
-    div.innerHTML=`<div class="sc-name">${e.name}</div><div class="sc-phase" style="color:${e.color}">${BOARD[e.pos].name}</div>${statStr}${e.skipTurn?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#ff8080;">SKIP NEXT TURN</div>':''}${e.immune?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--green);">🛡 IMMUNE</div>':''}${e.checkpointState==='passed'?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#f7ff58;">📋 DRAW A CARD</div>':''}${e.checkpointState==='blocked'?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#ff6b9d;">⛔ RETRY CHECKPOINT</div>':''}`;
+    const cellStr = S.colonizeMode ? `<div style="font-family:Cinzel,serif;font-size:0.82rem;color:var(--green);letter-spacing:0.04em;margin:0.15rem 0;">🧫 ${'●'.repeat(e.cells)}${'○'.repeat(Math.max(0,S.colonizeTarget-e.cells))} <span style="font-size:0.65rem;color:var(--text-dim);">${e.cells}/${S.colonizeTarget}</span></div>` : '';
+    div.innerHTML=`<div class="sc-name">${e.name}</div>${cellStr}<div class="sc-phase" style="color:${e.color}">${BOARD[e.pos].name}</div>${statStr}${e.skipTurn?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#ff8080;">SKIP NEXT TURN</div>':''}${e.immune?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--green);">🛡 IMMUNE</div>':''}${e.checkpointState==='passed'?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#f7ff58;">📋 DRAW A CARD</div>':''}${e.checkpointState==='blocked'?'<div style="font-family:Cinzel,serif;font-size:0.55rem;color:#ff6b9d;">⛔ RETRY CHECKPOINT</div>':''}`;
     sg.appendChild(div);
   });
 }
@@ -2303,7 +2329,20 @@ function movePlayer(entry, spaces, idx, onDone){
   function finishMove(){
     log(`✓ ${entry.name} moves to ${BOARD[entry.pos].name}!`, 'good');
     renderScores();
-    if(entry.pos === BOARD.length - 1){ if(onDone) onDone(true); triggerWin(idx); return; }
+    if(entry.pos === BOARD.length - 1){
+      if(S.colonizeMode){
+        entry.cells++;
+        log(`🧫 ${entry.name} completes a division! ${entry.cells}/${S.colonizeTarget} cell${entry.cells>1?'s':''}`, 'good');
+        renderScores();
+        if(entry.cells >= S.colonizeTarget){ if(onDone) onDone(true); triggerWin(idx); return; }
+        entry.pos = 0;
+        renderBoard();
+        if(onDone) onDone(false);
+        autoNextTurn();
+        return;
+      }
+      if(onDone) onDone(true); triggerWin(idx); return;
+    }
     const landedType = BOARD[entry.pos].type;
     if(landedType === 'event')         { if(onDone) onDone(true); triggerEvent();  return; }
     if(landedType === 'checkpoint-g1') { if(onDone) onDone(true); triggerDNA();    return; }
@@ -2843,19 +2882,28 @@ function nextTurn(){
 // ══════════════════════════════════════════════
 function triggerWin(idx){
   const name = S.entries[idx].name;
-  document.getElementById('winName').textContent = S.studyMode ? '⚗ Study Complete!' : `${name} wins!`;
-  document.getElementById('winFlavor').innerHTML = S.studyMode
-    ? `"${name} has navigated the full cell cycle from G0 to Cytokinesis.<br>The cell divides — mission accomplished."`
-    : `"${name}'s cell crosses the finish line — the cytoplasm divides<br>and two daughter cells emerge, perfectly formed."`;
+  const winner = S.entries[idx];
+  if(S.colonizeMode){
+    document.getElementById('winName').textContent = `${name} colonizes!`;
+    document.getElementById('winFlavor').innerHTML = `"${name} successfully divided ${winner.cells} time${winner.cells!==1?'s':''} — the colony is established.<br>Cell division complete."`;
+  } else {
+    document.getElementById('winName').textContent = S.studyMode ? '⚗ Study Complete!' : `${name} wins!`;
+    document.getElementById('winFlavor').innerHTML = S.studyMode
+      ? `"${name} has navigated the full cell cycle from G0 to Cytokinesis.<br>The cell divides — mission accomplished."`
+      : `"${name}'s cell crosses the finish line — the cytoplasm divides<br>and two daughter cells emerge, perfectly formed."`;
+  }
   // Build stats table
   const statsEl = document.getElementById('winStats');
   if(statsEl && S.entries.length > 0){
     const rows = S.entries.map(e=>{
       const pct = e.totalCount>0 ? Math.round(e.correctCount/e.totalCount*100) : '—';
       const pctStr = e.totalCount>0 ? `${pct}%` : '—';
-      return `<tr style="color:${e.color}"><td style="padding:0.2rem 0.6rem;font-family:'Cinzel',serif;font-size:0.7rem;">${e.name}</td><td style="padding:0.2rem 0.6rem;font-family:'EB Garamond',serif;font-size:0.85rem;text-align:center;">${e.correctCount}/${e.totalCount}</td><td style="padding:0.2rem 0.6rem;font-family:'EB Garamond',serif;font-size:0.85rem;text-align:center;">${pctStr}</td></tr>`;
+      const cellCol = S.colonizeMode ? `<td style="padding:0.2rem 0.6rem;font-family:'EB Garamond',serif;font-size:0.85rem;text-align:center;">🧫 ${e.cells}</td>` : '';
+      return `<tr style="color:${e.color}"><td style="padding:0.2rem 0.6rem;font-family:'Cinzel',serif;font-size:0.7rem;">${e.name}</td>${cellCol}<td style="padding:0.2rem 0.6rem;font-family:'EB Garamond',serif;font-size:0.85rem;text-align:center;">${e.correctCount}/${e.totalCount}</td><td style="padding:0.2rem 0.6rem;font-family:'EB Garamond',serif;font-size:0.85rem;text-align:center;">${pctStr}</td></tr>`;
     }).join('');
-    statsEl.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--gold);letter-spacing:0.1em;margin-bottom:0.5rem;text-align:center;">— QUESTION RESULTS —</div><table style="width:100%;border-collapse:collapse;margin:0 auto;"><thead><tr style="color:var(--text-dim)"><th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;text-align:left;">Player</th><th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;">Correct</th><th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;">Score</th></tr></thead><tbody>${rows}</tbody></table>`;
+    const cellHeader = S.colonizeMode ? `<th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;">Cells</th>` : '';
+    const tableTitle = S.colonizeMode ? '— COLONY RESULTS —' : '— QUESTION RESULTS —';
+    statsEl.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--gold);letter-spacing:0.1em;margin-bottom:0.5rem;text-align:center;">${tableTitle}</div><table style="width:100%;border-collapse:collapse;margin:0 auto;"><thead><tr style="color:var(--text-dim)"><th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;text-align:left;">Player</th>${cellHeader}<th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;">Correct</th><th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;">Score</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
   setTimeout(()=>{ showScreen('win'); startWinConfetti(); }, 700);
 }
