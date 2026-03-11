@@ -493,15 +493,14 @@ body {
     <!-- Top row: Study Mode + Relaxed toggle side by side -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;">
       <!-- Study Mode -->
-      <div class="frame" style="padding:0.7rem 0.9rem;cursor:pointer;transition:all 0.2s;" onclick="startGame(true)" onmouseenter="this.style.borderColor='var(--pink)'" onmouseleave="this.style.borderColor=''">
-        <div class="fc1"></div><div class="fc2"></div>
+      <div id="studyModeCard" style="padding:0.7rem 0.9rem;cursor:pointer;transition:all 0.2s;border:2px solid rgba(255,121,198,0.35);border-radius:4px;background:rgba(255,121,198,0.04);" onclick="toggleStudyMode()">
         <div style="display:flex;align-items:center;gap:0.6rem;">
           <span style="font-size:1.5rem;flex-shrink:0;">⚗</span>
           <div style="flex:1;min-width:0;">
             <div style="font-family:'Cinzel',serif;font-size:0.9rem;color:var(--pink);letter-spacing:0.1em;margin-bottom:0.15rem;">STUDY MODE</div>
-            <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text-dim);line-height:1.3;">Solo run — full board, all checkpoints. Click to begin.</div>
+            <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text-dim);line-height:1.3;">Solo run — full board, all checkpoints.</div>
           </div>
-          <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--pink);flex-shrink:0;">→</div>
+          <div id="studyModeCheck" style="font-size:1.1rem;color:var(--pink);flex-shrink:0;opacity:0;transition:opacity 0.2s;">✓</div>
         </div>
       </div>
       <!-- Relaxed Mode -->
@@ -518,6 +517,9 @@ body {
         </label>
       </div>
     </div>
+
+    <!-- Multiplayer section (locked when study mode is active) -->
+    <div id="multiplayerSection" style="display:flex;flex-direction:column;gap:0.7rem;transition:opacity 0.2s;">
 
     <!-- Divider -->
     <div style="font-family:'Cinzel',serif;font-size:0.82rem;color:var(--text-dim);letter-spacing:0.2em;text-align:center;">— MULTIPLAYER SETUP —</div>
@@ -548,9 +550,11 @@ body {
     <!-- Players grid -->
     <div class="entries-list" id="entriesList" style="margin-bottom:0;"></div>
 
+    </div><!-- end multiplayerSection -->
+
     <!-- Begin button + HTP link -->
     <div style="display:flex;align-items:center;gap:1rem;">
-      <button class="btn-gold" style="flex:1;" onclick="startGame(false)">✦ Begin the Division ✦</button>
+      <button class="btn-gold" style="flex:1;" onclick="startGame(setupStudyMode)">✦ Begin the Division ✦</button>
       <button style="background:none;border:none;color:var(--text-dim);font-family:'Cinzel',serif;font-size:0.85rem;cursor:pointer;letter-spacing:0.1em;white-space:nowrap;" onclick="showScreen('howtoplay')">← How to Play</button>
     </div>
 
@@ -1380,6 +1384,27 @@ function renderEntryInputs(){
   }
 }
 
+let setupStudyMode = false;
+function toggleStudyMode(){
+  setupStudyMode = !setupStudyMode;
+  const card = document.getElementById('studyModeCard');
+  const check = document.getElementById('studyModeCheck');
+  const mp = document.getElementById('multiplayerSection');
+  if(setupStudyMode){
+    card.style.borderColor = 'var(--pink)';
+    card.style.background = 'rgba(255,121,198,0.12)';
+    check.style.opacity = '1';
+    mp.style.opacity = '0.35';
+    mp.style.pointerEvents = 'none';
+  } else {
+    card.style.borderColor = 'rgba(255,121,198,0.35)';
+    card.style.background = 'rgba(255,121,198,0.04)';
+    check.style.opacity = '0';
+    mp.style.opacity = '1';
+    mp.style.pointerEvents = '';
+  }
+}
+
 function startGame(studyMode=false){
   S.studyMode = studyMode;
   S.relaxedMode = document.getElementById('relaxedToggle')?.checked || false;
@@ -1421,6 +1446,15 @@ function showScreen(id){
   const el = document.getElementById(id);
   el.classList.add('active');
   el.style.display = SCREEN_DISPLAY[id] || 'block';
+  if(id === 'setup' && setupStudyMode){
+    setupStudyMode = false;
+    const card = document.getElementById('studyModeCard');
+    const check = document.getElementById('studyModeCheck');
+    const mp = document.getElementById('multiplayerSection');
+    if(card) card.style.cssText += ';border-color:rgba(255,121,198,0.35);background:rgba(255,121,198,0.04);';
+    if(check) check.style.opacity = '0';
+    if(mp){ mp.style.opacity = '1'; mp.style.pointerEvents = ''; }
+  }
 }
 
 // ══════════════════════════════════════════════
