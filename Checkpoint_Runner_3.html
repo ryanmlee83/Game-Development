@@ -376,6 +376,16 @@ body {
   from { transform: translateX(120%) rotateY(-90deg); opacity:0; }
   to   { transform: translateX(0)    rotateY(0deg);   opacity:1; }
 }
+@keyframes deckPulse {
+  0%   { transform: scale(1)    translateY(0); }
+  40%  { transform: scale(0.82) translateY(3px); }
+  100% { transform: scale(1)    translateY(0); }
+}
+@keyframes popupFlipIn {
+  from { transform: perspective(800px) rotateY(90deg) scale(0.97); opacity:0; }
+  to   { transform: perspective(800px) rotateY(0deg)  scale(1);    opacity:1; }
+}
+.popup-box.flip-in { animation: popupFlipIn 0.3s cubic-bezier(0.34,1.4,0.64,1) both; }
 .event-card-display {
   border-radius:8px; border:2px solid; padding:1.2rem; text-align:center;
   transform-style: preserve-3d;
@@ -1900,6 +1910,40 @@ function renderBoard() {
       grp.forEach(({e,i},gi) => drawToken(svg, e, gi, grp.length, pos.x, pos.y, i===S.current));
     }
   });
+
+  // ── Card deck stacks in board interior ──
+  const DECK_DEFS = [
+    { id:'deck-green',  cx:115, color:'#06d6a0', label:'Green',  icon:'?' },
+    { id:'deck-violet', cx:150, color:'#c77dff', label:'Violet', icon:'?' },
+    { id:'deck-event',  cx:185, color:'#00d4ff', label:'Events', icon:'⚡' },
+  ];
+  const DCY = 88, DW = 13, DH = 17;
+  DECK_DEFS.forEach(({id, cx, color, label, icon}) => {
+    const g = svgEl('g', { id });
+    // Shadow cards (stacked depth)
+    [2, 1].forEach(s => g.appendChild(svgEl('rect', {
+      x: cx - DW/2 + s, y: DCY - DH/2 + s, width: DW, height: DH, rx: '1.5',
+      fill: 'rgba(0,0,0,0.55)', stroke: color, 'stroke-width': '0.5', opacity: '0.38'
+    })));
+    // Top card face
+    g.appendChild(svgEl('rect', {
+      x: cx - DW/2, y: DCY - DH/2, width: DW, height: DH, rx: '1.5',
+      fill: 'rgba(5,5,18,0.92)', stroke: color, 'stroke-width': '0.9',
+      style: `filter:drop-shadow(0 0 3px ${color}88)`
+    }));
+    // Icon
+    g.appendChild(svgTxt(cx, DCY + 1.5, icon, {
+      'font-size': '7.5', 'font-weight': 'bold', fill: color,
+      'text-anchor': 'middle', 'dominant-baseline': 'middle',
+      style: `filter:drop-shadow(0 0 2px ${color})`
+    }));
+    // Label below stack
+    g.appendChild(svgTxt(cx, DCY + DH/2 + 4.5, label, {
+      'font-size': '3.2', fill: color, 'text-anchor': 'middle',
+      'font-family': 'Cinzel,serif', opacity: '0.8'
+    }));
+    svg.appendChild(g);
+  });
 }
 
 // ── Label placement using ellipse geometry ──
@@ -2139,26 +2183,101 @@ function hideAllPanels(){
   if(S.vocabTimer){ clearInterval(S.vocabTimer); S.vocabTimer=null; }
 }
 
-function showPanel(id){
+function showPanel(id, flipIn = false){
   hideAllPanels();
   document.getElementById(id).style.display='block';
   // Event and splash panels are user-dismissable via backdrop click;
   // question panels (trivia/dna/tf/vocab) are not — they have their own close logic
   const dismissable = (id === 'eventPanel' || id === 'splashPanel');
-  openPopup(dismissable);
+  openPopup(dismissable, flipIn);
 }
 
 let _popupUserDismissable = false;
 
-function openPopup(dismissable = false){
+function openPopup(dismissable = false, flipIn = false){
   _popupUserDismissable = dismissable;
   document.getElementById('popupOverlay').classList.add('open');
+  const box = document.getElementById('popupBox');
+  box.classList.remove('flip-in');
+  if(flipIn){ void box.offsetWidth; box.classList.add('flip-in'); }
 }
 
 function closePopup(){
   _popupUserDismissable = false;
   document.getElementById('popupOverlay').classList.remove('open');
   hideAllPanels();
+}
+
+// Spawns a card at the deck sprite position, flies it to the viewport centre,
+// flips it face-down, then calls callback() so the popup can open.
+function animateCardDraw(deckType, callback) {
+  const svgBoard = document.getElementById('boardSVG');
+  const sr = svgBoard.getBoundingClientRect();
+  const sx = sr.width / VW, sy = sr.height / VH;
+
+  const DECK_POS   = { green:{cx:115,cy:88}, violet:{cx:150,cy:88}, event:{cx:185,cy:88} };
+  const DECK_COLOR = { green:'#06d6a0', violet:'#c77dff', event:'#00d4ff' };
+  const DECK_ICON  = { green:'?', violet:'?', event:'⚡' };
+  const DW = 13, DH = 17;
+
+  const dp    = DECK_POS[deckType]   || DECK_POS.green;
+  const color = DECK_COLOR[deckType] || '#06d6a0';
+  const icon  = DECK_ICON[deckType]  || '?';
+
+  // Screen rect of the deck sprite
+  const deckScreenX = sr.left + dp.cx * sx;
+  const deckScreenY = sr.top  + dp.cy * sy;
+  const cardW = DW * sx, cardH = DH * sy;
+
+  // Target: centred popup area
+  const popW = Math.min(window.innerWidth * 0.92, 560);
+  const popH = Math.min(window.innerHeight * 0.52, 320);
+  const destX = window.innerWidth  / 2 - popW / 2;
+  const destY = window.innerHeight / 2 - popH / 2;
+
+  // Offsets relative to card start position
+  const dx = destX - (deckScreenX - cardW / 2);
+  const dy = destY - (deckScreenY - cardH / 2);
+  const scX = popW / cardW, scY = popH / cardH;
+
+  // Build the flying card element
+  const card = document.createElement('div');
+  card.style.cssText = `
+    position:fixed; z-index:150; pointer-events:none;
+    left:${deckScreenX - cardW/2}px; top:${deckScreenY - cardH/2}px;
+    width:${cardW}px; height:${cardH}px;
+    background:rgba(5,5,18,0.93); border:2px solid ${color}; border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:${cardH * 0.44}px; color:${color};
+    box-shadow:0 0 14px ${color}55;
+    will-change:transform,opacity;
+  `;
+  card.textContent = icon;
+  document.body.appendChild(card);
+
+  // Pulse the matching SVG deck sprite
+  const deckG = document.getElementById(`deck-${deckType}`);
+  if(deckG) {
+    deckG.style.animation = 'none';
+    void deckG.offsetWidth;
+    deckG.style.animation = 'deckPulse 0.42s ease forwards';
+    setTimeout(() => { if(deckG) deckG.style.animation = ''; }, 450);
+  }
+
+  // Phase 1 — fly to popup position and scale up
+  card.animate([
+    { transform: 'translate(0,0) scale(1,1)', opacity: 0 },
+    { transform: 'translate(0,0) scale(1,1)', opacity: 1, offset: 0.05 },
+    { transform: `translate(${dx}px,${dy}px) scale(${scX},${scY})`, opacity: 1 },
+  ], { duration: 540, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'forwards' })
+  .finished.then(() => {
+    // Phase 2 — flip card face-down (disappears at 90°)
+    card.animate([
+      { transform: `translate(${dx}px,${dy}px) scale(${scX},${scY}) perspective(700px) rotateY(0deg)`,   opacity: 1 },
+      { transform: `translate(${dx}px,${dy}px) scale(${scX},${scY}) perspective(700px) rotateY(-90deg)`, opacity: 0.5 },
+    ], { duration: 210, easing: 'ease-in', fill: 'forwards' })
+    .finished.then(() => { card.remove(); callback(); });
+  });
 }
 
 function overlayClickDismiss(e){
@@ -2194,7 +2313,7 @@ function askQuestion(type){
   S.shuffledAns = optIndices.indexOf(S.currentQ.ans);
   S.shuffledOpts.forEach((o,i)=>{ const b=document.createElement('button'); b.className='opt-btn'; b.textContent=`${String.fromCharCode(65+i)}. ${o}`; b.onclick=()=>selectOption(i); opts.appendChild(b); });
   document.getElementById('btnSubmitAnswer').disabled = true;
-  showPanel('triviaPanel');
+  animateCardDraw(type, () => showPanel('triviaPanel', true));
 }
 
 function handleTrivia(chosen){
@@ -2703,8 +2822,9 @@ function launchEvent(){
   document.getElementById('eventEmoji').textContent=card.emoji;
   document.getElementById('eventName').textContent=card.name;
   document.getElementById('eventDesc').textContent=card.desc;
-  showPanel('eventPanel');
-  // Reset OK button and result from previous event
+  animateCardDraw('event', () => {
+    showPanel('eventPanel', true);
+    // Reset OK button and result from previous event
   const btnEvOK = document.getElementById('btnEventNext');
   if(btnEvOK) btnEvOK.style.display = 'none';
   const evRes = document.getElementById('eventResult');
@@ -2726,6 +2846,7 @@ function launchEvent(){
   }
 
   applyEvent(card, cur);
+  });
 }
 
 function showEventOK(action){
