@@ -2356,22 +2356,22 @@ function movePlayer(entry, spaces, idx, onDone){
         entry.cells++;
         log(`🧫 ${entry.name} completes a division! ${entry.cells}/${S.colonizeTarget} cell${entry.cells>1?'s':''}`, 'good');
         renderScores();
-        if(entry.cells >= S.colonizeTarget){ if(onDone) onDone(true); triggerWin(idx); return; }
+        if(entry.cells >= S.colonizeTarget){
+          if(onDone) onDone(()=>triggerWin(idx)); else triggerWin(idx); return;
+        }
         entry.pos = 0;
         renderBoard();
-        if(onDone) onDone(false);
-        autoNextTurn();
+        if(onDone) onDone(null); else autoNextTurn();
         return;
       }
-      if(onDone) onDone(true); triggerWin(idx); return;
+      if(onDone) onDone(()=>triggerWin(idx)); else triggerWin(idx); return;
     }
     const landedType = BOARD[entry.pos].type;
-    if(landedType === 'event')         { if(onDone) onDone(true); triggerEvent();  return; }
-    if(landedType === 'checkpoint-g1') { if(onDone) onDone(true); triggerDNA();    return; }
-    if(landedType === 'checkpoint-g2') { if(onDone) onDone(true); triggerTF();     return; }
-    if(landedType === 'checkpoint-m')  { if(onDone) onDone(true); triggerVocab();  return; }
-    if(onDone) onDone(false);
-    autoNextTurn();
+    if(landedType === 'event')         { if(onDone) onDone(triggerEvent);  else triggerEvent();  return; }
+    if(landedType === 'checkpoint-g1') { if(onDone) onDone(triggerDNA);    else triggerDNA();    return; }
+    if(landedType === 'checkpoint-g2') { if(onDone) onDone(triggerTF);     else triggerTF();     return; }
+    if(landedType === 'checkpoint-m')  { if(onDone) onDone(triggerVocab);  else triggerVocab();  return; }
+    if(onDone) onDone(null); else autoNextTurn();
   }
   doStep();
 }
@@ -2625,7 +2625,7 @@ function tfAnswer(val){
   setTimeout(()=>{
     btn.style.filter='';
     if(S.tfWrongCount>=3){ endTF(); return; }
-    if(S.relaxedMode && S.tfCorrectCount>=3){ endTF(); return; }
+    if(S.tfCorrectCount>=3){ endTF(); return; }
     if(S.relaxedMode || S.tfTimeLeft>0) loadNextTF();
   },300);
 }
@@ -2826,14 +2826,16 @@ function applyEvent(card, cur){
 
   switch(card.effect){
     case 'advance2': {
-      movePlayer(cur,2,S.current, triggered => {
-        if(!triggered){ showEventResult(`⚡ ${cur.name} advances 2 spaces!`,'ok'); finishEvent(); }
+      movePlayer(cur,2,S.current, nextTrigger => {
+        showEventResult(`⚡ ${cur.name} advances 2 spaces!`,'ok');
+        if(nextTrigger) showEventOK(nextTrigger); else finishEvent();
       });
       break;
     }
     case 'advance1': {
-      movePlayer(cur,1,S.current, triggered => {
-        if(!triggered){ showEventResult(`⚡ ${cur.name} advances 1 space!`,'ok'); finishEvent(); }
+      movePlayer(cur,1,S.current, nextTrigger => {
+        showEventResult(`⚡ ${cur.name} advances 1 space!`,'ok');
+        if(nextTrigger) showEventOK(nextTrigger); else finishEvent();
       });
       break;
     }
