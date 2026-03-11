@@ -1478,6 +1478,17 @@ const NODE_STYLE = {
   'start':          { fill:'#c77dff', stroke:'#9933ff', strokeW:1.5, r:9.0, labelColor:'#c77dff',  shape:'circle' },
 };
 
+// ── Icon PNG per space type ──
+const SPACE_ICON = {
+  'start':         'icon_1_purple_arrow.png',
+  'regular':       'icon_2_green_dna.png',
+  'event':         'icon_3_blue_lightning.png',
+  'checkpoint-g1': 'icon_4_orange_barrier.png',
+  'checkpoint-g2': 'icon_4_orange_barrier.png',
+  'checkpoint-m':  'icon_4_orange_barrier.png',
+  'finish':        'icon_5_gold_circles.png',
+};
+
 // ══════════════════════════════════════════════
 // ELLIPSE BOARD GEOMETRY
 // ══════════════════════════════════════════════
@@ -1825,8 +1836,8 @@ function renderBoard() {
   // G0 node — use pixel-mapped position from ring image
   const g0 = nodePos(0);
   const g0s = NODE_STYLE['start'];
-  svg.appendChild(svgEl('circle', { cx:g0.x, cy:g0.y, r:g0s.r,
-    fill:g0s.fill, stroke:g0s.stroke, 'stroke-width':g0s.strokeW }));
+  svg.appendChild(svgEl('image', { x:g0.x - g0s.r, y:g0.y - g0s.r,
+    width:g0s.r*2, height:g0s.r*2, href:SPACE_ICON['start'] }));
 
   _placeLabel(labelLayer, g0, g0s.r, g0.angleDeg, 'G0 (Resting)', BOARD[0].desc, '#c77dff', true);
 
@@ -1866,18 +1877,16 @@ function renderBoard() {
         fill:'none', stroke:style.stroke, 'stroke-width':'1', opacity:'0.45' }));
     }
 
-    // Node shape — all spaces are circles
-    let node = svgEl('circle', { cx:pos.x, cy:pos.y, r });
+    // Node shape — icon PNG scaled with depth
     const glowMap = {
       'finish':'glow-gold',
       'checkpoint-g1':'glow-pink', 'checkpoint-g2':'glow-pink', 'checkpoint-m':'glow-pink',
       'event':'glow-teal',
       'start':'glow-purple', 'regular':'glow-teal'
     };
+    const iconSrc = SPACE_ICON[sp.type] || SPACE_ICON['regular'];
+    let node = svgEl('image', { x:pos.x - r, y:pos.y - r, width:r*2, height:r*2, href:iconSrc });
     if(glowMap[sp.type]) node.setAttribute('filter', `url(#${glowMap[sp.type]})`);
-    node.setAttribute('fill', style.fill);
-    node.setAttribute('stroke', style.stroke);
-    node.setAttribute('stroke-width', style.strokeW * ds);
     svg.appendChild(node);
 
 
