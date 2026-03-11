@@ -33,12 +33,28 @@
   --text: #f0f0ff;
   --text-dim: #8888aa;
   --red: #ff4466;
+  --text-dark: #1a0a00;
+  --violet-dim: #7b2fbe;
+  --g0-color: #8888cc;
+  --error: #cc2222;
+  --error-light: #ff8080;
+  --surface-btn: #2a2a3a;
+  --surface-btn2: #3a3a5a;
+  --base-a: #ff7070; --base-a-dark: #cc0000;
+  --base-t: #70b8ff; --base-t-dark: #0044cc;
+  --base-g: #70dd70; --base-g-dark: #007700;
+  --base-c: #ffd060; --base-c-dark: #aa7700;
+  --matched-bg: #c8f0c8; --matched-text: #003300;
+  --wrong-flash-bg: #ffc8c8; --wrong-flash-text: #330000;
+  --vocab-term-bg: #f5e6c8; --vocab-term-bg2: #fff3d0; --vocab-term-sel: #ffe090;
+  --vocab-def-bg: #f0e0ff; --vocab-def-bg2: #e8c8ff; --vocab-def-sel: #d8a0ff;
+  --correct-text: #003010; --wrong-text: #300000;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #0d0618;
+  background: var(--bg);
   color: var(--text);
   font-family: 'EB Garamond', serif;
   min-height: 100vh;
@@ -105,8 +121,9 @@ body {
 .entry-row input:focus { border-color:var(--gold); }
 .entry-row input:disabled { opacity:0.2; }
 
-.btn-gold { width:100%; padding:0.85rem; background:linear-gradient(135deg,#7a5a08,var(--gold-light),#7a5a08); border:none; border-radius:3px; color:#1a0a00; font-family:'Cinzel',serif; font-size:1rem; font-weight:700; letter-spacing:0.15em; cursor:pointer; transition:all 0.2s; text-transform:uppercase; box-shadow:0 4px 18px rgba(201,162,39,0.3); }
+.btn-gold { width:100%; padding:0.85rem; background:linear-gradient(135deg,var(--gold-dark),var(--gold-light),var(--gold-dark)); border:none; border-radius:4px; color:var(--text-dark); font-family:'Cinzel',serif; font-size:1rem; font-weight:700; letter-spacing:0.15em; cursor:pointer; transition:all 0.2s; text-transform:uppercase; box-shadow:0 4px 18px rgba(201,162,39,0.3); }
 .btn-gold:hover { filter:brightness(1.1); transform:translateY(-1px); }
+.btn-secondary { background:linear-gradient(135deg,var(--surface-btn),var(--surface-btn2),var(--surface-btn)); color:var(--text-dim); }
 
 /* ══ FIXED GAME SHELL ══ */
 #game { padding:0; overflow:hidden; position:fixed; inset:0; }
@@ -201,18 +218,18 @@ body {
 .q-sub { font-size:0.55rem; opacity:0.75; display:block; }
 .q-btn.green-q { border-color:var(--green-dim); background:rgba(6,214,160,0.08); color:var(--green); }
 .q-btn.green-q:hover { border-color:var(--green); box-shadow:0 0 14px rgba(6,214,160,0.3); background:rgba(6,214,160,0.14); }
-.q-btn.violet-q { border-color:#7b2fbe; background:rgba(199,125,255,0.08); color:var(--violet-light); }
+.q-btn.violet-q { border-color:var(--violet-dim); background:rgba(199,125,255,0.08); color:var(--violet-light); }
 .q-btn.violet-q:hover { border-color:var(--violet); box-shadow:0 0 14px rgba(199,125,255,0.3); background:rgba(199,125,255,0.14); }
 .q-btn:disabled { opacity:0.35; cursor:not-allowed; }
 
-.btn-next { display:none; padding:0.5rem 1.4rem; background:linear-gradient(135deg,var(--gold-dark),var(--gold-light),var(--gold-dark)); border:none; border-radius:3px; color:#1a0a00; font-family:'Cinzel',serif; font-size:0.8rem; font-weight:700; letter-spacing:0.1em; cursor:pointer; text-transform:uppercase; transition:all 0.2s; white-space:nowrap; }
+.btn-next { display:none; padding:0.5rem 1.4rem; background:linear-gradient(135deg,var(--gold-dark),var(--gold-light),var(--gold-dark)); border:none; border-radius:4px; color:var(--text-dark); font-family:'Cinzel',serif; font-size:0.8rem; font-weight:700; letter-spacing:0.1em; cursor:pointer; text-transform:uppercase; transition:all 0.2s; white-space:nowrap; }
 .btn-next.show { display:block; }
 .btn-next:hover { filter:brightness(1.1); }
 
 .aq-result { display:none; flex:1; padding:0.4rem 0.75rem; border-radius:4px; font-family:'Cinzel',serif; font-size:0.75rem; text-align:center; letter-spacing:0.04em; }
 .aq-result.show { display:block; }
 .aq-result.ok  { background:rgba(0,180,60,0.15); border:1px solid var(--green); color:var(--green); }
-.aq-result.bad { background:rgba(180,0,0,0.15); border:1px solid #cc2222; color:#ff8080; }
+.aq-result.bad { background:rgba(180,0,0,0.15); border:1px solid var(--error); color:var(--error-light); }
 .aq-result.info { background:rgba(201,162,39,0.1); border:1px solid var(--gold-dark); color:var(--gold-light); }
 
 .icon-btn {
@@ -250,8 +267,7 @@ body {
 .popup-result-emoji { font-size:3.5rem; text-align:center; margin-bottom:0.6rem; }
 .popup-btn-next { width:100%; margin-top:1rem; padding:0.65rem; display:block; }
 
-.btn-splash { display:block; width:100%; margin-top:0.5rem; padding:0.75rem; background:linear-gradient(135deg,var(--gold-dark),var(--gold-light),var(--gold-dark)); border:none; border-radius:3px; color:#1a0a00; font-family:'Cinzel',serif; font-size:0.9rem; font-weight:700; letter-spacing:0.15em; cursor:pointer; transition:all 0.2s; text-transform:uppercase; }
-.btn-splash:hover { filter:brightness(1.1); }
+/* .btn-splash defined below with splash-panel styles */
 
 /* TRIVIA in popup */
 .aq-type { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:0.35rem; text-align:center; }
@@ -263,11 +279,11 @@ body {
 .aq-options { display:flex; flex-direction:column; gap:0.4rem; }
 .opt-btn { padding:0.5rem 0.8rem; background:rgba(201,162,39,0.07); border:1px solid var(--gold-dark); border-radius:3px; color:var(--parchment-text); font-family:'EB Garamond',serif; font-size:0.92rem; cursor:pointer; text-align:left; transition:all 0.2s; line-height:1.4; }
 .opt-btn:hover:not(:disabled) { background:rgba(201,162,39,0.18); border-color:var(--gold); }
-.opt-btn.correct { background:rgba(0,180,60,0.25)!important; border-color:var(--green)!important; color:#003010!important; font-weight:600; }
-.opt-btn.wrong   { background:rgba(180,0,0,0.25)!important; border-color:#cc2222!important; color:#300000!important; }
+.opt-btn.correct { background:rgba(0,180,60,0.25)!important; border-color:var(--green)!important; color:var(--correct-text)!important; font-weight:600; }
+.opt-btn.wrong   { background:rgba(180,0,0,0.25)!important; border-color:var(--error)!important; color:var(--wrong-text)!important; }
 .opt-btn:disabled { cursor:default; }
 .opt-btn.selected { background:rgba(201,162,39,0.28); border-color:var(--gold); font-weight:600; box-shadow:0 0 0 2px rgba(201,162,39,0.3); }
-.btn-submit-answer { margin-top:0.6rem; padding:0.55rem 1.2rem; background:var(--gold-dark); border:1px solid var(--gold); border-radius:3px; color:#1a1000; font-family:'EB Garamond',serif; font-size:0.95rem; font-weight:700; cursor:pointer; width:100%; transition:all 0.2s; letter-spacing:0.03em; }
+.btn-submit-answer { margin-top:0.6rem; padding:0.55rem 1.2rem; background:var(--gold-dark); border:1px solid var(--gold); border-radius:4px; color:var(--text-dark); font-family:'EB Garamond',serif; font-size:0.95rem; font-weight:700; cursor:pointer; width:100%; transition:all 0.2s; letter-spacing:0.03em; }
 .btn-submit-answer:disabled { opacity:0.35; cursor:default; }
 .btn-submit-answer:not(:disabled):hover { background:var(--gold); transform:translateY(-1px); }
 
@@ -291,28 +307,28 @@ body {
 .dna-wrap { }
 .dna-strand { display:flex; gap:0.4rem; align-items:center; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; }
 .dna-base { width:38px; height:38px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:'Cinzel',serif; font-size:1.1rem; font-weight:900; border:2px solid; color:#000 !important; }
-.base-A { background:#ff7070; border-color:#cc0000; }
-.base-T { background:#70b8ff; border-color:#0044cc; }
-.base-G { background:#70dd70; border-color:#007700; }
-.base-C { background:#ffd060; border-color:#aa7700; }
+.base-A { background:var(--base-a); border-color:var(--base-a-dark); }
+.base-T { background:var(--base-t); border-color:var(--base-t-dark); }
+.base-G { background:var(--base-g); border-color:var(--base-g-dark); }
+.base-C { background:var(--base-c); border-color:var(--base-c-dark); }
 .dna-connector { color:var(--gold-dark); font-size:1.2rem; }
 
 .comp-slots { display:flex; gap:0.4rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; }
-.comp-slot { width:38px; height:38px; border-radius:6px; border:2px dashed var(--gold-dark); background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-family:'Cinzel',serif; font-size:1.1rem; font-weight:900; transition:all 0.2s; cursor:default; color:#888; }
-.comp-slot.filled-A { background:#ff7070; border-color:#cc0000; border-style:solid; color:#000 !important; }
-.comp-slot.filled-T { background:#70b8ff; border-color:#0044cc; border-style:solid; color:#000 !important; }
-.comp-slot.filled-G { background:#70dd70; border-color:#007700; border-style:solid; color:#000 !important; }
-.comp-slot.filled-C { background:#ffd060; border-color:#aa7700; border-style:solid; color:#000 !important; }
+.comp-slot { width:38px; height:38px; border-radius:6px; border:2px dashed var(--gold-dark); background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-family:'Cinzel',serif; font-size:1.1rem; font-weight:900; transition:all 0.2s; cursor:default; color:var(--text-dim); }
+.comp-slot.filled-A { background:var(--base-a); border-color:var(--base-a-dark); border-style:solid; color:#000 !important; }
+.comp-slot.filled-T { background:var(--base-t); border-color:var(--base-t-dark); border-style:solid; color:#000 !important; }
+.comp-slot.filled-G { background:var(--base-g); border-color:var(--base-g-dark); border-style:solid; color:#000 !important; }
+.comp-slot.filled-C { background:var(--base-c); border-color:var(--base-c-dark); border-style:solid; color:#000 !important; }
 .comp-slot.correct-slot { box-shadow:0 0 10px rgba(0,200,80,0.7); }
 .comp-slot.wrong-slot   { box-shadow:0 0 10px rgba(200,0,0,0.7); }
 
 .base-picker { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; }
-.pick-btn { width:44px; height:44px; border-radius:8px; border:3px solid; font-family:'Cinzel',serif; font-size:1.1rem; font-weight:900; cursor:pointer; transition:all 0.2s; color:#000 !important; }
+.pick-btn { width:44px; height:44px; border-radius:6px; border:2px solid; font-family:'Cinzel',serif; font-size:1.1rem; font-weight:900; cursor:pointer; transition:all 0.2s; color:#000 !important; }
 .pick-btn:hover:not(:disabled) { transform:scale(1.12); filter:brightness(1.1); }
-.pick-A { background:#ff7070; border-color:#cc0000; }
-.pick-T { background:#70b8ff; border-color:#0044cc; }
-.pick-G { background:#70dd70; border-color:#007700; }
-.pick-C { background:#ffd060; border-color:#aa7700; }
+.pick-A { background:var(--base-a); border-color:var(--base-a-dark); }
+.pick-T { background:var(--base-t); border-color:var(--base-t-dark); }
+.pick-G { background:var(--base-g); border-color:var(--base-g-dark); }
+.pick-C { background:var(--base-c); border-color:var(--base-c-dark); }
 .pick-btn:disabled { opacity:0.3; cursor:not-allowed; transform:none !important; }
 
 .dna-progress { font-family:'Cinzel',serif; font-size:0.65rem; color:var(--text-dim); text-align:center; margin-bottom:0.5rem; letter-spacing:0.1em; }
@@ -329,24 +345,24 @@ body {
 .tf-btn { flex:1; padding:0.65rem; border-radius:6px; font-family:'Cinzel',serif; font-size:0.85rem; font-weight:700; cursor:pointer; transition:all 0.2s; border:2px solid; letter-spacing:0.1em; }
 .tf-true  { background:rgba(0,180,60,0.15); border-color:var(--green); color:var(--green); }
 .tf-true:hover  { background:rgba(0,180,60,0.3); }
-.tf-false { background:rgba(180,0,0,0.15); border-color:#cc2222; color:#ff8080; }
+.tf-false { background:rgba(180,0,0,0.15); border-color:var(--error); color:var(--error-light); }
 .tf-false:hover { background:rgba(180,0,0,0.3); }
 .tf-btn:disabled { opacity:0.35; cursor:not-allowed; }
 
 /* ── VOCAB MATCHING ── */
 .vocab-wrap { }
 .vocab-cols { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.75rem; }
-.vocab-term { padding:0.5rem 0.6rem; border-radius:4px; border:2px solid #8a6a00; background:#f5e6c8; font-family:'Cinzel',serif; font-size:0.68rem; font-weight:700; color:#1a0a00 !important; cursor:pointer; transition:all 0.2s; text-align:center; letter-spacing:0.03em; }
-.vocab-term:hover { border-color:#c9a227; background:#fff3d0; }
-.vocab-term.selected { border-color:#c9a227; background:#ffe090; box-shadow:0 0 10px rgba(201,162,39,0.5); color:#1a0a00 !important; }
-.vocab-term.matched  { border-color:#007700; background:#c8f0c8; color:#003300 !important; cursor:default; }
-.vocab-term.wrong-flash { border-color:#cc0000; background:#ffc8c8; color:#330000 !important; }
+.vocab-term { padding:0.5rem 0.6rem; border-radius:4px; border:2px solid var(--gold-dark); background:var(--vocab-term-bg); font-family:'Cinzel',serif; font-size:0.68rem; font-weight:700; color:var(--text-dark) !important; cursor:pointer; transition:all 0.2s; text-align:center; letter-spacing:0.03em; }
+.vocab-term:hover { border-color:var(--gold); background:var(--vocab-term-bg2); }
+.vocab-term.selected { border-color:var(--gold); background:var(--vocab-term-sel); box-shadow:0 0 10px rgba(201,162,39,0.5); color:var(--text-dark) !important; }
+.vocab-term.matched  { border-color:var(--base-g-dark); background:var(--matched-bg); color:var(--matched-text) !important; cursor:default; }
+.vocab-term.wrong-flash { border-color:var(--error); background:var(--wrong-flash-bg); color:var(--wrong-flash-text) !important; }
 
-.vocab-def { padding:0.5rem 0.6rem; border-radius:4px; border:2px solid #5a0080; background:#f0e0ff; font-family:'EB Garamond',serif; font-size:0.82rem; font-weight:700; color:#1a0030 !important; cursor:pointer; transition:all 0.2s; line-height:1.4; }
-.vocab-def:hover { border-color:#9900cc; background:#e8c8ff; }
-.vocab-def.selected { border-color:#9900cc; background:#d8a0ff; box-shadow:0 0 10px rgba(153,0,204,0.4); color:#1a0030 !important; }
-.vocab-def.matched  { border-color:#007700; background:#c8f0c8; color:#003300 !important; cursor:default; }
-.vocab-def.wrong-flash { border-color:#cc0000; background:#ffc8c8; color:#330000 !important; }
+.vocab-def { padding:0.5rem 0.6rem; border-radius:4px; border:2px solid var(--violet-dim); background:var(--vocab-def-bg); font-family:'EB Garamond',serif; font-size:0.82rem; font-weight:700; color:var(--violet-bg) !important; cursor:pointer; transition:all 0.2s; line-height:1.4; }
+.vocab-def:hover { border-color:var(--violet); background:var(--vocab-def-bg2); }
+.vocab-def.selected { border-color:var(--violet); background:var(--vocab-def-sel); box-shadow:0 0 10px rgba(153,0,204,0.4); color:var(--violet-bg) !important; }
+.vocab-def.matched  { border-color:var(--base-g-dark); background:var(--matched-bg); color:var(--matched-text) !important; cursor:default; }
+.vocab-def.wrong-flash { border-color:var(--error); background:var(--wrong-flash-bg); color:var(--wrong-flash-text) !important; }
 
 .vocab-progress { font-family:'Cinzel',serif; font-size:0.65rem; color:var(--text-dim); text-align:center; margin-bottom:0.5rem; letter-spacing:0.1em; }
 
@@ -368,7 +384,7 @@ body {
 .event-card-display.negative { background:linear-gradient(160deg,#1a0000,#0f0000); border-color:var(--red); box-shadow:0 0 24px rgba(200,0,0,0.25); }
 .event-type { font-family:'Cinzel',serif; font-size:0.85rem; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:0.4rem; }
 .positive .event-type { color:var(--green); }
-.negative .event-type { color:#ff8080; }
+.negative .event-type { color:var(--error-light); }
 .event-emoji { font-size:2rem; margin-bottom:0.4rem; }
 .event-name { font-family:'Cinzel',serif; font-size:1.1rem; color:var(--gold-light); margin-bottom:0.5rem; letter-spacing:0.05em; }
 .event-desc { font-family:'EB Garamond',serif; font-size:1.1rem; color:var(--text); line-height:1.5; font-style:italic; }
@@ -381,7 +397,7 @@ body {
 .splash-sub { font-family:'EB Garamond',serif; font-size:0.95rem; color:var(--text-dim); font-style:italic; margin-bottom:1rem; line-height:1.5; }
 .splash-rule { font-family:'Cinzel',serif; font-size:0.95rem; color:var(--text-dim); letter-spacing:0.06em; background:rgba(0,0,0,0.3); border:1px solid var(--gold-dark); border-radius:4px; padding:0.7rem 1rem; margin-bottom:1rem; line-height:1.7; }
 .splash-rule em { color:var(--gold-light); font-style:normal; }
-.btn-splash { width:100%; padding:0.7rem; background:linear-gradient(135deg,var(--gold-dark),var(--gold-light),var(--gold-dark)); border:none; border-radius:3px; color:#1a0a00; font-family:'Cinzel',serif; font-size:0.9rem; font-weight:700; letter-spacing:0.12em; cursor:pointer; text-transform:uppercase; transition:all 0.2s; }
+.btn-splash { display:block; width:100%; margin-top:0.5rem; padding:0.75rem; background:linear-gradient(135deg,var(--gold-dark),var(--gold-light),var(--gold-dark)); border:none; border-radius:4px; color:var(--text-dark); font-family:'Cinzel',serif; font-size:0.9rem; font-weight:700; letter-spacing:0.15em; cursor:pointer; text-transform:uppercase; transition:all 0.2s; }
 .btn-splash:hover { filter:brightness(1.1); transform:translateY(-1px); }
 
 /* ── LOG ── */
@@ -389,8 +405,8 @@ body {
 .log-entries { max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:0.2rem; }
 .log-e { font-family:'EB Garamond',serif; font-size:0.78rem; color:var(--text-dim); padding:0.18rem 0; border-bottom:1px solid rgba(201,162,39,0.06); line-height:1.4; }
 .log-e.hi   { color:var(--gold); }
-.log-e.good { color:#80e899; }
-.log-e.bad  { color:#ff8888; }
+.log-e.good { color:var(--green); }
+.log-e.bad  { color:var(--error-light); }
 .log-e.info { color:var(--cyan); }
 
 /* ── WIN ── */
@@ -458,7 +474,7 @@ body {
           <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--green);margin-bottom:0.3rem;">🟢 GREEN QUESTION</div>
           <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);line-height:1.5;">Basic recall. Answer correctly → move <strong>1 space</strong>.</div>
         </div>
-        <div style="background:rgba(199,125,255,0.08);border:1px solid #7b2fbe;border-radius:6px;padding:0.6rem;">
+        <div style="background:rgba(199,125,255,0.08);border:1px solid var(--violet-dim);border-radius:6px;padding:0.6rem;">
           <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--violet-light);margin-bottom:0.3rem;">🟣 VIOLET QUESTION</div>
           <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);line-height:1.5;">Application & analysis. Answer correctly → move <strong>2 spaces</strong>.</div>
         </div>
@@ -470,7 +486,7 @@ body {
       <div style="display:flex;flex-direction:column;gap:0.4rem;">
         <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">💠</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--green);">CHECKPOINTS</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — Three checkpoint activities: DNA base-pair matching (G1), True/False rapid fire (G2), and vocabulary matching (M). Each has a 30-second timer. Pass or try again next turn.</span></div></div>
         <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">🃏</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--violet-light);">CELL EVENTS</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — Draw a card. Could boost you forward, grant immunity, or set you back. Such is biology.</span></div></div>
-        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">💤</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:#8888cc;">G0 PHASE</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — The resting state. All players start here before entering the active cycle at G1.</span></div></div>
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">💤</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--g0-color);">G0 PHASE</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — The resting state. All players start here before entering the active cycle at G1.</span></div></div>
       </div>
     </div>
 
@@ -480,7 +496,7 @@ body {
     </div>
 
     <div style="display:flex;gap:0.75rem;">
-      <button class="btn-gold" style="flex:1;background:linear-gradient(135deg,#2a2a3a,#3a3a5a,#2a2a3a);color:var(--text-dim);" onclick="showScreen('title')">← Back</button>
+      <button class="btn-gold" style="flex:1;background:linear-gradient(135deg,var(--surface-btn),var(--surface-btn2),var(--surface-btn));color:var(--text-dim);" onclick="showScreen('title')">← Back</button>
       <button class="btn-gold" style="flex:2;" onclick="showScreen('setup')">Ready — Let's Play ✦</button>
     </div>
   </div>
@@ -493,7 +509,7 @@ body {
     <!-- Top row: Study Mode + Relaxed toggle side by side -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;">
       <!-- Study Mode -->
-      <div id="studyModeCard" style="padding:0.7rem 0.9rem;cursor:pointer;transition:all 0.2s;border:2px solid rgba(255,121,198,0.35);border-radius:4px;background:rgba(255,121,198,0.04);" onclick="toggleStudyMode()">
+      <div id="studyModeCard" style="padding:0.7rem 0.9rem;cursor:pointer;transition:all 0.2s;border:1px solid rgba(255,121,198,0.35);border-radius:4px;background:rgba(255,121,198,0.04);" onclick="toggleStudyMode()">
         <div style="display:flex;align-items:center;gap:0.6rem;">
           <span style="font-size:1.5rem;flex-shrink:0;">⚗</span>
           <div style="flex:1;min-width:0;">
@@ -504,15 +520,15 @@ body {
         </div>
       </div>
       <!-- Relaxed Mode -->
-      <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.7rem 0.9rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:0.7rem 0.9rem;">
         <div>
           <div style="font-family:'Cinzel',serif;font-size:0.9rem;color:var(--sky);letter-spacing:0.08em;margin-bottom:0.15rem;">🕊 RELAXED MODE</div>
           <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text-dim);line-height:1.3;">No checkpoint timers — learn at your pace</div>
         </div>
         <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0;margin-left:0.75rem;">
           <input type="checkbox" id="relaxedToggle" style="opacity:0;width:0;height:0;">
-          <span onclick="this.previousElementSibling.click()" style="position:absolute;cursor:pointer;inset:0;background:#2a2a3a;border-radius:22px;transition:0.3s;border:1px solid rgba(255,255,255,0.15);">
-            <span id="relaxedKnob" style="position:absolute;height:16px;width:16px;left:2px;bottom:2px;background:#888;border-radius:50%;transition:0.3s;"></span>
+          <span onclick="this.previousElementSibling.click()" style="position:absolute;cursor:pointer;inset:0;background:var(--surface-btn);border-radius:22px;transition:0.3s;border:1px solid rgba(255,255,255,0.15);">
+            <span id="relaxedKnob" style="position:absolute;height:16px;width:16px;left:2px;bottom:2px;background:var(--text-dim);border-radius:50%;transition:0.3s;"></span>
           </span>
         </label>
       </div>
@@ -717,7 +733,7 @@ body {
       <div class="divider"><span>⬦</span></div>
       <div id="winStats" style="margin-bottom:1rem;"></div>
       <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
-        <button class="btn-gold" style="flex:1;background:linear-gradient(135deg,#2a2a3a,#3a3a5a,#2a2a3a);color:var(--text-dim);font-size:0.85rem;" onclick="showScreen('setup')">⬥ Setup New Game</button>
+        <button class="btn-gold" style="flex:1;background:linear-gradient(135deg,var(--surface-btn),var(--surface-btn2),var(--surface-btn));color:var(--text-dim);font-size:0.85rem;" onclick="showScreen('setup')">⬥ Setup New Game</button>
         <button class="btn-gold" style="flex:1;" onclick="location.reload()">✦ Play Again ✦</button>
       </div>
     </div>
@@ -1235,8 +1251,8 @@ document.getElementById('relaxedToggle').addEventListener('change', function(){
     track.style.borderColor='var(--sky)';
   } else {
     knob.style.transform='translateX(0)';
-    knob.style.background='#888';
-    track.style.background='#2a2a3a';
+    knob.style.background='var(--text-dim)';
+    track.style.background='var(--surface-btn)';
     track.style.borderColor='rgba(255,255,255,0.15)';
   }
 });
