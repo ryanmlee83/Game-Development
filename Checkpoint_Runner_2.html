@@ -2266,7 +2266,7 @@ function handleTrivia(chosen){
   });
   const result = document.getElementById('aqResult');
   if(correct){
-    const spaces = (isCheckpointCard || S.questionType==='green') ? 1 : 2;
+    const spaces = S.questionType==='green' ? 1 : 2;
     setTimeout(()=>{
       closePopup();
       if(isCheckpointCard) cur.checkpointState = null;
