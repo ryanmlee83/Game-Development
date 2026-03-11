@@ -1469,13 +1469,13 @@ function renderGame(){
 
 // ── Node style config per space type ──
 const NODE_STYLE = {
-  'regular':        { fill:'#1a1a3a', stroke:'#74c7ec', strokeW:2.0, r:9.0, labelColor:'#74c7ec',  shape:'circle' },
-  'checkpoint-g1':  { fill:'#0a2a18', stroke:'#06d6a0', strokeW:2.0, r:9.0, labelColor:'#06d6a0',  shape:'circle' },
-  'checkpoint-g2':  { fill:'#2a2a08', stroke:'#f7ff58', strokeW:2.0, r:9.0, labelColor:'#f7ff58',  shape:'circle' },
-  'checkpoint-m':   { fill:'#2a0818', stroke:'#ff6b9d', strokeW:2.0, r:9.0, labelColor:'#ff6b9d',  shape:'circle' },
-  'event':          { fill:'#180a2a', stroke:'#c77dff', strokeW:2.0, r:9.0, labelColor:'#c77dff',  shape:'circle' },
-  'finish':         { fill:'#2a1800', stroke:'#ffd166', strokeW:2.0, r:9.0, labelColor:'#ffd166',  shape:'circle' },
-  'start':          { fill:'#0a0a20', stroke:'#8888cc', strokeW:2.0, r:9.0, labelColor:'#8888cc',  shape:'circle' },
+  'regular':        { fill:'#06d6a0', stroke:'#04a07a', strokeW:1.5, r:9.0, labelColor:'#06d6a0',  shape:'circle' },
+  'checkpoint-g1':  { fill:'#ff4466', stroke:'#cc0033', strokeW:1.5, r:9.0, labelColor:'#ff8099',  shape:'circle' },
+  'checkpoint-g2':  { fill:'#ff4466', stroke:'#cc0033', strokeW:1.5, r:9.0, labelColor:'#ff8099',  shape:'circle' },
+  'checkpoint-m':   { fill:'#ff4466', stroke:'#cc0033', strokeW:1.5, r:9.0, labelColor:'#ff8099',  shape:'circle' },
+  'event':          { fill:'#74c7ec', stroke:'#0099cc', strokeW:1.5, r:9.0, labelColor:'#74c7ec',  shape:'circle' },
+  'finish':         { fill:'#ffd166', stroke:'#b8860b', strokeW:1.5, r:9.0, labelColor:'#ffd166',  shape:'circle' },
+  'start':          { fill:'#c77dff', stroke:'#9933ff', strokeW:1.5, r:9.0, labelColor:'#c77dff',  shape:'circle' },
 };
 
 // ══════════════════════════════════════════════
@@ -1809,99 +1809,6 @@ function renderBoard() {
   });
   svg.appendChild(ringImg);
 
-  // ── Phase diagram in the ellipse interior ──
-  // Ellipse parametric angles from pixel-mapped node positions (Board_black_16.png):
-  // G0≈0°, G1≈13°, G1CP≈46°, S≈77°, G2≈112°, G2CP≈162°,
-  // Prophase≈181°, Metaphase≈218°, MCP≈248°, Anaphase≈283°, Telophase≈334°, Cytokinesis≈346°
-  //
-  // 4 wedges (boundaries = midpoints between adjacent phase nodes):
-  //   G1 Phase   :   6° → 62°   (midpoint G0↔G1 → midpoint G1CP↔S)
-  //   S Phase    :  62° → 95°   (midpoint G1CP↔S → midpoint S↔G2)
-  //   G2 Phase   :  95° → 171°  (midpoint S↔G2 → midpoint G2CP↔Prophase)
-  //   Mitosis    : 171° → 353°  (midpoint G2CP↔Prophase → midpoint Cyto↔G0)
-
-  const G1_start  = 10;
-  const S_start   = 81;
-  const G2_start  = 108;
-  const MIT_start = 170;
-  const MIT_end   = 348;
-
-  const sectors = [
-    {
-      label:'G₁', sub:'Growth',
-      startAng: G1_start, endAng: S_start,
-      fill:'rgba(100,180,255,0.15)', stroke:'rgba(100,180,255,0.50)',
-      textCol:'rgba(140,210,255,0.95)'
-    },
-    {
-      label:'S', sub:'Synthesis',
-      startAng: S_start, endAng: G2_start,
-      fill:'rgba(255,160,80,0.15)', stroke:'rgba(255,180,80,0.50)',
-      textCol:'rgba(255,200,120,0.95)'
-    },
-    {
-      label:'G₂', sub:'Prep',
-      startAng: G2_start, endAng: MIT_start,
-      fill:'rgba(100,220,180,0.15)', stroke:'rgba(100,220,180,0.50)',
-      textCol:'rgba(120,240,200,0.95)'
-    },
-    {
-      label:'Mitosis', sub:'M Phase',
-      startAng: MIT_start, endAng: MIT_end,
-      fill:'rgba(220,80,180,0.15)', stroke:'rgba(220,100,200,0.50)',
-      textCol:'rgba(240,140,220,0.95)'
-    },
-  ];
-
-  // Interior diagram geometry — calibrated from actual RING_NODE_POS pixel positions.
-  // Ring center: x=(271.2+31.1)/2≈151, y=(8.9+148.0)/2≈78.5
-  // Ring outer semi-axes: RX≈120 (S/Anaphase nodes), RY≈69.6 (G0/Prophase nodes)
-  const DIAG_CX = 151, DIAG_CY = 78.5, DIAG_RX = 120, DIAG_RY = 69.6;
-  const IR = 0.86;  // fills to ~inner edge of track
-  function iArc(angleDeg, scale=IR) {
-    const a = (angleDeg - 90) * Math.PI / 180;
-    return { x: DIAG_CX + DIAG_RX * scale * Math.cos(a), y: DIAG_CY + DIAG_RY * scale * Math.sin(a) };
-  }
-
-  const diagramG = svgEl('g', {});
-
-  sectors.forEach(sec => {
-    const steps = 64;
-    const span  = sec.endAng - sec.startAng;
-    const pts   = [`M ${DIAG_CX} ${DIAG_CY}`];
-    for(let s = 0; s <= steps; s++){
-      const p = iArc(sec.startAng + (s/steps)*span);
-      pts.push(`L ${p.x.toFixed(2)} ${p.y.toFixed(2)}`);
-    }
-    pts.push('Z');
-    diagramG.appendChild(svgEl('path', { d: pts.join(' '),
-      fill: sec.fill, stroke: sec.stroke, 'stroke-width':'0.7', 'stroke-linejoin':'round' }));
-
-    // Label placement — nudge Interphase label up, Mitosis label down
-    const midAng  = sec.startAng + span / 2;
-    const lp      = iArc(midAng, IR * 0.56);
-    const sublp   = iArc(midAng, IR * 0.40);
-    diagramG.appendChild(svgTxt(lp.x,    lp.y,    sec.label, { 'font-size':'5.5', 'font-weight':'bold', fill: sec.textCol }));
-    diagramG.appendChild(svgTxt(sublp.x, sublp.y, sec.sub,   { 'font-size':'2.4', fill: sec.textCol, opacity:'0.75' }));
-  });
-
-  // Divider spokes — one at each sector boundary
-  [G1_start, S_start, G2_start, MIT_start, MIT_end].forEach(ang => {
-    const p = iArc(ang, IR);
-    diagramG.appendChild(svgEl('line', { x1:DIAG_CX, y1:DIAG_CY, x2:p.x, y2:p.y,
-      stroke:'rgba(255,255,255,0.22)', 'stroke-width':'0.7' }));
-  });
-
-  // Inner boundary ellipse
-  diagramG.appendChild(svgEl('ellipse', { cx:DIAG_CX, cy:DIAG_CY, rx:(DIAG_RX*IR).toFixed(1), ry:(DIAG_RY*IR).toFixed(1),
-    fill:'none', stroke:'rgba(255,255,255,0.12)', 'stroke-width':'0.5' }));
-
-  // Centre hub
-  diagramG.appendChild(svgEl('circle', { cx:DIAG_CX, cy:DIAG_CY, r:'9',
-    fill:'rgba(8,6,20,0.9)', stroke:'rgba(255,255,255,0.15)', 'stroke-width':'0.5' }));
-  diagramG.appendChild(svgTxt(DIAG_CX, DIAG_CY+0.5, '🧬', { 'font-size':'8' }));
-
-  svg.appendChild(diagramG);
   for(let t=0; t<RING_COUNT; t++){
     const ma = (START_ANGLE + ((t+0.5)/RING_COUNT)*360) % 360;
     const p = ePos(ma);
@@ -1919,10 +1826,9 @@ function renderBoard() {
   const g0 = nodePos(0);
   const g0s = NODE_STYLE['start'];
   svg.appendChild(svgEl('circle', { cx:g0.x, cy:g0.y, r:g0s.r,
-    fill:g0s.fill, stroke:g0s.stroke, 'stroke-width':g0s.strokeW, 'stroke-dasharray':'2 2' }));
-  svg.appendChild(svgTxt(g0.x, g0.y, BOARD[0].emoji, { 'font-size':'4.8' }));
+    fill:g0s.fill, stroke:g0s.stroke, 'stroke-width':g0s.strokeW }));
 
-  _placeLabel(labelLayer, g0, g0s.r, g0.angleDeg, 'G0 (Resting)', BOARD[0].desc, '#8888cc', true);
+  _placeLabel(labelLayer, g0, g0s.r, g0.angleDeg, 'G0 (Resting)', BOARD[0].desc, '#c77dff', true);
 
   if(S.entries) {
     S.entries.filter(e=>e.pos===0).forEach((e,gi,arr) =>
@@ -1963,9 +1869,10 @@ function renderBoard() {
     // Node shape — all spaces are circles
     let node = svgEl('circle', { cx:pos.x, cy:pos.y, r });
     const glowMap = {
-      'finish':'glow-gold', 'checkpoint-g1':'glow-teal',
-      'checkpoint-g2':'glow-yellow', 'checkpoint-m':'glow-pink',
-      'event':'glow-purple'
+      'finish':'glow-gold',
+      'checkpoint-g1':'glow-pink', 'checkpoint-g2':'glow-pink', 'checkpoint-m':'glow-pink',
+      'event':'glow-teal',
+      'start':'glow-purple', 'regular':'glow-teal'
     };
     if(glowMap[sp.type]) node.setAttribute('filter', `url(#${glowMap[sp.type]})`);
     node.setAttribute('fill', style.fill);
@@ -1973,16 +1880,6 @@ function renderBoard() {
     node.setAttribute('stroke-width', style.strokeW * ds);
     svg.appendChild(node);
 
-    // Icon — emoji or custom SVG icon
-    if(sp.emoji === '__DNAP__') {
-      drawDNAPolymerase(svg, pos.x, pos.y, 5.5 * ds);
-    } else if(sp.emoji === '__TRNA__') {
-      drawTRNA(svg, pos.x, pos.y, 5.5 * ds);
-    } else {
-      svg.appendChild(svgTxt(pos.x, pos.y, sp.emoji, {
-        'font-size': (sp.type==='finish' ? 9.75 : 8.25) * ds
-      }));
-    }
 
     // Label
     const nameShort = sp.name.replace(' Phase','').replace(' Checkpoint','★').replace('Cell Event','Event');
