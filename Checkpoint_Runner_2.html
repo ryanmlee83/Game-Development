@@ -468,7 +468,7 @@ body {
     <div class="frame" style="padding:1rem;margin-bottom:0.8rem;"><div class="fc1"></div><div class="fc2"></div>
       <div style="font-family:'Cinzel',serif;font-size:0.9rem;color:var(--gold);letter-spacing:0.15em;margin-bottom:0.6rem;">⬦ SPECIAL SPACES</div>
       <div style="display:flex;flex-direction:column;gap:0.4rem;">
-        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">💠</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--green);">CHECKPOINTS</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — Three checkpoint activities: DNA base-pair matching (G1), True/False rapid fire (G2), and vocabulary matching (M). Each has a 30-second timer. Pass → advance 1 space.</span></div></div>
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">💠</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--green);">CHECKPOINTS</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — Three checkpoint activities: DNA base-pair matching (G1), True/False rapid fire (G2), and vocabulary matching (M). Each has a 30-second timer. Pass or try again next turn.</span></div></div>
         <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">🃏</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--violet-light);">CELL EVENTS</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — Draw a card. Could boost you forward, grant immunity, or set you back. Such is biology.</span></div></div>
         <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">💤</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:#8888cc;">G0 PHASE</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — The resting state. All players start here before entering the active cycle at G1.</span></div></div>
       </div>
@@ -540,7 +540,6 @@ body {
     <!-- Begin button + HTP link -->
     <div style="display:flex;align-items:center;gap:1rem;">
       <button class="btn-gold" style="flex:1;" onclick="startGame(false)">✦ Begin the Division ✦</button>
-      <button style="background:none;border:1px solid var(--gold-dark);color:var(--gold);font-family:'Cinzel',serif;font-size:0.85rem;cursor:pointer;letter-spacing:0.1em;white-space:nowrap;padding:0.5rem 0.75rem;border-radius:3px;" onclick="shuffleTurnOrder()" title="Randomly shuffle player order">🎲 Shuffle</button>
       <button style="background:none;border:none;color:var(--text-dim);font-family:'Cinzel',serif;font-size:0.85rem;cursor:pointer;letter-spacing:0.1em;white-space:nowrap;" onclick="showScreen('howtoplay')">← How to Play</button>
     </div>
 
@@ -2241,7 +2240,7 @@ function handleTrivia(chosen){
   });
   const result = document.getElementById('aqResult');
   if(correct){
-    const spaces = S.questionType==='green' ? 1 : 2;
+    const spaces = (isCheckpointCard || S.questionType==='green') ? 1 : 2;
     setTimeout(()=>{
       closePopup();
       if(isCheckpointCard) cur.checkpointState = null;
