@@ -651,7 +651,7 @@ body {
         <div class="popup-ck-title">30-Second Rapid Fire</div>
         <div class="tf-timer-bar-bg"><div class="tf-timer-bar" id="tfTimerBar" style="width:100%"></div></div>
         <div class="tf-timer-text" id="tfTimerText">30s</div>
-        <div class="tf-score">Correct: <em id="tfCorrect">0</em> / Need: <em>3</em></div>
+        <div class="tf-score">Correct: <em id="tfCorrect">0</em> / Need 3 &nbsp;|&nbsp; Wrong: <em id="tfWrong">0</em> / 3</div>
         <div class="tf-question" id="tfQuestion"></div>
         <div class="tf-btns">
           <button class="tf-btn tf-true" id="tfTrue" onclick="tfAnswer(true)">✓ TRUE</button>
@@ -1076,18 +1076,18 @@ const VIOLET_Q = [
 // ══════════════════════════════════════════════
 const DNA_PAIRS = { A:'T', T:'A', G:'C', C:'G' };
 const DNA_STRANDS = [
-  ['A','T','G','C','A','G'],
-  ['T','A','C','G','T','C'],
-  ['G','C','A','T','G','A'],
-  ['C','G','T','A','C','T'],
-  ['A','G','C','T','A','C'],
-  ['T','C','G','A','T','G'],
-  ['G','A','T','C','G','T'],
-  ['C','T','A','G','C','A'],
-  ['A','A','T','G','C','C'],
-  ['T','T','A','C','G','G'],
-  ['G','G','C','A','T','T'],
-  ['C','C','G','T','A','A'],
+  ['A','T','G','C','A','G','T','C'],
+  ['T','A','C','G','T','C','A','G'],
+  ['G','C','A','T','G','A','C','T'],
+  ['C','G','T','A','C','T','G','A'],
+  ['A','G','C','T','A','C','T','G'],
+  ['T','C','G','A','T','G','A','C'],
+  ['G','A','T','C','G','T','A','C'],
+  ['C','T','A','G','C','A','G','T'],
+  ['A','A','T','G','C','C','G','T'],
+  ['T','T','A','C','G','G','C','A'],
+  ['G','G','C','A','T','T','C','G'],
+  ['C','C','G','T','A','A','G','T'],
 ];
 
 // ══════════════════════════════════════════════
@@ -1143,55 +1143,39 @@ const TF_QUESTIONS = [
 // ══════════════════════════════════════════════
 // VOCAB MATCHING DATA
 // ══════════════════════════════════════════════
-const VOCAB_SETS = [
-  [
-    { term:'Centromere',    def:'Region where sister chromatids are joined together' },
-    { term:'Spindle fiber', def:'Protein structure that pulls chromosomes apart' },
-    { term:'Cytokinesis',   def:'Division of the cytoplasm following mitosis' },
-    { term:'Chromatid',     def:'One half of a duplicated chromosome' },
-  ],
-  [
-    { term:'Kinetochore',   def:'Protein complex where spindle fibers attach on chromosomes' },
-    { term:'Interphase',    def:'Longest phase of the cell cycle; includes DNA replication' },
-    { term:'Anaphase',      def:'Phase when sister chromatids are pulled to opposite poles' },
-    { term:'Cell plate',    def:'New cell wall structure formed in dividing plant cells' },
-  ],
-  [
-    { term:'Prophase',      def:'Chromosomes condense and nuclear envelope breaks down' },
-    { term:'Metaphase',     def:'Chromosomes align at the middle of the cell' },
-    { term:'Telophase',     def:'Nuclear envelopes re-form around separated chromosomes' },
-    { term:'Centriole',     def:'Organelle that helps organize spindle fibers in animal cells' },
-  ],
-  [
-    { term:'Centrosome',    def:'Organelle that organizes the mitotic spindle in animal cells' },
-    { term:'Cleavage furrow', def:'Pinch in the cell membrane that divides animal cells during cytokinesis' },
-    { term:'G1 phase',      def:'First growth phase; cell increases in size and prepares for DNA replication' },
-    { term:'S phase',       def:'Phase in which DNA replication occurs' },
-  ],
-  [
-    { term:'G2 phase',      def:'Second growth phase; cell prepares for mitosis after DNA replication' },
-    { term:'Aneuploidy',    def:'Condition where a cell has an abnormal number of chromosomes' },
-    { term:'Apoptosis',     def:'Programmed cell death that eliminates damaged or unneeded cells' },
-    { term:'G0 phase',      def:'Resting state in which a cell is not actively preparing to divide' },
-  ],
-  [
-    { term:'Microtubule',   def:'Protein fiber that makes up spindle fibers' },
-    { term:'Nucleolus',     def:'Structure inside the nucleus that disappears during prophase' },
-    { term:'Sister chromatids', def:'Two identical copies of a chromosome joined at the centromere' },
-    { term:'Telomere',      def:'Protective cap at the end of a chromosome' },
-  ],
-  [
-    { term:'Mitosis',       def:'Type of cell division producing two genetically identical daughter cells' },
-    { term:'Chromosome',    def:'Structure made of DNA and protein that carries genetic information' },
-    { term:'Cell cycle',    def:'Series of events a cell goes through from formation to division' },
-    { term:'Diploid',       def:'Cell containing two complete sets of chromosomes' },
-  ],
-  [
-    { term:'Checkpoints',   def:'Control points that verify conditions are right before the cell continues dividing' },
-    { term:'Cleavage',      def:'Division of the cytoplasm in animal cells during cytokinesis' },
-    { term:'Tumor',         def:'Mass of cells resulting from uncontrolled cell division' },
-    { term:'Contact inhibition', def:'Normal process by which cells stop dividing when they touch neighboring cells' },
-  ],
+const VOCAB_TERMS = [
+  { term:'Centromere',         def:'Region where sister chromatids are joined together' },
+  { term:'Spindle fiber',      def:'Protein structure that pulls chromosomes apart' },
+  { term:'Cytokinesis',        def:'Division of the cytoplasm following mitosis' },
+  { term:'Chromatid',          def:'One half of a duplicated chromosome' },
+  { term:'Kinetochore',        def:'Protein complex where spindle fibers attach on chromosomes' },
+  { term:'Interphase',         def:'Longest phase of the cell cycle; includes DNA replication' },
+  { term:'Anaphase',           def:'Phase when sister chromatids are pulled to opposite poles' },
+  { term:'Cell plate',         def:'New cell wall structure formed in dividing plant cells' },
+  { term:'Prophase',           def:'Chromosomes condense and nuclear envelope breaks down' },
+  { term:'Metaphase',          def:'Chromosomes align at the middle of the cell' },
+  { term:'Telophase',          def:'Nuclear envelopes re-form around separated chromosomes' },
+  { term:'Centriole',          def:'Organelle that helps organize spindle fibers in animal cells' },
+  { term:'Centrosome',         def:'Organelle that organizes the mitotic spindle in animal cells' },
+  { term:'Cleavage furrow',    def:'Pinch in the cell membrane that divides animal cells during cytokinesis' },
+  { term:'G1 phase',           def:'First growth phase; cell increases in size and prepares for DNA replication' },
+  { term:'S phase',            def:'Phase in which DNA replication occurs' },
+  { term:'G2 phase',           def:'Second growth phase; cell prepares for mitosis after DNA replication' },
+  { term:'Aneuploidy',         def:'Condition where a cell has an abnormal number of chromosomes' },
+  { term:'Apoptosis',          def:'Programmed cell death that eliminates damaged or unneeded cells' },
+  { term:'G0 phase',           def:'Resting state in which a cell is not actively preparing to divide' },
+  { term:'Microtubule',        def:'Protein fiber that makes up spindle fibers' },
+  { term:'Nucleolus',          def:'Structure inside the nucleus that disappears during prophase' },
+  { term:'Sister chromatids',  def:'Two identical copies of a chromosome joined at the centromere' },
+  { term:'Telomere',           def:'Protective cap at the end of a chromosome' },
+  { term:'Mitosis',            def:'Type of cell division producing two genetically identical daughter cells' },
+  { term:'Chromosome',         def:'Structure made of DNA and protein that carries genetic information' },
+  { term:'Cell cycle',         def:'Series of events a cell goes through from formation to division' },
+  { term:'Diploid',            def:'Cell containing two complete sets of chromosomes' },
+  { term:'Checkpoints',        def:'Control points that verify conditions are right before the cell continues dividing' },
+  { term:'Cleavage',           def:'Division of the cytoplasm in animal cells during cytokinesis' },
+  { term:'Tumor',              def:'Mass of cells resulting from uncontrolled cell division' },
+  { term:'Contact inhibition', def:'Normal process by which cells stop dividing when they touch neighboring cells' },
 ];
 
 // ══════════════════════════════════════════════
@@ -1234,7 +1218,7 @@ let S = {
   studyMode:false, relaxedMode:false, colonizeMode:false, colonizeTarget:3,
   dnaTemplate:[], dnaAnswers:[], dnaCurrentSlot:0, dnaLocked:false,
   dnaTimer:null, dnaTimeLeft:30,
-  tfTimer:null, tfTimeLeft:30, tfCorrectCount:0, tfTotalAnswered:0,
+  tfTimer:null, tfTimeLeft:30, tfCorrectCount:0, tfTotalAnswered:0, tfWrongCount:0,
   vocabSet:[], vocabSelectedTerm:null, vocabMatchedCount:0, vocabDefOrder:[],
   vocabTimer:null, vocabTimeLeft:30,
   immuneNext: {},
@@ -1425,7 +1409,7 @@ function startGame(studyMode=false){
   }
   S.current=0; S.turnNumber=1;
   greenDeck=shuffle(GREEN_Q); violetDeck=shuffle(VIOLET_Q);
-  tfDeck=shuffle(TF_QUESTIONS); vocabDeck=shuffle(VOCAB_SETS);
+  tfDeck=shuffle(TF_QUESTIONS); vocabDeck=shuffle(VOCAB_TERMS);
   dnaStrandDeck=shuffle(DNA_STRANDS); eventDeck=shuffle(EVENT_CARDS);
   showScreen('game');
   log(studyMode ? '⚗ Study mode — solo run through the cell cycle!' : 'The mitosis challenge begins!','hi');
@@ -2588,7 +2572,7 @@ function triggerTF(){ showSplash('checkpoint-g2'); }
 function launchTF(){
   document.getElementById('aqType').textContent='⏱️ G2 Checkpoint — True/False Rapid Fire';
   document.getElementById('aqType').className='aq-type checkpoint';
-  S.tfTimeLeft=30; S.tfCorrectCount=0; S.tfTotalAnswered=0;
+  S.tfTimeLeft=30; S.tfCorrectCount=0; S.tfTotalAnswered=0; S.tfWrongCount=0;
   S.answered=false;
   showPanel('tfPanel');
   loadNextTF();
@@ -2607,6 +2591,7 @@ function loadNextTF(){
   document.getElementById('tfTrue').disabled=false;
   document.getElementById('tfFalse').disabled=false;
   document.getElementById('tfCorrect').textContent=S.tfCorrectCount;
+  document.getElementById('tfWrong').textContent=S.tfWrongCount;
 }
 
 function startTFTimer(){
@@ -2626,14 +2611,16 @@ function tfAnswer(val){
   if(S.answered) return;
   const correct=val===S.currentTF.ans;
   if(correct) S.tfCorrectCount++;
+  else S.tfWrongCount++;
   S.tfTotalAnswered++;
   const cur=S.entries[S.current]; cur.totalCount++; if(correct) cur.correctCount++;
   document.getElementById('tfCorrect').textContent=S.tfCorrectCount;
+  document.getElementById('tfWrong').textContent=S.tfWrongCount;
   const btn=val?document.getElementById('tfTrue'):document.getElementById('tfFalse');
   btn.style.filter=correct?'brightness(1.5)':'opacity(0.4)';
   setTimeout(()=>{
     btn.style.filter='';
-    // In relaxed mode, auto-pass once 3 correct reached; otherwise keep going
+    if(S.tfWrongCount>=3){ endTF(); return; }
     if(S.relaxedMode && S.tfCorrectCount>=3){ endTF(); return; }
     if(S.relaxedMode || S.tfTimeLeft>0) loadNextTF();
   },300);
@@ -2657,7 +2644,7 @@ function endTF(){
     autoNextTurn();
   } else {
     result.className='aq-result show bad';
-    result.textContent=`✗ Only ${S.tfCorrectCount} correct — need 3. Turn lost.`;
+    result.textContent=`✗ ${S.tfWrongCount>=3?'3 wrong answers':'Only '+S.tfCorrectCount+' correct'} — checkpoint failed. Turn lost.`;
     log(`✗ ${S.entries[S.current].name} failed the G2 Checkpoint (${S.tfCorrectCount}/${S.tfTotalAnswered}).`,'bad');
     S.entries[S.current].checkpointState = 'blocked';
     autoNextTurn();
@@ -2672,7 +2659,9 @@ function triggerVocab(){ showSplash('checkpoint-m'); }
 function launchVocab(){
   document.getElementById('aqType').textContent='🔬 M Checkpoint — Vocabulary Matching';
   document.getElementById('aqType').className='aq-type checkpoint';
-  S.vocabSet=shuffle([...draw(vocabDeck, VOCAB_SETS)].map(v=>({...v,matched:false})));
+  const picked=[];
+  for(let i=0;i<4;i++) picked.push({...draw(vocabDeck, VOCAB_TERMS), matched:false});
+  S.vocabSet=shuffle(picked);
   S.vocabDefOrder=shuffle(S.vocabSet.map((_,i)=>i)); // fixed display order for defs
   S.vocabSelectedTerm=null; S.vocabMatchedCount=0;
   S.vocabTimeLeft=30;
