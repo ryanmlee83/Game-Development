@@ -2266,20 +2266,24 @@ function askQuestion(type){
   document.getElementById('btnNext').className='btn-next';
   const opts=document.getElementById('aqOptions'); opts.innerHTML='';
   S.selectedOpt = null;
-  S.currentQ.opts.forEach((o,i)=>{ const b=document.createElement('button'); b.className='opt-btn'; b.textContent=`${String.fromCharCode(65+i)}. ${o}`; b.onclick=()=>selectOption(i); opts.appendChild(b); });
+  // Shuffle answer choices and remap the correct-answer index
+  const optIndices = shuffle([0,1,2,3].slice(0, S.currentQ.opts.length));
+  S.shuffledOpts = optIndices.map(i=>S.currentQ.opts[i]);
+  S.shuffledAns = optIndices.indexOf(S.currentQ.ans);
+  S.shuffledOpts.forEach((o,i)=>{ const b=document.createElement('button'); b.className='opt-btn'; b.textContent=`${String.fromCharCode(65+i)}. ${o}`; b.onclick=()=>selectOption(i); opts.appendChild(b); });
   document.getElementById('btnSubmitAnswer').disabled = true;
   showPanel('triviaPanel');
 }
 
 function handleTrivia(chosen){
   if(S.answered) return; S.answered=true;
-  const correct = chosen === S.currentQ.ans;
+  const correct = chosen === S.shuffledAns;
   const cur = S.entries[S.current];
   const isCheckpointCard = cur.checkpointState === 'passed';
   cur.totalCount++; if(correct) cur.correctCount++;
   document.querySelectorAll('.opt-btn').forEach((b,i)=>{
     b.disabled=true;
-    if(i===S.currentQ.ans) b.classList.add('correct');
+    if(i===S.shuffledAns) b.classList.add('correct');
     else if(i===chosen && !correct) b.classList.add('wrong');
   });
   const result = document.getElementById('aqResult');
