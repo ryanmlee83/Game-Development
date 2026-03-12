@@ -554,7 +554,6 @@ body {
     <div style="display:grid;grid-template-columns:1fr auto;gap:0.7rem;align-items:center;">
       <div class="mode-row" style="margin-bottom:0;">
         <button class="mode-btn on" onclick="setMode('individual')" id="modeInd">⚔ Individual</button>
-        <button class="mode-btn" onclick="setMode('teams')" id="modeTeam">🛡 Teams</button>
         <button class="mode-btn" onclick="setMode('colonize')" id="modeColonize">🧫 Colonize!</button>
       </div>
       <div style="display:flex;align-items:center;gap:0.5rem;">
@@ -1328,9 +1327,8 @@ function setColonizeTarget(n){
 function setMode(m){
   S.mode=m;
   document.getElementById('modeInd').classList.toggle('on',m==='individual');
-  document.getElementById('modeTeam').classList.toggle('on',m==='teams');
   document.getElementById('modeColonize').classList.toggle('on',m==='colonize');
-  document.getElementById('countLabel').textContent=m==='teams'?'NUMBER OF TEAMS':'NUMBER OF PLAYERS';
+  document.getElementById('countLabel').textContent='NUMBER OF PLAYERS';
   const ctr = document.getElementById('colonizeTargetRow');
   if(ctr) ctr.style.display = m==='colonize' ? 'flex' : 'none';
   renderEntryInputs();
@@ -1377,7 +1375,7 @@ function renderEntryInputs(){
 
   const el=document.getElementById('entriesList');
   el.innerHTML='';
-  const label=S.mode==='teams'?'Team':'Player';
+  const label='Player';
   for(let i=0;i<6;i++){
     const active = i < numEntries;
     if(!playerTokens[i]) playerTokens[i] = { icon: TOKEN_ICONS[i % TOKEN_ICONS.length], colorIdx: i % TOKEN_COLORS.length };
@@ -1412,8 +1410,8 @@ function renderEntryInputs(){
 
     // Color picker (all players)
     const colorRow = document.createElement('div');
-    colorRow.style.cssText = 'display:flex;align-items:center;gap:0.35rem;padding-left:1.8rem;';
-    colorRow.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:0.75rem;color:var(--text-dim);letter-spacing:0.08em;margin-right:0.2rem;">COLOR</span>`;
+    colorRow.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:0.35rem;padding-left:1.8rem;';
+    colorRow.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:0.75rem;color:var(--text-dim);letter-spacing:0.08em;margin-right:0.2rem;width:100%;flex-basis:100%;">COLOR</span>`;
     TOKEN_COLORS.forEach((tc, ci) => {
       const swatch = document.createElement('button');
       swatch.title = tc.name;
@@ -1460,7 +1458,7 @@ function startGame(studyMode=false){
     S.mode='individual';
   } else {
     for(let i=0;i<numEntries;i++){
-      const name=document.getElementById('en'+i).value.trim()||(S.mode==='teams'?`Team ${i+1}`:`Player ${i+1}`);
+      const name=document.getElementById('en'+i).value.trim()||`Player ${i+1}`;
       const tok = playerTokens[i] || {};
       const col = TOKEN_COLORS[tok.colorIdx ?? i % TOKEN_COLORS.length];
       S.entries.push({name,pos:0,color:col.hex,textColor:col.text,icon:tok.icon||TOKEN_ICONS[i%TOKEN_ICONS.length],immune:false,skipTurn:false,checkpointState:null,correctCount:0,totalCount:0,cells:0});
