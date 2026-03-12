@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HELICHASE — Molecular Adventure</title>
+<style>
+/* =============================================
+   CSS CUSTOM PROPERTIES
+   ============================================= */
+:root {
+  --bg-primary: #050a14;
+  --bg-secondary: #080f20;
+  --panel-bg: rgba(0, 20, 40, 0.85);
+  --panel-border: #00d4ff;
+  --text-primary: #e0f4ff;
+  --text-secondary: #7fc4d4;
+  --accent-glow: #00ffcc;
+  --danger: #ff4466;
+  --success: #00ff88;
+  --base-a: #4CAF50;
+  --base-t: #F44336;
+  --base-c: #2196F3;
+  --base-g: #FFC107;
+  --gold: #ffd700;
+  --font-mono: 'Courier New', Courier, monospace;
+}
+
+/* =============================================
+   RESET & BASE
+   ============================================= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
+
+#game-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* =============================================
+   FADE TRANSITION
+   ============================================= */
+.screen {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0; left: 0;
+  animation: screenFadeIn 0.5s ease forwards;
+}
+
+@keyframes screenFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* =============================================
+   BACKGROUND ORGANELLES (title + general)
+   ============================================= */
+.bg-canvas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.organelle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.07;
+  animation: drift linear infinite alternate;
+}
+
+.organelle.hex {
+  border-radius: 15%;
+  transform: rotate(30deg);
+}
+
+@keyframes drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(var(--dx, 30px), var(--dy, 20px)) scale(var(--ds, 1.08)); }
+}
+
+/* Scanline overlay for title */
+.scanlines::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(0,0,0,0.18) 3px,
+    rgba(0,0,0,0.18) 4px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* =============================================
+   GLOW ANIMATIONS
+   ============================================= */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--panel-border), 0 0 20px rgba(0,212,255,0.3); }
+  50%       { box-shadow: 0 0 16px var(--panel-border), 0 0 40px rgba(0,212,255,0.6); }
+}
+
+@keyframes textGlowPulse {
+  0%, 100% { text-shadow: 0 0 10px var(--accent-glow), 0 0 20px rgba(0,255,204,0.5); }
+  50%       { text-shadow: 0 0 20px var(--accent-glow), 0 0 40px rgba(0,255,204,0.8), 0 0 60px rgba(0,255,204,0.3); }
+}
+
+@keyframes dangerPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--danger), 0 0 20px rgba(255,68,102,0.4); }
+  50%       { box-shadow: 0 0 20px var(--danger), 0 0 50px rgba(255,68,102,0.7); }
+}
+
+@keyframes successPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--success), 0 0 20px rgba(0,255,136,0.4); }
+  50%       { box-shadow: 0 0 20px var(--success), 0 0 50px rgba(0,255,136,0.7); }
+}
+
+@keyframes regionPulse {
+  0%, 100% { opacity: 0.7; filter: drop-shadow(0 0 6px var(--danger)); }
+  50%       { opacity: 1;   filter: drop-shadow(0 0 14px var(--danger)); }
+}
+
+/* =============================================
+   PANELS
+   ============================================= */
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  padding: 16px;
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+.panel-header {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--panel-border);
+  border-bottom: 1px solid rgba(0,212,255,0.3);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.panel-header .bracket {
+  color: var(--accent-glow);
+}
+
+/* =============================================
+   BUTTONS
+   ============================================= */
+.btn {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent-glow);
+  background: rgba(0,255,204,0.08);
+  border: 1px solid var(--accent-glow);
+  padding: 10px 28px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  user-select: none;
+}
+
+.btn:hover {
+  background: rgba(0,255,204,0.18);
+  box-shadow: 0 0 16px var(--accent-glow), 0 0 32px rgba(0,255,204,0.4);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-danger {
+  color: var(--danger);
+  background: rgba(255,68,102,0.08);
+  border-color: var(--danger);
+}
+
+.btn-danger:hover {
+  background: rgba(255,68,102,0.18);
+  box-shadow: 0 0 16px var(--danger);
+}
+
+.btn-sm {
+  font-size: 11px;
+  padding: 6px 16px;
+}
+
+/* =============================================
+   COLLAPSIBLE
+   ============================================= */
+.collapsible-toggle {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--panel-border);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  user-select: none;
+  padding: 4px 0;
+}
+
+.collapsible-toggle .arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+  font-style: normal;
+}
+
+.collapsible-toggle.open .arrow {
+  transform: rotate(90deg);
+}
+
+.collapsible-body {
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.collapsible-body.collapsed {
+  max-height: 0 !important;
+  opacity: 0;
+}
+
+/* =============================================
+   DNA BASES
+   ============================================= */
+.base-A { color: var(--base-a); font-weight: bold; }
+.base-T { color: var(--base-t); font-weight: bold; }
+.base-C { color: var(--base-c); font-weight: bold; }
+.base-G { color: var(--base-g); font-weight: bold; }
+.base-highlight { background: rgba(255,215,0,0.25); border-radius: 2px; }
+
+.codon-block {
+  display: inline-block;
+  margin: 1px 3px;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
+.sequence-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  line-height: 1.6;
+  font-size: 12px;
+}
+
+/* =============================================
+   AMINO ACID BADGES
+   ============================================= */
+.aa-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin: 2px;
+  border: 1px solid rgba(255,255,255,0.2);
+  min-width: 44px;
+}
+
+.aa-badge .aa-name { font-size: 12px; font-weight: bold; }
+.aa-badge .aa-codon { font-size: 9px; opacity: 0.8; letter-spacing: 0.05em; }
+
+/* =============================================
+   FRAGMENT PANELS
+   ============================================= */
+.fragment-panel {
+  background: rgba(0, 15, 35, 0.9);
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  border-radius: 4px;
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  margin-bottom: 12px;
+}
+
+.fragment-panel:hover {
+  border-color: var(--panel-border);
+  box-shadow: 0 0 12px rgba(0,212,255,0.4);
+  transform: scale(1.005);
+}
+
+.fragment-panel.selected {
+  border-color: var(--accent-glow);
+  background: rgba(0, 30, 50, 0.95);
+  box-shadow: 0 0 20px rgba(0,255,204,0.5), inset 0 0 20px rgba(0,255,204,0.05);
+}
+
+.fragment-panel.error {
+  border-color: var(--danger);
+  animation: dangerPulse 0.6s ease-in-out 3;
+}
+
+.fragment-panel.correct-highlight {
+  border-color: var(--gold);
+  box-shadow: 0 0 24px rgba(255,215,0,0.6);
+  animation: successPulse 1s ease-in-out infinite;
+}
+
+.fragment-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--panel-border);
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* =============================================
+   HUD BAR
+   ============================================= */
+.hud-bar {
+  background: rgba(0, 10, 25, 0.92);
+  border-bottom: 1px solid rgba(0,212,255,0.4);
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
+  z-index: 50;
+  position: relative;
+}
+
+.hud-bar .hud-title {
+  color: var(--panel-border);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+}
+
+.hud-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 6px var(--success);
+  animation: textGlowPulse 2s ease-in-out infinite;
+}
+
+.hud-dot.warning { background: #ffaa00; box-shadow: 0 0 6px #ffaa00; }
+.hud-dot.danger  { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+
+/* =============================================
+   ZOOM SCREEN
+   ============================================= */
+.zoom-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  position: relative;
+}
+
+.zoom-rings {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0,212,255,0.4);
+  animation: expandRing 2s ease-out infinite;
+}
+
+@keyframes expandRing {
+  0%   { width: 40px;  height: 40px;  opacity: 0.9; }
+  100% { width: 120vw; height: 120vw; opacity: 0;   }
+}
+
+.zoom-label {
+  position: relative;
+  z-index: 5;
+  text-align: center;
+}
+
+.zoom-label h2 {
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.zoom-label .scale-text {
+  font-size: 48px;
+  letter-spacing: 0.1em;
+  color: var(--panel-border);
+  animation: textGlowPulse 1.5s ease-in-out infinite;
+  margin-bottom: 12px;
+  line-height: 1;
+}
+
+.zoom-label .desc-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.15em;
+  animation: textGlowPulse 2s ease-in-out infinite;
+}
+
+.zoom-progress-bar {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 3px;
+  background: rgba(0,212,255,0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.zoom-progress-fill {
+  height: 100%;
+  background: var(--panel-border);
+  box-shadow: 0 0 8px var(--panel-border);
+  animation: zoomProgressAnim 2.5s linear forwards;
+}
+
+@keyframes zoomProgressAnim {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* =============================================
+   SCAN LINE EFFECT (success)
+   ============================================= */
+.scan-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-sweep::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60px;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,215,0,0.35), transparent);
+  animation: scanSweep 1.5s ease-in-out 3;
+}
+
+@keyframes scanSweep {
+  from { left: -60px; }
+  to   { left: 100%;  }
+}
+
+/* =============================================
+   DOUBLE HELIX (phase2)
+   ============================================= */
+.helix-container {
+  position: relative;
+  width: 120px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.helix-strand {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.helix-node {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  left: 50%;
+  transform-origin: center;
+  animation: helixSpin 3s linear infinite;
+}
+
+@keyframes helixSpin {
+  from { transform: translateX(-50%) rotate(0deg) translateX(40px); }
+  to   { transform: translateX(-50%) rotate(360deg) translateX(40px); }
+}
+
+@keyframes helixUnzip {
+  0%, 100% { stroke-dashoffset: 0; }
+  50%       { stroke-dashoffset: 20; }
+}
+
+/* =============================================
+   TITLE SCREEN SPECIFICS
+   ============================================= */
+.title-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  position: relative;
+}
+
+.title-logo {
+  font-size: clamp(48px, 8vw, 80px);
+  letter-spacing: 0.25em;
+  color: var(--panel-border);
+  animation: textGlowPulse 2.5s ease-in-out infinite;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 5;
+}
+
+.title-subtitle {
+  font-size: 14px;
+  letter-spacing: 0.4em;
+  color: var(--accent-glow);
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 5;
+}
+
+.title-tagline {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  margin-bottom: 48px;
+  text-align: center;
+  max-width: 480px;
+  line-height: 1.8;
+  position: relative;
+  z-index: 5;
+}
+
+.title-version {
+  position: absolute;
+  bottom: 20px;
+  right: 24px;
+  font-size: 10px;
+  color: rgba(127,196,212,0.4);
+  letter-spacing: 0.15em;
+  z-index: 5;
+}
+
+/* =============================================
+   SCENARIO SCREEN
+   ============================================= */
+.scenario-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  grid-template-rows: 1fr auto;
+  height: 100%;
+  gap: 0;
+}
+
+.scenario-left {
+  border-right: 1px solid rgba(0,212,255,0.3);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.scenario-right {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.scenario-footer {
+  grid-column: 1 / -1;
+  background: rgba(0, 10, 25, 0.9);
+  border-top: 1px solid rgba(0,212,255,0.3);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+/* SVG Body */
+.body-svg-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+}
+
+/* =============================================
+   DNA PUZZLE LAYOUT
+   ============================================= */
+.puzzle-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+}
+
+.puzzle-main {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  overflow: hidden;
+}
+
+.puzzle-left {
+  border-right: 1px solid rgba(0,212,255,0.25);
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.puzzle-right {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.puzzle-footer {
+  background: rgba(0, 10, 25, 0.92);
+  border-top: 1px solid rgba(0,212,255,0.3);
+  padding: 12px 20px;
+}
+
+/* =============================================
+   TARGET SEQUENCE DISPLAY
+   ============================================= */
+.target-seq-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.codon-ref-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.codon-ref-item {
+  font-size: 10px;
+  padding: 3px 6px;
+  background: rgba(0,20,40,0.6);
+  border: 1px solid rgba(0,212,255,0.2);
+  border-radius: 2px;
+  color: var(--text-secondary);
+}
+
+.codon-ref-item span { color: var(--panel-border); }
+
+/* =============================================
+   ANALYSIS ERROR
+   ============================================= */
+.error-panel {
+  background: rgba(40, 0, 15, 0.92);
+  border: 1px solid var(--danger);
+  border-radius: 4px;
+  padding: 14px;
+  margin-bottom: 12px;
+  animation: dangerPulse 0.8s ease-in-out 2;
+}
+
+.error-panel .error-header {
+  color: var(--danger);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-panel .error-msg {
+  font-size: 12px;
+  color: #ffaabb;
+  line-height: 1.6;
+}
+
+.hint-panel {
+  background: rgba(0, 20, 50, 0.9);
+  border: 1px solid rgba(0,255,204,0.4);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.hint-panel .hint-header {
+  color: var(--accent-glow);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  margin-bottom: 8px;
+}
+
+/* =============================================
+   SUCCESS TRANSITION
+   ============================================= */
+.success-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  position: relative;
+  gap: 20px;
+}
+
+.success-screen .success-title {
+  font-size: 28px;
+  letter-spacing: 0.3em;
+  color: var(--success);
+  text-shadow: 0 0 20px var(--success), 0 0 40px rgba(0,255,136,0.5);
+  text-transform: uppercase;
+  z-index: 5;
+}
+
+.success-gene-id {
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-shadow: 0 0 10px var(--gold);
+  z-index: 5;
+}
+
+.success-fragment-preview {
+  max-width: 700px;
+  width: 90%;
+  z-index: 5;
+}
+
+.helix-spin-wrap {
+  z-index: 5;
+  text-align: center;
+}
+
+/* =============================================
+   PHASE 2 SCREEN
+   ============================================= */
+.phase2-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  position: relative;
+  gap: 24px;
+}
+
+.phase2-screen .phase-title {
+  font-size: 32px;
+  letter-spacing: 0.25em;
+  color: var(--panel-border);
+  text-transform: uppercase;
+  animation: textGlowPulse 2s ease-in-out infinite;
+  z-index: 5;
+}
+
+.phase2-screen .phase-subtitle {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--text-secondary);
+  z-index: 5;
+}
+
+.phase2-wip {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: rgba(127,196,212,0.35);
+  border: 1px dashed rgba(127,196,212,0.2);
+  padding: 8px 20px;
+  z-index: 5;
+}
+
+.small-hex {
+  position: absolute;
+  width: 20px; height: 20px;
+  border: 1px solid rgba(0,212,255,0.2);
+  border-radius: 3px;
+  transform: rotate(30deg);
+  animation: drift linear infinite alternate;
+  opacity: 0.15;
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 2px; }
+
+/* =============================================
+   MISC UTILITIES
+   ============================================= */
+.glow-text-cyan { color: var(--panel-border); text-shadow: 0 0 8px rgba(0,212,255,0.7); }
+.glow-text-green { color: var(--accent-glow); text-shadow: 0 0 8px rgba(0,255,204,0.7); }
+.glow-text-gold  { color: var(--gold); text-shadow: 0 0 8px rgba(255,215,0,0.7); }
+.mt4 { margin-top: 4px; }
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap8 { gap: 8px; }
+.font-10 { font-size: 10px; }
+.font-11 { font-size: 11px; }
+.font-12 { font-size: 12px; }
+.font-13 { font-size: 13px; }
+.ls-wide { letter-spacing: 0.2em; }
+
+</style>
+</head>
+<body>
+<div id="game-container"></div>
+
+<script>
+/* =============================================
+   DATA MODEL
+   ============================================= */
+const SCENARIOS = [
+  {
+    id: "muscle_repair_001",
+    name: "MUSCLE FIBER DEGRADATION",
+    bodyRegion: "quadriceps",
+    bodyRegionLabel: "Left Quadriceps",
+    scenarioText: "Trauma detected in left quadriceps. Myosin heavy chain protein levels critically low. Locate the MYH2 gene sequence to initiate protein synthesis.",
+    proteinName: "Myosin Heavy Chain II",
+    proteinAbbrev: "MYH2",
+    aminoAcidSequence: ["Met", "Ala", "Leu", "Glu", "Lys"],
+    codonSequence: ["ATG", "GCT", "CTG", "GAA", "AAG"],
+    candidateFragments: [
+      {
+        id: "frag_a",
+        label: "FRAGMENT A",
+        sequence: "TGCAAGATGTTCGACCTGATGCATGCGCTGATAATGCGGAAAAGTCCGTTAAGTCGATG",
+        correctRegionStart: 20,
+        correctRegionEnd: 35,
+        isCorrect: true
+      },
+      {
+        id: "frag_b",
+        label: "FRAGMENT B",
+        sequence: "AATGCCTAGGCTTAAGCGATCGAAGTTACCGGCAATGCAATCCAGGTTAGCGATCGTAA",
+        correctRegionStart: null,
+        correctRegionEnd: null,
+        isCorrect: false
+      },
+      {
+        id: "frag_c",
+        label: "FRAGMENT C",
+        sequence: "CGTTAAGCCTTAGGCATGAATGCCTTGAGAAGTCAATCGGCAATCGATAGCTTAAGCCG",
+        correctRegionStart: null,
+        correctRegionEnd: null,
+        isCorrect: false
+      }
+    ],
+    helpText: "The target amino acid sequence starts with Methionine (Met). In DNA, Methionine is always coded by ATG on the template strand. Look for ATG in each fragment — then check if the next codons match your target sequence: GCT (Ala), CTG (Leu), GAA (Glu), AAG (Lys).",
+    difficulty: ["beginner"]
+  }
+];
+
+const CODON_TABLE = {
+  "ATG": "Met (M) - START",
+  "GCT": "Ala (A)",
+  "GCC": "Ala (A)",
+  "CTG": "Leu (L)",
+  "CTA": "Leu (L)",
+  "GAA": "Glu (E)",
+  "GAG": "Glu (E)",
+  "AAG": "Lys (K)",
+  "AAA": "Lys (K)",
+  "TGT": "Cys (C)",
+  "GGT": "Gly (G)",
+  "TTT": "Phe (F)",
+  "TAA": "STOP",
+  "TAG": "STOP",
+  "TGA": "STOP"
+};
+
+const AA_COLORS = {
+  "Met": "#9c27b0",
+  "Ala": "#2196F3",
+  "Leu": "#009688",
+  "Glu": "#FF5722",
+  "Lys": "#FF9800",
+  "Val": "#4CAF50",
+  "Gly": "#607D8B",
+  "Pro": "#E91E63",
+  "Ser": "#00BCD4",
+  "Thr": "#8BC34A"
+};
+
+/* =============================================
+   GAME STATE MACHINE
+   ============================================= */
+const Game = {
+  state: 'title',
+  currentScenario: null,
+  attempts: 0,
+  selectedFragment: null,
+  errorFragmentId: null,
+  autoAdvanceTimer: null,
+
+  setState(newState) {
+    if (this.autoAdvanceTimer) {
+      clearTimeout(this.autoAdvanceTimer);
+      this.autoAdvanceTimer = null;
+    }
+    this.state = newState;
+    this.render();
+  },
+
+  render() {
+    const gc = document.getElementById('game-container');
+    switch (this.state) {
+      case 'title':               gc.innerHTML = renderTitle();           setupTitleListeners();           break;
+      case 'scenario':            gc.innerHTML = renderScenario();        setupScenarioListeners();        break;
+      case 'zoom_to_cell':        gc.innerHTML = renderZoom('cell');      setupZoomListeners('cell');      break;
+      case 'zoom_to_nucleus':     gc.innerHTML = renderZoom('nucleus');   setupZoomListeners('nucleus');   break;
+      case 'dna_puzzle':          gc.innerHTML = renderDnaPuzzle();       setupPuzzleListeners();          break;
+      case 'dna_success_transition': gc.innerHTML = renderSuccessTransition(); setupSuccessListeners();   break;
+      case 'phase2_placeholder':  gc.innerHTML = renderPhase2();          setupPhase2Listeners();          break;
+    }
+  }
+};
+
+/* =============================================
+   HELPER: renderSequence
+   Wraps each base in a colored span
+   ============================================= */
+function renderSequence(seq, tripletSpacing = false, highlightStart = null, highlightEnd = null) {
+  let html = '';
+  for (let i = 0; i < seq.length; i++) {
+    const base = seq[i];
+    const cls = 'base-' + base;
+    let hlClass = '';
+    if (highlightStart !== null && i >= highlightStart && i < highlightEnd) {
+      hlClass = ' base-highlight';
+    }
+    if (tripletSpacing && i > 0 && i % 3 === 0) {
+      html += '<span class="codon-gap"> </span>';
+    }
+    html += `<span class="${cls}${hlClass}">${base}</span>`;
+  }
+  return html;
+}
+
+function renderSequenceByTriplets(seq, highlightStart = null, highlightEnd = null) {
+  let html = '<div class="sequence-wrap">';
+  for (let i = 0; i < seq.length; i += 3) {
+    const codon = seq.slice(i, i + 3);
+    const isHL = highlightStart !== null && i >= highlightStart && i < highlightEnd;
+    html += `<span class="codon-block${isHL ? ' base-highlight' : ''}">`;
+    for (const base of codon) {
+      html += `<span class="base-${base}">${base}</span>`;
+    }
+    html += '</span>';
+  }
+  html += '</div>';
+  return html;
+}
+
+/* =============================================
+   HELPER: Background organelles
+   ============================================= */
+function renderOrgBg(count = 8, extraClass = '') {
+  const sizes = [80, 120, 180, 60, 200, 100, 150, 90, 70, 220];
+  const colors = ['rgba(0,212,255,1)', 'rgba(0,255,204,1)', 'rgba(100,200,255,1)', 'rgba(0,150,180,1)'];
+  let html = `<div class="bg-canvas ${extraClass}">`;
+  for (let i = 0; i < count; i++) {
+    const size = sizes[i % sizes.length];
+    const color = colors[i % colors.length];
+    const top = Math.random() * 100;
+    const left = Math.random() * 100;
+    const dur = 8 + Math.random() * 14;
+    const dx = (Math.random() - 0.5) * 80;
+    const dy = (Math.random() - 0.5) * 60;
+    const ds = 0.9 + Math.random() * 0.3;
+    const delay = Math.random() * -12;
+    const isHex = i % 3 === 2;
+    html += `<div class="organelle${isHex ? ' hex' : ''}" style="
+      width:${size}px; height:${size}px;
+      top:${top}%; left:${left}%;
+      background:${color};
+      animation-duration:${dur}s;
+      animation-delay:${delay}s;
+      --dx:${dx}px; --dy:${dy}px; --ds:${ds};
+    "></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+/* =============================================
+   HELPER: Small hex bg (phase2)
+   ============================================= */
+function renderSmallHexBg(count = 20) {
+  let html = '<div class="bg-canvas">';
+  for (let i = 0; i < count; i++) {
+    const size = 10 + Math.random() * 30;
+    const top = Math.random() * 100;
+    const left = Math.random() * 100;
+    const dur = 10 + Math.random() * 20;
+    const dx = (Math.random() - 0.5) * 60;
+    const dy = (Math.random() - 0.5) * 40;
+    html += `<div class="small-hex" style="
+      width:${size}px; height:${size}px;
+      top:${top}%; left:${left}%;
+      animation-duration:${dur}s;
+      --dx:${dx}px; --dy:${dy}px;
+    "></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+/* =============================================
+   HELPER: Collapsible wrapper
+   ============================================= */
+function collapsible(id, headerText, bodyContent, startOpen = true) {
+  return `
+  <div class="collapsible-wrap">
+    <div class="collapsible-toggle ${startOpen ? 'open' : ''}" onclick="toggleCollapsible('${id}')">
+      <span class="arrow">▶</span>
+      <span>${headerText}</span>
+    </div>
+    <div class="collapsible-body" id="col-${id}" style="max-height:${startOpen ? '1200px' : '0'}; opacity:${startOpen ? '1' : '0'};">
+      ${bodyContent}
+    </div>
+  </div>`;
+}
+
+function toggleCollapsible(id) {
+  const body = document.getElementById('col-' + id);
+  const toggle = body.previousElementSibling;
+  const isOpen = !body.classList.contains('collapsed');
+  if (isOpen) {
+    body.style.maxHeight = body.scrollHeight + 'px';
+    requestAnimationFrame(() => {
+      body.style.maxHeight = '0';
+      body.style.opacity = '0';
+      toggle.classList.remove('open');
+    });
+    body.classList.add('collapsed');
+  } else {
+    body.classList.remove('collapsed');
+    body.style.maxHeight = '1200px';
+    body.style.opacity = '1';
+    toggle.classList.add('open');
+  }
+}
+
+/* =============================================
+   SVG BODY DIAGRAM
+   ============================================= */
+function renderBodySvg(region) {
+  return `
+  <svg viewBox="0 0 160 320" width="160" height="320" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .body-outline { fill: none; stroke: #00d4ff; stroke-width: 1.5; opacity: 0.5; }
+      .body-fill    { fill: rgba(0,80,120,0.2); }
+      .region-quad  { fill: rgba(255,68,102,0.55); animation: regionPulse 1.8s ease-in-out infinite; }
+      @keyframes regionPulse {
+        0%,100% { opacity:0.6; filter:drop-shadow(0 0 5px #ff4466); }
+        50%     { opacity:1;   filter:drop-shadow(0 0 12px #ff4466); }
+      }
+    </style>
+    <!-- Head -->
+    <ellipse cx="80" cy="22" rx="22" ry="22" class="body-fill body-outline"/>
+    <!-- Neck -->
+    <rect x="72" y="40" width="16" height="14" class="body-fill body-outline"/>
+    <!-- Torso -->
+    <path d="M45,54 Q40,60 38,90 Q36,120 40,140 Q60,148 80,148 Q100,148 120,140 Q124,120 122,90 Q120,60 115,54 Z" class="body-fill body-outline"/>
+    <!-- Left upper arm -->
+    <path d="M45,58 Q30,70 28,100 Q27,115 32,118" class="body-fill body-outline" stroke-width="1.5" fill="none" stroke="#00d4ff" opacity="0.5"/>
+    <ellipse cx="28" cy="88" rx="10" ry="30" transform="rotate(-8,28,88)" class="body-fill body-outline"/>
+    <!-- Right upper arm -->
+    <ellipse cx="132" cy="88" rx="10" ry="30" transform="rotate(8,132,88)" class="body-fill body-outline"/>
+    <!-- Left forearm -->
+    <ellipse cx="22" cy="130" rx="8" ry="24" transform="rotate(15,22,130)" class="body-fill body-outline"/>
+    <!-- Right forearm -->
+    <ellipse cx="138" cy="130" rx="8" ry="24" transform="rotate(-15,138,130)" class="body-fill body-outline"/>
+    <!-- Hips -->
+    <path d="M40,140 Q38,160 42,170 L118,170 Q122,160 120,140 Z" class="body-fill body-outline"/>
+    <!-- LEFT QUAD (highlighted if quadriceps) -->
+    ${region === 'quadriceps' ? `
+    <rect x="42" y="170" width="32" height="70" rx="10" class="region-quad"/>
+    ` : `
+    <ellipse cx="58" cy="205" rx="16" ry="35" class="body-fill body-outline"/>
+    `}
+    <!-- Right quad -->
+    <ellipse cx="102" cy="205" rx="16" ry="35" class="body-fill body-outline"/>
+    <!-- Left knee/shin -->
+    <rect x="44" y="238" width="28" height="50" rx="8" class="body-fill body-outline"/>
+    <!-- Right shin -->
+    <rect x="88" y="238" width="28" height="50" rx="8" class="body-fill body-outline"/>
+    <!-- Left foot -->
+    <ellipse cx="58" cy="294" rx="16" ry="8" class="body-fill body-outline"/>
+    <!-- Right foot -->
+    <ellipse cx="102" cy="294" rx="16" ry="8" class="body-fill body-outline"/>
+    ${region === 'quadriceps' ? `
+    <!-- Label arrow -->
+    <line x1="74" y1="190" x2="10" y2="200" stroke="#ff4466" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="2" y="198" fill="#ff4466" font-size="6" font-family="Courier New">LEFT</text>
+    <text x="2" y="207" fill="#ff4466" font-size="6" font-family="Courier New">QUAD</text>
+    ` : ''}
+  </svg>`;
+}
+
+/* =============================================
+   1. TITLE SCREEN
+   ============================================= */
+function renderTitle() {
+  return `
+  <div class="screen title-screen scanlines">
+    ${renderOrgBg(8)}
+    <div class="title-logo">HELICHASE</div>
+    <div class="title-subtitle">◈ MOLECULAR ADVENTURE ◈</div>
+    <div class="title-tagline">
+      Navigate the living cell.<br>
+      Decode the gene.<br>
+      Repair the body.
+    </div>
+    <button class="btn" id="btn-start" style="font-size:15px; padding:14px 48px; letter-spacing:0.25em;">
+      INITIALIZE SEQUENCE
+    </button>
+    <div class="title-version">Version 0.1 — Phase 1 Prototype</div>
+  </div>`;
+}
+
+function setupTitleListeners() {
+  document.getElementById('btn-start').addEventListener('click', () => {
+    Game.currentScenario = SCENARIOS[0];
+    Game.attempts = 0;
+    Game.selectedFragment = null;
+    Game.setState('scenario');
+  });
+}
+
+/* =============================================
+   2. SCENARIO SCREEN
+   ============================================= */
+function renderScenario() {
+  const sc = Game.currentScenario;
+
+  const aaBadges = sc.aminoAcidSequence.map((aa, i) => {
+    const color = AA_COLORS[aa] || '#607D8B';
+    const codon = sc.codonSequence[i];
+    return `<div class="aa-badge" style="background:${color}22; border-color:${color}88;">
+      <span class="aa-name" style="color:${color}">${aa}</span>
+      <span class="aa-codon">${codon}</span>
+    </div>`;
+  }).join('');
+
+  const proteinDbBody = `
+    <div style="margin-top:8px; font-size:11px; line-height:1.8; color:var(--text-secondary);">
+      <div><span class="glow-text-cyan">NAME:</span> ${sc.proteinName}</div>
+      <div><span class="glow-text-cyan">GENE:</span> ${sc.proteinAbbrev}</div>
+      <div><span class="glow-text-cyan">FUNCTION:</span> Motor protein for muscle contraction</div>
+      <div><span class="glow-text-cyan">LOCATION:</span> Sarcomere thick filament</div>
+      <div><span class="glow-text-cyan">ABUNDANCE:</span> CRITICALLY LOW</div>
+    </div>`;
+
+  return `
+  <div class="screen" style="background:var(--bg-primary);">
+    <div class="hud-bar">
+      <div class="hud-title">[ HELICHASE ] // MISSION BRIEFING</div>
+      <div class="hud-indicator">
+        <div class="hud-dot danger"></div>
+        <span>TRAUMA DETECTED</span>
+      </div>
+    </div>
+    <div class="scenario-layout" style="height:calc(100% - 40px);">
+      <!-- LEFT: Body diagram -->
+      <div class="scenario-left">
+        <div class="panel-header"><span class="bracket">[</span> PATIENT SCAN <span class="bracket">]</span></div>
+        <div class="body-svg-wrap">
+          ${renderBodySvg(sc.bodyRegion)}
+        </div>
+        <div class="panel" style="padding:12px;">
+          <div class="font-10 ls-wide" style="color:var(--text-secondary); margin-bottom:6px;">AFFECTED REGION</div>
+          <div style="color:var(--danger); font-size:13px; letter-spacing:0.15em;">${sc.bodyRegionLabel.toUpperCase()}</div>
+          <div class="font-10" style="color:var(--text-secondary); margin-top:8px; line-height:1.6;">
+            ◈ Protein deficit detected<br>
+            ◈ Gene expression: INACTIVE<br>
+            ◈ Repair protocol: PENDING
+          </div>
+        </div>
+        ${collapsible('prot-db', 'PROTEIN DATABASE', proteinDbBody, false)}
+      </div>
+
+      <!-- RIGHT: Mission briefing -->
+      <div class="scenario-right">
+        <div class="panel-header"><span class="bracket">[</span> MISSION BRIEFING <span class="bracket">]</span></div>
+
+        <div class="panel">
+          <div class="font-10 ls-wide" style="color:var(--text-secondary); margin-bottom:4px;">SCENARIO ID</div>
+          <div style="color:var(--panel-border); font-size:14px; letter-spacing:0.2em;">${sc.name}</div>
+        </div>
+
+        <div class="panel">
+          <div class="font-10 ls-wide" style="color:var(--text-secondary); margin-bottom:8px;">PROTEIN REQUIRED</div>
+          <div style="font-size:20px; letter-spacing:0.2em;">
+            <span class="glow-text-green">${sc.proteinAbbrev}</span>
+            <span style="font-size:12px; color:var(--text-secondary); margin-left:12px;">${sc.proteinName}</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="font-10 ls-wide" style="color:var(--text-secondary); margin-bottom:8px;">MISSION PARAMETERS</div>
+          <div style="font-size:12px; line-height:1.8; color:var(--text-primary);">${sc.scenarioText}</div>
+        </div>
+
+        <div class="panel">
+          <div class="font-10 ls-wide" style="color:var(--text-secondary); margin-bottom:10px;">TARGET AMINO ACID SEQUENCE</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            ${aaBadges}
+          </div>
+          <div class="font-10 mt8" style="color:var(--text-secondary); line-height:1.6;">
+            Corresponding codon sequence:
+            <span style="color:var(--panel-border); letter-spacing:0.1em;">${sc.codonSequence.join(' — ')}</span>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="panel" style="padding:12px; animation:none;">
+            <div class="font-10 ls-wide" style="color:var(--text-secondary); margin-bottom:6px;">OBJECTIVE</div>
+            <div class="font-11" style="color:var(--accent-glow); line-height:1.7;">
+              ◈ Enter cellular environment<br>
+              ◈ Locate cell nucleus<br>
+              ◈ Identify correct DNA fragment<br>
+              ◈ Initiate helicase sequence
+            </div>
+          </div>
+          <div class="panel" style="padding:12px; animation:none;">
+            <div class="font-10 ls-wide" style="color:var(--text-secondary); margin-bottom:6px;">DIFFICULTY</div>
+            <div class="font-11" style="color:var(--success);">BEGINNER</div>
+            <div class="font-10 mt8" style="color:var(--text-secondary);">Codon reference available<br>Scaffolded hints enabled</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="scenario-footer">
+        <div style="font-size:11px; color:var(--text-secondary); letter-spacing:0.1em;">READY TO PROCEED</div>
+        <button class="btn" id="btn-zoom-start">INITIATE ZOOM SEQUENCE &nbsp;▶</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function setupScenarioListeners() {
+  document.getElementById('btn-zoom-start').addEventListener('click', () => {
+    Game.setState('zoom_to_cell');
+  });
+}
+
+/* =============================================
+   3. ZOOM TRANSITIONS
+   ============================================= */
+function renderZoom(type) {
+  const isCell = type === 'cell';
+  const scaleLabel = isCell ? 'x10,000' : 'x100,000';
+  const scaleText  = isCell ? 'ORGANISM → CELLULAR' : 'CELLULAR → NUCLEAR';
+  const desc       = isCell ? 'Entering cellular environment...' : 'Approaching nucleus...';
+  const sub        = isCell ? 'Navigating cytoplasm. Locating target cell.' : 'Nuclear membrane breach imminent.';
+
+  const rings = Array.from({length: 6}, (_, i) =>
+    `<div class="ring" style="animation-delay:${i * 0.4}s; border-color:rgba(0,${180 + i*10},${220+i*5},0.5);"></div>`
+  ).join('');
+
+  return `
+  <div class="screen zoom-screen" style="background:var(--bg-primary);">
+    ${renderOrgBg(5)}
+    <div class="zoom-rings">${rings}</div>
+    <div class="zoom-label">
+      <h2>[ SCALE: ${scaleText} ]</h2>
+      <div class="scale-text">${scaleLabel}</div>
+      <div class="desc-text">${desc}</div>
+      <div class="desc-text mt8" style="font-size:10px; opacity:0.7;">${sub}</div>
+    </div>
+    <div class="zoom-progress-bar">
+      <div class="zoom-progress-fill"></div>
+    </div>
+    <div style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); font-size:10px; color:rgba(127,196,212,0.4); letter-spacing:0.25em;">
+      AUTO-ADVANCING...
+    </div>
+  </div>`;
+}
+
+function setupZoomListeners(type) {
+  const next = type === 'cell' ? 'zoom_to_nucleus' : 'dna_puzzle';
+  Game.autoAdvanceTimer = setTimeout(() => {
+    Game.setState(next);
+  }, 2500);
+}
+
+/* =============================================
+   4. DNA PUZZLE SCREEN
+   ============================================= */
+function renderDnaPuzzle() {
+  const sc = Game.currentScenario;
+
+  // Target sequence panel
+  const aaBadges = sc.aminoAcidSequence.map((aa, i) => {
+    const color = AA_COLORS[aa] || '#607D8B';
+    const codon = sc.codonSequence[i];
+    return `<div class="aa-badge" style="background:${color}22; border-color:${color}88; margin:2px;">
+      <span class="aa-name" style="color:${color}; font-size:11px;">${aa}</span>
+      <span class="aa-codon">${codon}</span>
+    </div>`;
+  }).join('');
+
+  const targetSeqHtml = renderSequenceByTriplets(sc.codonSequence.join(''));
+
+  const targetPanelBody = `
+    <div style="margin-top:6px;">
+      <div class="font-10 ls-wide" style="color:var(--text-secondary); margin-bottom:6px;">PROTEIN: <span class="glow-text-cyan">${sc.proteinAbbrev}</span></div>
+      <div style="display:flex; flex-wrap:wrap;">${aaBadges}</div>
+      <div class="font-10 ls-wide mt8" style="color:var(--text-secondary); margin-bottom:4px;">BASE SEQUENCE:</div>
+      ${targetSeqHtml}
+    </div>`;
+
+  // Codon reference panel
+  const relevantCodons = sc.codonSequence;
+  const codonRefItems = relevantCodons.map(c =>
+    `<div class="codon-ref-item"><span>${c}</span> = ${CODON_TABLE[c] || '?'}</div>`
+  ).join('');
+
+  const codonRefBody = `
+    <div class="codon-ref-grid mt4">
+      ${codonRefItems}
+      <div class="codon-ref-item"><span>TAA</span> = ${CODON_TABLE["TAA"]}</div>
+      <div class="codon-ref-item"><span>TGA</span> = ${CODON_TABLE["TGA"]}</div>
+    </div>
+    <div class="font-10 mt8" style="color:rgba(127,196,212,0.5); line-height:1.6;">
+      Codons read 5'→3' on coding strand.<br>
+      ATG = START / Methionine in all cases.
+    </div>`;
+
+  // Fragment panels
+  const errorId = Game.errorFragmentId;
+  const selectedId = Game.selectedFragment;
+  const fragPanels = sc.candidateFragments.map(frag => {
+    const isSelected = frag.id === selectedId;
+    const isError    = frag.id === errorId;
+    let cls = 'fragment-panel';
+    if (isSelected) cls += ' selected';
+    if (isError)    cls += ' error';
+    const seqHtml = renderSequenceByTriplets(frag.sequence);
+    return `
+    <div class="${cls}" id="${frag.id}" data-id="${frag.id}">
+      <div class="fragment-label">
+        <span>${frag.label}</span>
+        <span style="color:var(--text-secondary); font-size:9px;">${frag.sequence.length} bp</span>
+      </div>
+      <div style="font-size:11px; line-height:1.5;">${seqHtml}</div>
+    </div>`;
+  }).join('');
+
+  // Error/hint panels
+  let errorHintHtml = '';
+  if (Game.attempts === 1) {
+    errorHintHtml = `
+    <div class="error-panel">
+      <div class="error-header">⚠ ANALYSIS ERROR — SEQUENCE MISMATCH</div>
+      <div class="error-msg">The selected fragment does not contain the complete target sequence. Protein synthesis cannot proceed.</div>
+    </div>
+    <div class="hint-panel">
+      <div class="hint-header">[ HINT — LEVEL 1 ]</div>
+      ${sc.helpText}
+    </div>`;
+  } else if (Game.attempts >= 2) {
+    const atgHighlights = sc.candidateFragments.map(f => {
+      const idx = f.sequence.indexOf('ATG');
+      return `<span class="glow-text-cyan">${f.label}:</span> ATG found at position ${idx >= 0 ? idx : 'NOT FOUND'}`;
+    }).join('<br>');
+    errorHintHtml = `
+    <div class="error-panel">
+      <div class="error-header">⚠ ANALYSIS ERROR — ATTEMPT ${Game.attempts}</div>
+      <div class="error-msg">Sequence verification failed. Reviewing ATG start positions...</div>
+    </div>
+    <div class="hint-panel">
+      <div class="hint-header">[ HINT — LEVEL 2: ATG SCAN COMPLETE ]</div>
+      <div style="line-height:1.8;">
+        ${atgHighlights}<br>
+        <span style="color:var(--accent-glow);">Now check: which fragment's ATG is followed by GCT CTG GAA AAG?</span>
+      </div>
+    </div>`;
+  }
+
+  return `
+  <div class="screen puzzle-layout" style="background:var(--bg-primary);">
+    <!-- HUD -->
+    <div class="hud-bar">
+      <div class="hud-title">[ DNA SEQUENCE ANALYSIS ] // ${sc.name}</div>
+      <div style="display:flex; gap:20px; align-items:center;">
+        <div class="hud-indicator">
+          <div class="hud-dot ${Game.attempts === 0 ? '' : Game.attempts === 1 ? 'warning' : 'danger'}"></div>
+          <span>ATTEMPTS: ${Game.attempts}</span>
+        </div>
+        <div class="hud-indicator">
+          <div class="hud-dot"></div>
+          <span>GENE: ${sc.proteinAbbrev}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN AREA -->
+    <div class="puzzle-main">
+      <!-- LEFT COLUMN -->
+      <div class="puzzle-left">
+        <div class="panel-header"><span class="bracket">[</span> TARGET SEQUENCE <span class="bracket">]</span></div>
+        ${collapsible('target-seq', 'TARGET GENE DATA', targetPanelBody, true)}
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="puzzle-right">
+        <div class="panel-header" style="margin-bottom:14px;"><span class="bracket">[</span> SEQUENCE ANALYSIS FIELD — SELECT THE FRAGMENT CONTAINING THE TARGET GENE <span class="bracket">]</span></div>
+
+        ${errorHintHtml}
+
+        <div id="fragment-list">
+          ${fragPanels}
+        </div>
+
+        <div style="margin-top:12px; display:flex; align-items:center; gap:16px;">
+          <button class="btn" id="btn-analyze" ${selectedId ? '' : 'disabled style="opacity:0.4; cursor:not-allowed;"'}>
+            ▶ ANALYZE SELECTION
+          </button>
+          ${selectedId ? `<span class="font-11" style="color:var(--text-secondary);">SELECTED: ${selectedId.toUpperCase().replace('_',' ')}</span>` : `<span class="font-11" style="color:rgba(127,196,212,0.4);">No fragment selected</span>`}
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER: Codon reference -->
+    <div class="puzzle-footer">
+      ${collapsible('codon-ref', 'CODON REFERENCE TABLE', codonRefBody, false)}
+    </div>
+  </div>`;
+}
+
+function setupPuzzleListeners() {
+  // Fragment selection
+  document.querySelectorAll('.fragment-panel').forEach(panel => {
+    panel.addEventListener('click', () => {
+      Game.selectedFragment = panel.dataset.id;
+      Game.errorFragmentId = null;
+      Game.render();
+    });
+  });
+
+  const analyzeBtn = document.getElementById('btn-analyze');
+  if (analyzeBtn) {
+    analyzeBtn.addEventListener('click', () => {
+      const sc = Game.currentScenario;
+      const frag = sc.candidateFragments.find(f => f.id === Game.selectedFragment);
+      if (!frag) return;
+      if (frag.isCorrect) {
+        Game.setState('dna_success_transition');
+      } else {
+        Game.attempts++;
+        Game.errorFragmentId = frag.id;
+        Game.render();
+      }
+    });
+  }
+}
+
+/* =============================================
+   5. DNA SUCCESS TRANSITION
+   ============================================= */
+function renderSuccessTransition() {
+  const sc = Game.currentScenario;
+  const correctFrag = sc.candidateFragments.find(f => f.isCorrect);
+  const hs = correctFrag.correctRegionStart;
+  const he = correctFrag.correctRegionEnd;
+
+  // Build sequence with highlight
+  let seqHtml = '<div class="sequence-wrap" style="font-size:12px;">';
+  for (let i = 0; i < correctFrag.sequence.length; i += 3) {
+    const codon = correctFrag.sequence.slice(i, i + 3);
+    const isHL = i >= hs && i < he;
+    seqHtml += `<span class="codon-block${isHL ? ' base-highlight' : ''}${isHL ? ' glow-text-gold' : ''}">`;
+    for (const base of codon) {
+      seqHtml += `<span class="base-${base}">${base}</span>`;
+    }
+    seqHtml += '</span>';
+  }
+  seqHtml += '</div>';
+
+  const helixSvg = renderHelixSvg();
+
+  return `
+  <div class="screen success-screen" style="background:var(--bg-primary);">
+    ${renderOrgBg(6)}
+    <div class="success-title">◈ TARGET SEQUENCE LOCATED ◈</div>
+    <div class="success-gene-id" style="letter-spacing:0.3em;">GENE IDENTIFIED: ${sc.proteinAbbrev} — ${sc.proteinName.toUpperCase()}</div>
+
+    <div class="success-fragment-preview panel scan-sweep" style="animation:glowPulse 1.5s ease-in-out infinite;">
+      <div class="fragment-label correct-label" style="color:var(--gold); margin-bottom:10px; font-size:10px; letter-spacing:0.2em;">
+        ▶ ${correctFrag.label} — MATCH CONFIRMED
+      </div>
+      ${seqHtml}
+      <div class="font-10 mt8" style="color:var(--gold);">
+        Highlighted region: positions ${hs}–${he} | Codons: ${sc.codonSequence.join(' ')}
+      </div>
+    </div>
+
+    <div class="helix-spin-wrap">
+      <div style="color:var(--accent-glow); font-size:11px; letter-spacing:0.25em; margin-bottom:16px; animation:textGlowPulse 1.5s ease-in-out infinite;">
+        INITIATING HELICASE SEQUENCE...
+      </div>
+      ${helixSvg}
+    </div>
+
+    <div style="font-size:10px; color:rgba(127,196,212,0.5); letter-spacing:0.2em; z-index:5;">
+      AUTO-ADVANCING TO MOLECULAR SCALE...
+    </div>
+  </div>`;
+}
+
+function renderHelixSvg() {
+  const nodes = [];
+  const count = 12;
+  for (let i = 0; i < count; i++) {
+    const t = (i / count) * Math.PI * 2;
+    const delay = (i / count) * 3;
+    const x1 = 60 + Math.cos(t) * 30;
+    const y1 = 10 + i * 15;
+    const x2 = 60 - Math.cos(t) * 30;
+    const y2 = 10 + i * 15;
+    const colors = ['#4CAF50','#F44336','#2196F3','#FFC107'];
+    const c1 = colors[i % 4];
+    const c2 = colors[(i + 2) % 4];
+    nodes.push(`
+      <circle cx="${x1}" cy="${y1}" r="5" fill="${c1}" opacity="0.85" style="filter:drop-shadow(0 0 4px ${c1});">
+        <animateTransform attributeName="transform" type="rotate" from="0 60 ${y1}" to="360 60 ${y1}" dur="3s" begin="${delay * 0.1}s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="${x2}" cy="${y2}" r="5" fill="${c2}" opacity="0.85" style="filter:drop-shadow(0 0 4px ${c2});">
+        <animateTransform attributeName="transform" type="rotate" from="360 60 ${y2}" to="0 60 ${y2}" dur="3s" begin="${delay * 0.1}s" repeatCount="indefinite"/>
+      </circle>
+      <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+    `);
+  }
+  return `<svg viewBox="0 0 120 ${10 + count * 15 + 10}" width="120" height="${10 + count * 15 + 10}" xmlns="http://www.w3.org/2000/svg">
+    ${nodes.join('')}
+  </svg>`;
+}
+
+function setupSuccessListeners() {
+  Game.autoAdvanceTimer = setTimeout(() => {
+    Game.setState('phase2_placeholder');
+  }, 3500);
+}
+
+/* =============================================
+   6. PHASE 2 PLACEHOLDER
+   ============================================= */
+function renderPhase2() {
+  const dnaHelix = renderLargeHelixSvg();
+  return `
+  <div class="screen phase2-screen" style="background:var(--bg-primary);">
+    ${renderSmallHexBg(25)}
+    <div class="phase-title">PHASE 2: HELICASE ACTIVATION</div>
+    <div class="phase-subtitle">◈ Molecular unwinding sequence initialized... ◈</div>
+    <div style="z-index:5; text-align:center;">
+      ${dnaHelix}
+    </div>
+    <div style="z-index:5; text-align:center; max-width:500px;">
+      <div style="font-size:13px; color:var(--text-secondary); letter-spacing:0.1em; line-height:1.8; margin-bottom:16px;">
+        Helicase enzyme approaching target site...<br>
+        <span style="color:var(--panel-border);">Double helix unwinding at ${Game.currentScenario?.proteinAbbrev || 'MYH2'} locus.</span><br>
+        Replication fork formation: <span style="color:var(--accent-glow);">INITIATED</span>
+      </div>
+      <div class="phase2-wip">[ PHASE 2 CONTENT IN DEVELOPMENT ]</div>
+    </div>
+    <button class="btn" id="btn-return-title" style="z-index:5; margin-top:8px;">↩ RETURN TO TITLE</button>
+  </div>`;
+}
+
+function renderLargeHelixSvg() {
+  const count = 16;
+  const nodes = [];
+  for (let i = 0; i < count; i++) {
+    const t = (i / count) * Math.PI * 2;
+    const y = 20 + i * 18;
+    const x1 = 80 + Math.cos(t) * 50;
+    const x2 = 80 - Math.cos(t) * 50;
+    const colors = ['#4CAF50','#F44336','#2196F3','#FFC107'];
+    const c1 = colors[i % 4];
+    const c2 = colors[(i + 2) % 4];
+    const isUnzipped = i >= count * 0.6;
+    const sepX1 = isUnzipped ? x1 + (i - count * 0.6) * 4 : x1;
+    const sepX2 = isUnzipped ? x2 - (i - count * 0.6) * 4 : x2;
+    if (!isUnzipped) {
+      nodes.push(`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="rgba(0,212,255,0.25)" stroke-width="1.5" stroke-dasharray="4,3"/>`);
+    }
+    nodes.push(`
+      <circle cx="${sepX1}" cy="${y}" r="6" fill="${c1}" style="filter:drop-shadow(0 0 5px ${c1});">
+        <animate attributeName="cy" values="${y};${y-3};${y}" dur="${2 + i*0.1}s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="${sepX2}" cy="${y}" r="6" fill="${c2}" style="filter:drop-shadow(0 0 5px ${c2});">
+        <animate attributeName="cy" values="${y};${y+3};${y}" dur="${2 + i*0.1}s" repeatCount="indefinite"/>
+      </circle>`);
+  }
+  const height = 20 + count * 18 + 20;
+  return `<svg viewBox="0 0 160 ${height}" width="160" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    ${nodes.join('')}
+    <text x="80" y="${height - 4}" text-anchor="middle" fill="rgba(0,212,255,0.5)" font-size="8" font-family="Courier New">HELICASE ACTIVE</text>
+  </svg>`;
+}
+
+function setupPhase2Listeners() {
+  document.getElementById('btn-return-title').addEventListener('click', () => {
+    Game.currentScenario = null;
+    Game.attempts = 0;
+    Game.selectedFragment = null;
+    Game.setState('title');
+  });
+}
+
+/* =============================================
+   INIT
+   ============================================= */
+Game.render();
+</script>
+</body>
+</html>
