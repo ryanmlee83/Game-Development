@@ -178,7 +178,6 @@ body {
   overflow: hidden;
 }
 #boardSVG { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; z-index:1; }
-#cellCanvas { display:none; }
 
 /* RIGHT SIDEBAR */
 .game-sidebar {
@@ -264,7 +263,6 @@ body {
 .popup-rule { font-family:'EB Garamond',serif; font-size:1.15rem; color:var(--text); text-align:center; line-height:1.65; margin-bottom:1.2rem; }
 .popup-ck-title { font-family:'Cinzel',serif; font-size:0.68rem; color:var(--gold); letter-spacing:0.1em; text-align:center; margin-bottom:0.5rem; text-transform:uppercase; }
 .popup-ck-sub { font-family:'Cinzel',serif; font-size:0.6rem; color:var(--text-dim); text-align:center; margin-bottom:0.4rem; }
-.popup-result-emoji { font-size:3.5rem; text-align:center; margin-bottom:0.6rem; }
 .popup-btn-next { width:100%; margin-top:1rem; padding:0.65rem; display:block; }
 
 /* .btn-splash defined below with splash-panel styles */
@@ -402,7 +400,6 @@ body {
 /* ── SPLASH SCREEN ── */
 .splash-panel { text-align:center; padding:1.5rem 1rem; animation:splashIn 0.35s ease; }
 @keyframes splashIn { from{transform:scale(0.85);opacity:0;} to{transform:scale(1);opacity:1;} }
-.splash-emoji { font-size:3rem; margin-bottom:0.6rem; }
 .splash-title { font-family:'Cinzel Decorative',serif; font-size:1.1rem; color:var(--gold-light); text-shadow:0 0 20px rgba(201,162,39,0.5); margin-bottom:0.4rem; letter-spacing:0.05em; }
 .splash-sub { font-family:'EB Garamond',serif; font-size:0.95rem; color:var(--text-dim); font-style:italic; margin-bottom:1rem; line-height:1.5; }
 .splash-rule { font-family:'Cinzel',serif; font-size:0.95rem; color:var(--text-dim); letter-spacing:0.06em; background:rgba(0,0,0,0.3); border:1px solid var(--gold-dark); border-radius:4px; padding:0.7rem 1rem; margin-bottom:1rem; line-height:1.7; }
@@ -610,7 +607,6 @@ body {
       <!-- BOARD -->
       <div class="board-frame frame"><div class="fc1"></div><div class="fc2"></div>
         <div class="circular-board-container" id="boardContainer">
-          <canvas id="cellCanvas"></canvas>
           <svg id="boardSVG" viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
       </div>
@@ -706,14 +702,6 @@ body {
         </div>
         <div class="aq-result" id="eventResult"></div>
         <button class="btn-next popup-btn-next" id="btnEventNext" style="display:none">OK</button>
-      </div>
-
-      <!-- RESULT popup (standalone correct/wrong feedback) -->
-      <div id="resultPanel" style="display:none">
-        <div class="popup-result-emoji" id="resultEmoji"></div>
-        <div class="popup-title" id="resultTitle"></div>
-        <div class="popup-sub" id="resultSub"></div>
-        <button class="btn-next popup-btn-next" id="btnResultNext" onclick="closePopup()">⟶ Continue</button>
       </div>
 
     </div><!-- end popup-box -->
@@ -838,31 +826,22 @@ function startWinConfetti(){
 }
 // ══════════════════════════════════════════════
 const BOARD = [
-  { id:'g0',    name:'G0 Phase',       emoji:'💤', type:'regular',       tag:'START',      desc:'Cell exits cycle, awaits signal' },
-  { id:'g1',    name:'G1 Phase',       emoji:'🔵', type:'regular',       tag:'INTERPHASE', desc:'Cell grows, makes proteins' },
-  { id:'ev-g1', name:'Cell Event',     emoji:'🃏', type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
-  { id:'cp-g1', name:'G1 Checkpoint',  emoji:'🧬', type:'checkpoint-g1', tag:'CHECKPOINT', desc:'DNA integrity verified before S phase' },
-  { id:'s',     name:'S Phase',        emoji:'__DNAP__', type:'regular',       tag:'INTERPHASE', desc:'DNA fully replicated, chromosomes doubled' },
-  { id:'g2',    name:'G2 Phase',       emoji:'⚡', type:'regular',       tag:'INTERPHASE', desc:'Cell preps organelles for division' },
-  { id:'ev-g2', name:'Cell Event',     emoji:'🃏', type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
-  { id:'cp-g2', name:'G2 Checkpoint',  emoji:'⏱️', type:'checkpoint-g2', tag:'CHECKPOINT', desc:'Replication errors caught here' },
-  { id:'pro',   name:'Prophase',       emoji:'🌀', type:'regular',       tag:'MITOSIS',    desc:'Chromosomes condense, spindle forms' },
-  { id:'ev1',   name:'Cell Event',     emoji:'🃏', type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
-  { id:'meta',  name:'Metaphase',      emoji:'📐', type:'regular',       tag:'MITOSIS',    desc:'Chromosomes align at cell plate' },
-  { id:'cp-m',  name:'M Checkpoint',   emoji:'🔬', type:'checkpoint-m',  tag:'CHECKPOINT', desc:'Spindle must attach before division' },
-  { id:'ana',   name:'Anaphase',       emoji:'↔️', type:'regular',       tag:'MITOSIS',    desc:'Sister chromatids pulled to poles' },
-  { id:'ev2',   name:'Cell Event',     emoji:'🃏', type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
-  { id:'telo',  name:'Telophase',      emoji:'🔴', type:'regular',       tag:'MITOSIS',    desc:'Nuclear envelopes re-form around chromosomes' },
-  { id:'cyto',  name:'Cytokinesis',    emoji:'✂️', type:'finish',        tag:'FINISH',     desc:'Cytoplasm splits — two daughter cells!' },
-];
-
-const PAWN_COLORS = [
-  ['#ff2d78','#fff'],   // hot magenta
-  ['#00f5a0','#000'],   // electric mint
-  ['#ffb800','#000'],   // vivid amber
-  ['#00cfff','#000'],   // sky cyan
-  ['#bf5fff','#fff'],   // bright purple
-  ['#ff6b35','#fff'],   // vivid orange
+  { id:'g0',    name:'G0 Phase',       type:'regular',       tag:'START',      desc:'Cell exits cycle, awaits signal' },
+  { id:'g1',    name:'G1 Phase',       type:'regular',       tag:'INTERPHASE', desc:'Cell grows, makes proteins' },
+  { id:'ev-g1', name:'Cell Event',     type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
+  { id:'cp-g1', name:'G1 Checkpoint',  type:'checkpoint-g1', tag:'CHECKPOINT', desc:'DNA integrity verified before S phase' },
+  { id:'s',     name:'S Phase',        type:'regular',       tag:'INTERPHASE', desc:'DNA fully replicated, chromosomes doubled' },
+  { id:'g2',    name:'G2 Phase',       type:'regular',       tag:'INTERPHASE', desc:'Cell preps organelles for division' },
+  { id:'ev-g2', name:'Cell Event',     type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
+  { id:'cp-g2', name:'G2 Checkpoint',  type:'checkpoint-g2', tag:'CHECKPOINT', desc:'Replication errors caught here' },
+  { id:'pro',   name:'Prophase',       type:'regular',       tag:'MITOSIS',    desc:'Chromosomes condense, spindle forms' },
+  { id:'ev1',   name:'Cell Event',     type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
+  { id:'meta',  name:'Metaphase',      type:'regular',       tag:'MITOSIS',    desc:'Chromosomes align at cell plate' },
+  { id:'cp-m',  name:'M Checkpoint',   type:'checkpoint-m',  tag:'CHECKPOINT', desc:'Spindle must attach before division' },
+  { id:'ana',   name:'Anaphase',       type:'regular',       tag:'MITOSIS',    desc:'Sister chromatids pulled to poles' },
+  { id:'ev2',   name:'Cell Event',     type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
+  { id:'telo',  name:'Telophase',      type:'regular',       tag:'MITOSIS',    desc:'Nuclear envelopes re-form around chromosomes' },
+  { id:'cyto',  name:'Cytokinesis',    type:'finish',        tag:'FINISH',     desc:'Cytoplasm splits — two daughter cells!' },
 ];
 
 const TOKEN_COLORS = [
@@ -1087,47 +1066,26 @@ const GREEN_Q = [
 ];
 
 const VIOLET_Q = [
-  // V1: answer B trimmed (removed "correctly, leading to aneuploidy")
   { q:"If a mutation caused spindle fibers to malfunction, what would happen during mitosis?", opts:["Cells would grow larger","Chromosomes might not separate","DNA replication would stop","The nucleus would dissolve permanently"], ans:1 },
-  // V2: answer C trimmed; option D "retry" → "restart"
   { q:"What would happen if cytokinesis failed after telophase?", opts:["The cell would die immediately","Two tiny cells would form","The cell would have two nuclei","Nothing — division would just restart"], ans:2 },
-  // V3: answer B → "Cancer cells divide continuously"
   { q:"How does cancer relate to the mitotic cell cycle?", opts:["Cancer cells skip interphase","Cancer cells divide continuously","Cancer prevents all cell division","Cancer cells undergo meiosis instead"], ans:1 },
-  // V4 deleted (was "Why do cells spend most of their time in interphase")
-  // V5: answer B shortened; option D adds "would"
   { q:"How would a cell in prophase look different from one in interphase under a microscope?", opts:["Prophase cells are smaller","Chromosomes are visible in prophase","Interphase cells have no nucleus","They would look identical"], ans:1 },
-  // V6: rewritten with parallel answer choices per comment
   { q:"Why is it important for sister chromatids to separate evenly during mitosis?", opts:["To conserve energy during division","To ensure each daughter cell receives an identical set of chromosomes","To increase the speed of division","To prevent errors in RNA transcription"], ans:1 },
-  // V7: "directly" added to stem
   { q:"What phase of mitosis would be most directly affected by a drug that prevents spindle fiber attachment?", opts:["Prophase","Telophase","Anaphase","Metaphase"], ans:3 },
-  // V8: answer B → "remain in G0 phase"
   { q:"Why do some cells, like neurons, rarely undergo mitosis?", opts:["They are too large","They remain in G0 phase","They lack DNA","Neurons only use meiosis"], ans:1 },
-  // V9: rewritten with parallel answer choices per comment
   { q:"What structural difference means plant cells handle cytokinesis differently than animal cells?", opts:["Plant cells lack a nucleus during division","Plant cells have rigid cell walls, so they build a cell plate instead of pinching apart","Plant cells complete cytokinesis more quickly","Plant cells form two nuclei before dividing"], ans:1 },
-  // V10: options A, C, D reworded
   { q:"What is the consequence of aneuploidy caused by mitotic errors?", opts:["Cells become more efficient because they gain genetic material","It can lead to cell malfunction, genetic disorders, or cancer","The cell must repair itself by making a new copy of the chromosome","Somatic cells are affected, but germ-line cells will not be"], ans:1 },
-  // V11 deleted (was "A cell treated with a drug that destroys microtubules")
-  // V12: "most" removed from stem; answer B trimmed
   { q:"If the G1 checkpoint fails to detect DNA damage, what is the likely long-term consequence?", opts:["The cell becomes larger than normal","Mutations are passed to daughter cells","The cell enters G0 permanently","DNA replication is repeated"], ans:1 },
-  // V13: answer B → "produces identical daughter cells"
   { q:"Why is mitosis considered a conservative process?", opts:["It conserves energy by dividing slowly","It produces identical daughter cells","It keeps one original DNA strand in the parent","It avoids making any new proteins"], ans:1 },
-  // V14: "body" removed; "gametes" → "cells"
   { q:"A student claims that mitosis and meiosis produce the same type of cells. What is wrong with this statement?", opts:["Nothing — both produce diploid cells","Mitosis produces diploid cells; meiosis produces haploid cells","Meiosis produces diploid cells; mitosis produces haploid cells","Both produce haploid cells, but at different rates"], ans:1 },
   { q:"If a human cell with 46 chromosomes undergoes mitosis, how many chromosomes will each daughter cell have?", opts:["23","46","92","It depends on which chromosomes are replicated"], ans:1 },
-  // V16: answer B trimmed ("all" and "before anaphase proceeds" removed)
   { q:"How does the M checkpoint protect the cell?", opts:["It ensures DNA has been replicated before division","It confirms chromosomes are attached to spindle fibers","It checks that the cell is large enough to divide","It verifies that cytokinesis completed successfully"], ans:1 },
-  // V17: answer B and option C reworded
   { q:"What would most likely happen if a cell skipped the S phase and went directly into mitosis?", opts:["Division would proceed normally but more quickly","Chromosomes would not have sister chromatids","The cell would not produce homologous chromosomes","The chromosomes would condense more tightly"], ans:1 },
-  // V18: answer B and option C trimmed
   { q:"Why is uncontrolled cell division dangerous to an organism?", opts:["It uses too much ATP","It can form tumors","It produces haploid cells","It speeds up aging"], ans:1 },
   { q:"A cell has twice the normal amount of DNA but has not yet divided. Which phase is it most likely in?", opts:["G1 phase","S phase","G2 phase","G0 phase"], ans:2 },
-  // V20: answer B trimmed
   { q:"Which best explains why skin cells divide frequently while heart muscle cells rarely do?", opts:["Skin cells have more DNA","Skin cells need constant replacement","Heart muscle cells lack mitochondria","Skin cells perform meiosis instead"], ans:1 },
-  // V21: answer B → "same DNA"
   { q:"What is the significance of the fact that mitosis produces genetically identical cells?", opts:["It allows for genetic variation in a population","It ensures that all body cells carry the same DNA","It prevents cells from making proteins","It means mutations can never occur"], ans:1 },
   { q:"A researcher observes a cell where chromosomes are moving toward opposite poles but no nuclear envelope has formed yet. Which phase is this?", opts:["Metaphase","Anaphase","Telophase","Prophase"], ans:1 },
-  // V23 moved to GREEN bank as Q41 (contact inhibition)
-  // V24: "(programmed cell death)" removed; answer B trimmed
   { q:"Why is apoptosis considered important for normal development?", opts:["It removes cells that divide too slowly","It eliminates damaged or unneeded cells","It replaces mitosis during organ formation","It ensures chromosomes are evenly distributed"], ans:1 },
 ];
 
@@ -1470,7 +1428,6 @@ function startGame(studyMode=false){
   dnaStrandDeck=shuffle(DNA_STRANDS); eventDeck=shuffle(EVENT_CARDS);
   showScreen('game');
   log(studyMode ? '⚗ Study mode — solo run through the cell cycle!' : 'The mitosis challenge begins!','hi');
-  startCellCanvas();
   startGameBgCanvas();
   renderGame();
 }
@@ -2044,136 +2001,6 @@ function drawToken(svg, e, gi, groupSize, bx, by, isCurrent) {
   svg.appendChild(g);
 }
 
-// ── CELL CANVAS ANIMATION ──
-let cellAnim = null;
-
-function startCellCanvas(){
-  const canvas = document.getElementById('cellCanvas');
-  if(!canvas) return;
-  if(cellAnim) cancelAnimationFrame(cellAnim);
-
-  function resize(){
-    const container = canvas.parentElement;
-    const size = container.offsetWidth * 0.48;
-    canvas.width  = size;
-    canvas.height = size;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  const ctx = canvas.getContext('2d');
-  let t = 0;
-
-  // Organelle particles
-  const particles = Array.from({length: 22}, (_, i) => ({
-    angle: (i / 22) * Math.PI * 2 + Math.random(),
-    r: 0.15 + Math.random() * 0.25,
-    speed: (0.003 + Math.random() * 0.004) * (Math.random() > 0.5 ? 1 : -1),
-    size: 2 + Math.random() * 3,
-    hue: [120, 200, 280, 60][Math.floor(Math.random() * 4)],
-    alpha: 0.4 + Math.random() * 0.4,
-  }));
-
-  // Chromatin strands
-  const strands = Array.from({length: 5}, (_, i) => ({
-    offset: (i / 5) * Math.PI * 2,
-    speed: 0.004 + Math.random() * 0.003,
-    hue: 200 + i * 30,
-  }));
-
-  function draw(){
-    t += 0.01;
-    const W = canvas.width, H = canvas.height;
-    const cx = W / 2, cy = H / 2, R = W / 2;
-    ctx.clearRect(0, 0, W, H);
-
-    // Outer cell membrane
-    const pulse = 0.96 + 0.04 * Math.sin(t * 0.8);
-    const memGrad = ctx.createRadialGradient(cx, cy, R*0.7*pulse, cx, cy, R*0.99*pulse);
-    memGrad.addColorStop(0, 'rgba(0,0,0,0)');
-    memGrad.addColorStop(0.75, 'rgba(106,13,173,0.06)');
-    memGrad.addColorStop(0.88, 'rgba(106,13,173,0.18)');
-    memGrad.addColorStop(0.95, 'rgba(156,60,220,0.28)');
-    memGrad.addColorStop(1,    'rgba(180,80,255,0.12)');
-    ctx.beginPath();
-    ctx.arc(cx, cy, R * 0.97 * pulse, 0, Math.PI * 2);
-    ctx.fillStyle = memGrad;
-    ctx.fill();
-
-    // Cell membrane border shimmer
-    ctx.beginPath();
-    ctx.arc(cx, cy, R * 0.96 * pulse, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(160,80,255,${0.3 + 0.15 * Math.sin(t)})`;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Cytoplasm glow
-    const cytoGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 0.8);
-    cytoGrad.addColorStop(0, 'rgba(20,5,40,0.0)');
-    cytoGrad.addColorStop(1, 'rgba(10,0,20,0.4)');
-    ctx.beginPath();
-    ctx.arc(cx, cy, R * 0.8, 0, Math.PI * 2);
-    ctx.fillStyle = cytoGrad;
-    ctx.fill();
-
-    // Chromatin strands inside nucleus
-    strands.forEach(s => {
-      const nucR = R * 0.32;
-      ctx.beginPath();
-      for(let a = 0; a < Math.PI * 2; a += 0.08){
-        const wobble = nucR * (0.6 + 0.15 * Math.sin(a * 3 + s.offset + t * s.speed * 60));
-        const px = cx + wobble * Math.cos(a + s.offset + t * s.speed);
-        const py = cy + wobble * Math.sin(a + s.offset + t * s.speed);
-        a === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      }
-      ctx.strokeStyle = `hsla(${s.hue}, 70%, 65%, 0.35)`;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    });
-
-    // Nucleus
-    const nucPulse = 0.98 + 0.02 * Math.sin(t * 1.2);
-    const nucGrad = ctx.createRadialGradient(cx - R*0.05, cy - R*0.05, R*0.02, cx, cy, R * 0.33 * nucPulse);
-    nucGrad.addColorStop(0, 'rgba(80,40,140,0.85)');
-    nucGrad.addColorStop(0.6, 'rgba(50,15,90,0.8)');
-    nucGrad.addColorStop(1, 'rgba(30,5,60,0.6)');
-    ctx.beginPath();
-    ctx.arc(cx, cy, R * 0.33 * nucPulse, 0, Math.PI * 2);
-    ctx.fillStyle = nucGrad;
-    ctx.fill();
-    ctx.strokeStyle = `rgba(180,120,255,${0.5 + 0.2 * Math.sin(t * 0.9)})`;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Nucleolus
-    const nlGrad = ctx.createRadialGradient(cx + R*0.05, cy + R*0.05, 0, cx + R*0.05, cy + R*0.05, R * 0.1);
-    nlGrad.addColorStop(0, 'rgba(200,160,255,0.6)');
-    nlGrad.addColorStop(1, 'rgba(120,60,200,0.2)');
-    ctx.beginPath();
-    ctx.arc(cx + R * 0.06, cy + R * 0.06, R * 0.09, 0, Math.PI * 2);
-    ctx.fillStyle = nlGrad;
-    ctx.fill();
-
-    // Organelle particles in cytoplasm
-    particles.forEach(p => {
-      p.angle += p.speed;
-      const orR = R * p.r * (0.9 + 0.1 * Math.sin(t + p.angle));
-      const ox = cx + orR * Math.cos(p.angle) * (0.38 + p.r * 1.2);
-      const oy = cy + orR * Math.sin(p.angle) * (0.38 + p.r * 1.2);
-      // Only draw if outside nucleus
-      const dist = Math.sqrt((ox - cx) ** 2 + (oy - cy) ** 2);
-      if(dist < R * 0.36) return;
-      ctx.beginPath();
-      ctx.arc(ox, oy, p.size * (0.8 + 0.2 * Math.sin(t * 2 + p.angle)), 0, Math.PI * 2);
-      ctx.fillStyle = `hsla(${p.hue}, 70%, 65%, ${p.alpha * (0.7 + 0.3 * Math.sin(t + p.angle))})`;
-      ctx.fill();
-    });
-
-    cellAnim = requestAnimationFrame(draw);
-  }
-  draw();
-}
-
 function renderScores(){
   const sg=document.getElementById('scoresGrid');
   sg.innerHTML='';
@@ -2217,7 +2044,7 @@ function resetQuestionUI(){
 }
 
 function hideAllPanels(){
-  ['splashPanel','triviaPanel','dnaPanel','tfPanel','vocabPanel','eventPanel','resultPanel'].forEach(id=>{
+  ['splashPanel','triviaPanel','dnaPanel','tfPanel','vocabPanel','eventPanel'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
   if(S.dnaTimer){ clearInterval(S.dnaTimer); S.dnaTimer=null; }
