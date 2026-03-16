@@ -1496,17 +1496,27 @@ const SFX = (() => {
       note(1174, 0.50, 'sine', 0.11, 0.45); // second dong — octave overtone
     },
     flip() {
-      // Card-flip whoosh — sine sweep 700→220 Hz, 0.15s
+      // Paper rustle + card-slap thud
+      // Four closely-detuned sawtooths create a rough, noise-like texture
       if (_muted) return;
       const c = ac();
-      const osc = c.createOscillator(), g = c.createGain();
-      osc.connect(g); g.connect(c.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(700, c.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(220, c.currentTime + 0.13);
-      g.gain.setValueAtTime(0.13, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.16);
-      osc.start(); osc.stop(c.currentTime + 0.18);
+      [1200, 1340, 1480, 1600].forEach(f => {
+        const osc = c.createOscillator(), g = c.createGain();
+        osc.connect(g); g.connect(c.destination);
+        osc.type = 'sawtooth'; osc.frequency.value = f;
+        g.gain.setValueAtTime(0.055, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.07);
+        osc.start(); osc.stop(c.currentTime + 0.08);
+      });
+      // Low thud follows the rustle for the "slap" of card settling
+      const thud = c.createOscillator(), tg = c.createGain();
+      thud.connect(tg); tg.connect(c.destination);
+      thud.type = 'sine';
+      thud.frequency.setValueAtTime(180, c.currentTime + 0.03);
+      thud.frequency.exponentialRampToValueAtTime(80, c.currentTime + 0.12);
+      tg.gain.setValueAtTime(0.18, c.currentTime + 0.03);
+      tg.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.15);
+      thud.start(c.currentTime + 0.03); thud.stop(c.currentTime + 0.17);
     },
     click()      { note(1800, 0.04, 'sine', 0.07); },
     event() {
@@ -2207,12 +2217,12 @@ function renderBoard() {
 
   // ── Card deck stacks in board interior ──
   const DECK_DEFS = [
-    { id:'deck-green',  cx:115, color:'#06d6a0', label:'Green',  icon:'?' },
-    { id:'deck-violet', cx:150, color:'#c77dff', label:'Violet', icon:'?' },
-    { id:'deck-event',  cx:185, color:'#00d4ff', label:'Events', icon:'⚡' },
+    { id:'deck-green',  cx:115, color:'#06d6a0', label:'Green',  icon:'?', moveText:'MOVE 1 SPACE' },
+    { id:'deck-violet', cx:150, color:'#c77dff', label:'Violet', icon:'?', moveText:'MOVE 2 SPACES' },
+    { id:'deck-event',  cx:185, color:'#00d4ff', label:'Events', icon:'⚡', moveText:null },
   ];
   const DCY = 88, DW = 26, DH = 34;
-  DECK_DEFS.forEach(({id, cx, color, label, icon}) => {
+  DECK_DEFS.forEach(({id, cx, color, label, icon, moveText}) => {
     const g = svgEl('g', { id, style: 'transition:filter 0.15s,opacity 0.15s;' });
     g.addEventListener('mouseenter', () => { if(g.style.cursor==='pointer') g.style.filter=`brightness(1.35) drop-shadow(0 0 4px ${color})`; });
     g.addEventListener('mouseleave', () => { g.style.filter=''; });
@@ -2237,6 +2247,11 @@ function renderBoard() {
       'font-size': '10', 'font-weight': 'bold', fill: color,
       'text-anchor': 'middle', 'dominant-baseline': 'middle',
       style: `filter:drop-shadow(0 0 2px ${color})`
+    }));
+    // Move text (green/violet only)
+    if(moveText) g.appendChild(svgTxt(cx, DCY + 9, moveText, {
+      'font-size': '2.0', fill: color, 'text-anchor': 'middle',
+      'font-family': 'Cinzel,serif', 'letter-spacing': '0.15', opacity: '0.80'
     }));
     // "RUNNER" footer
     g.appendChild(svgTxt(cx, DCY + 13, 'RUNNER', {
@@ -2666,8 +2681,7 @@ function movePlayer(entry, spaces, idx, onDone){
     // Landing sound — win fanfare handled separately in triggerWin
     if(entry.pos < BOARD.length - 1){
       const _lt = BOARD[entry.pos]?.type;
-      if(CHECKPOINT_TYPES.includes(_lt)) SFX.checkpoint();
-      else if(_lt === 'event') SFX.event();
+      if(_lt === 'event') SFX.event();
       else SFX.land();
     }
     log(`✓ ${entry.name} moves to ${BOARD[entry.pos].name}!`, 'good');
@@ -2787,6 +2801,7 @@ function launchDNA(){
       result.className = 'aq-result show bad';
       result.textContent = `✗ Time's up! ${S.entries[S.current].name} loses their turn.`;
       log(`✗ ${S.entries[S.current].name} ran out of time on the G1 Checkpoint.`,'bad');
+      SFX.wrong();
       S.entries[S.current].checkpointState = 'blocked';
       autoNextTurn();
     }
@@ -2802,7 +2817,7 @@ function setDNAPickersEnabled(enabled){
     b.className = `pick-btn pick-${base}`;
     b.textContent = base;
     b.disabled = !enabled;
-    if(enabled) b.addEventListener('click', () => pickBase(base));
+    if(enabled) b.addEventListener('click', () => { SFX.click(); pickBase(base); });
     bp.appendChild(b);
   });
 }
@@ -2862,6 +2877,7 @@ function pickBase(base){
     result.className = 'aq-result show bad';
     result.textContent = `✗ "${base}" doesn't pair with "${templateBase}" — correct is "${DNA_PAIRS[templateBase]}". Turn lost.`;
     log(`✗ ${S.entries[S.current].name} failed the G1 Checkpoint.`, 'bad');
+    SFX.wrong();
     S.entries[S.current].checkpointState = 'blocked';
     autoNextTurn();
     return;
@@ -2880,6 +2896,7 @@ function pickBase(base){
     closePopup();
     renderDNA();
     const cur = S.entries[S.current];
+    SFX.checkpoint();
     cur.checkpointState = 'passed';
     result.className = 'aq-result show ok';
     result.textContent = `✓ Perfect strand! ${cur.name} passes the G1 Checkpoint — draw a card next turn to advance!`;
@@ -2934,6 +2951,7 @@ function startTFTimer(){
 
 function tfAnswer(val){
   if(S.answered) return;
+  SFX.click();
   const correct=val===S.currentTF.ans;
   if(correct) S.tfCorrectCount++;
   else S.tfWrongCount++;
@@ -2961,6 +2979,7 @@ function endTF(){
   closePopup();
   if(passed){
     const cur = S.entries[S.current];
+    SFX.checkpoint();
     cur.checkpointState = 'passed';
     result.className='aq-result show ok';
     result.textContent=`✓ Passed! ${S.tfCorrectCount} correct. ${cur.name} passes the G2 Checkpoint — draw a card next turn to advance!`;
@@ -2971,6 +2990,7 @@ function endTF(){
     result.className='aq-result show bad';
     result.textContent=`✗ ${S.tfWrongCount>=3?'3 wrong answers':'Only '+S.tfCorrectCount+' correct'} — checkpoint failed. Turn lost.`;
     log(`✗ ${S.entries[S.current].name} failed the G2 Checkpoint (${S.tfCorrectCount}/${S.tfTotalAnswered}).`,'bad');
+    SFX.wrong();
     S.entries[S.current].checkpointState = 'blocked';
     autoNextTurn();
   }
@@ -3012,6 +3032,7 @@ function launchVocab(){
       result.className = 'aq-result show bad';
       result.textContent = `✗ Time's up! ${S.entries[S.current].name} loses their turn.`;
       log(`✗ ${S.entries[S.current].name} ran out of time on the M Checkpoint.`,'bad');
+      SFX.wrong();
       S.entries[S.current].checkpointState = 'blocked';
       autoNextTurn();
     }
@@ -3041,6 +3062,7 @@ function renderVocab(){
 }
 
 function selectVocabTerm(idx){
+  SFX.click();
   S.vocabSelectedTerm=idx;
   renderVocab();
   document.querySelectorAll('.vocab-term').forEach(t=>{ if(parseInt(t.dataset.idx)===idx) t.classList.add('selected'); });
@@ -3048,6 +3070,7 @@ function selectVocabTerm(idx){
 
 function selectVocabDef(idx){
   if(S.vocabSelectedTerm===null) return;
+  SFX.click();
   const correct=S.vocabSelectedTerm===idx;
   const vcur=S.entries[S.current]; vcur.totalCount++; if(correct) vcur.correctCount++;
   if(correct){
@@ -3058,6 +3081,7 @@ function selectVocabDef(idx){
       closePopup();
       const result=document.getElementById('aqResult');
       const cur = S.entries[S.current];
+      SFX.checkpoint();
       cur.checkpointState = 'passed';
       result.className='aq-result show ok';
       result.textContent=`✓ All matched! ${cur.name} passes the M Checkpoint — draw a card next turn to advance!`;
@@ -3079,6 +3103,7 @@ function selectVocabDef(idx){
       result.className='aq-result show bad';
       result.textContent=`✗ Incorrect match. ${S.entries[S.current].name} loses their turn.`;
       log(`✗ ${S.entries[S.current].name} failed the M Checkpoint.`,'bad');
+      SFX.wrong();
       S.entries[S.current].checkpointState = 'blocked';
       document.querySelectorAll('.vocab-term,.vocab-def').forEach(e=>{e.classList.remove('wrong-flash');e.onclick=null;});
       autoNextTurn();
