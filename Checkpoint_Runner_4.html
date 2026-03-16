@@ -1474,9 +1474,41 @@ const SFX = (() => {
     hop()        { note(540,  0.06, 'sine',     0.13); },
     land()       { note(295,  0.07, 'sine',     0.20); note(440, 0.13, 'triangle', 0.14, 0.04); },
     correct()    { note(523,  0.10, 'triangle', 0.28); note(659, 0.20, 'triangle', 0.28, 0.10); },
-    wrong()      { note(240,  0.05, 'sawtooth', 0.18); note(180, 0.22, 'sawtooth', 0.15, 0.05); },
-    checkpoint() { note(660,  0.14, 'triangle', 0.28); note(880, 0.22, 'triangle', 0.24, 0.13);
-                   note(1100, 0.28, 'triangle', 0.18, 0.26); },
+    wrong() {
+      // Sad-trombone womp — sawtooth sweep 350→120 Hz over 0.55s
+      if (_muted) return;
+      const c = ac();
+      const osc = c.createOscillator(), g = c.createGain();
+      osc.connect(g); g.connect(c.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(350, c.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(120, c.currentTime + 0.55);
+      g.gain.setValueAtTime(0.20, c.currentTime);
+      g.gain.setValueAtTime(0.20, c.currentTime + 0.45);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.62);
+      osc.start(); osc.stop(c.currentTime + 0.65);
+    },
+    checkpoint() {
+      // Double dong — two sine bell hits (A4+octave, then D5+octave), 0.45s apart
+      note(440,  0.90, 'sine', 0.28);        // first dong — fundamental
+      note(880,  0.50, 'sine', 0.11);        // first dong — octave overtone
+      note(587,  0.90, 'sine', 0.28, 0.45); // second dong — fundamental
+      note(1174, 0.50, 'sine', 0.11, 0.45); // second dong — octave overtone
+    },
+    flip() {
+      // Card-flip whoosh — sine sweep 700→220 Hz, 0.15s
+      if (_muted) return;
+      const c = ac();
+      const osc = c.createOscillator(), g = c.createGain();
+      osc.connect(g); g.connect(c.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(700, c.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(220, c.currentTime + 0.13);
+      g.gain.setValueAtTime(0.13, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.16);
+      osc.start(); osc.stop(c.currentTime + 0.18);
+    },
+    click()      { note(1800, 0.04, 'sine', 0.07); },
     event() {
       if (_muted) return;
       const c = ac();
@@ -2394,7 +2426,7 @@ function openPopup(dismissable = false, flipIn = false){
   document.getElementById('popupOverlay').classList.add('open');
   const box = document.getElementById('popupBox');
   box.classList.remove('flip-in');
-  if(flipIn){ void box.offsetWidth; box.classList.add('flip-in'); }
+  if(flipIn){ void box.offsetWidth; box.classList.add('flip-in'); SFX.flip(); }
 }
 
 function closePopup(){
@@ -2565,6 +2597,7 @@ function handleTrivia(chosen){
 
 function selectOption(i){
   if(S.answered) return;
+  SFX.click();
   S.selectedOpt = i;
   document.querySelectorAll('.opt-btn').forEach((b,j) => b.classList.toggle('selected', j===i));
   document.getElementById('btnSubmitAnswer').disabled = false;
