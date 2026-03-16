@@ -1202,6 +1202,7 @@ let S = {
   immuneNext: {},
   // Token movement animation state
   isMoving: false, movingIdx: -1, moveTrail: [],
+  animX: null, animY: null, animArc: 0,
 };
 
 // Relaxed toggle visual
@@ -1398,6 +1399,7 @@ function startGame(studyMode=false){
   }
   S.current=0; S.turnNumber=1;
   S.isMoving=false; S.movingIdx=-1; S.moveTrail=[];
+  S.animX=null; S.animY=null; S.animArc=0;
   greenDeck=shuffle(GREEN_Q); violetDeck=shuffle(VIOLET_Q);
   tfDeck=shuffle(TF_QUESTIONS); vocabDeck=shuffle(VOCAB_TERMS);
   dnaStrandDeck=shuffle(DNA_STRANDS); eventDeck=shuffle(EVENT_CARDS);
@@ -1981,16 +1983,20 @@ function _placeLabel(layer, pos, nodeR, angleDeg, nameText, descText, color, isD
 // UPRIGHT TOKEN — tRNA icon stands perpendicular to board surface
 // ══════════════════════════════════════════════
 function drawToken(svg, e, gi, groupSize, bx, by, isCurrent) {
-  // Offset for multiple tokens on same space
+  // When this token is mid-hop, override its board position with the
+  // interpolated animation coordinates so it visually moves between spaces.
+  if(isCurrent && S.animX !== null){
+    bx = S.animX;
+    by = S.animY;
+  }
+
   const offsetAng = (gi / Math.max(groupSize,1)) * Math.PI * 2;
   const offsetR = groupSize > 1 ? 6 : 0;
   const fx = bx + offsetR * Math.cos(offsetAng);
   const fy = by + offsetR * Math.sin(offsetAng) * 0.4;
 
-  const isHopping = isCurrent && S.isMoving;
-
-  // Dual pulse rings for the active player
-  if(isCurrent){
+  // Dual pulse rings — only shown when token is resting (not mid-hop)
+  if(isCurrent && S.animX === null){
     // Outer ring — slow, wide, subtle
     const outerPulse = svgEl('circle', { cx:fx, cy:fy, r:'12',
       fill:'none', stroke:e.color, 'stroke-width':'0.8', opacity:'0' });
@@ -2006,29 +2012,16 @@ function drawToken(svg, e, gi, groupSize, bx, by, isCurrent) {
     svg.appendChild(innerPulse);
   }
 
-  // Outer group: translate + drop-shadow (never animated)
-  const outer = svgEl('g', {
-    transform: `translate(${fx},${fy})`,
+  // Scale pops up to ~1.07× at the peak of the arc (S.animArc peaks at 1.0 mid-hop)
+  const iconScale = 0.72 * (1 + 0.49 * (isCurrent ? S.animArc : 0));
+
+  const g = svgEl('g', {
+    transform: `translate(${fx},${fy}) scale(${iconScale.toFixed(3)})`,
     filter: 'url(#shadow-token)'
   });
-
-  // Inner group: scale only — this is what the bounce targets
-  const inner = svgEl('g', { transform: 'scale(0.72)' });
   const initial = e.name.charAt(0).toUpperCase();
-  inner.innerHTML = getTokenIconSVG(e.icon || 'chromosome', e.color, e.textColor, initial, 1, isCurrent);
-
-  // Hop bounce — animateTransform on scale-only group so additive="sum" is unambiguous
-  if(isHopping){
-    const anim = svgEl('animateTransform', {
-      attributeName: 'transform', type: 'scale',
-      values: '0.55;1.5;0.85;1.1;1',
-      dur: '0.45s', repeatCount: '1', fill: 'freeze', additive: 'sum'
-    });
-    inner.appendChild(anim);
-  }
-
-  outer.appendChild(inner);
-  svg.appendChild(outer);
+  g.innerHTML = getTokenIconSVG(e.icon || 'chromosome', e.color, e.textColor, initial, 1, isCurrent);
+  svg.appendChild(g);
 }
 
 function renderScores(){
@@ -2290,6 +2283,27 @@ function autoNextTurn(delay=2200){
   setTimeout(()=>{ nextTurn(); }, delay);
 }
 
+// Interpolate a token visually from one board space to the next.
+// Calls renderBoard() at each frame so the token appears to glide.
+function animateHop(fromIdx, toIdx, onComplete){
+  const from = nodePos(fromIdx);
+  const to   = nodePos(toIdx);
+  const STEPS = 8, MS = 50; // 8 frames × 50ms = 400ms per hop
+  let i = 0;
+  function tick(){
+    const t = (i + 1) / STEPS;
+    const ease = t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t; // ease-in-out
+    S.animX   = from.x + (to.x - from.x) * ease;
+    S.animY   = from.y + (to.y - from.y) * ease;
+    S.animArc = Math.sin(t * Math.PI); // 0 → peak 1.0 → 0, gives hop arc
+    renderBoard();
+    i++;
+    if(i < STEPS) setTimeout(tick, MS);
+    else { S.animX = null; S.animY = null; S.animArc = 0; onComplete(); }
+  }
+  tick();
+}
+
 function movePlayer(entry, spaces, idx, onDone){
   S.isMoving = true;
   S.movingIdx = idx;
@@ -2298,22 +2312,24 @@ function movePlayer(entry, spaces, idx, onDone){
   function doStep(){
     const nextPos = entry.pos + 1;
     if(step >= spaces || nextPos >= BOARD.length){ finishMove(); return; }
-    // Record the space we're leaving as a trail breadcrumb (keep last 3)
     S.moveTrail.push(entry.pos);
     if(S.moveTrail.length > 3) S.moveTrail.shift();
+    const fromPos = entry.pos;
     entry.pos = nextPos;
-    renderBoard();
     step++;
-    if(CHECKPOINT_TYPES.includes(BOARD[entry.pos].type)){
-      log(`⛔ ${entry.name} is stopped at ${BOARD[entry.pos].name} — checkpoint must be completed!`, 'info');
-      finishMove(); return;
-    }
-    setTimeout(doStep, 700);
+    animateHop(fromPos, nextPos, () => {
+      if(CHECKPOINT_TYPES.includes(BOARD[entry.pos].type)){
+        log(`⛔ ${entry.name} is stopped at ${BOARD[entry.pos].name} — checkpoint must be completed!`, 'info');
+        finishMove(); return;
+      }
+      setTimeout(doStep, 120); // brief pause between hops
+    });
   }
   function finishMove(){
     S.isMoving = false;
     S.moveTrail = [];
-    renderBoard(); // clean render — removes trail and bounce
+    S.animX = null; S.animY = null; S.animArc = 0;
+    renderBoard();
     log(`✓ ${entry.name} moves to ${BOARD[entry.pos].name}!`, 'good');
     renderScores();
     if(entry.pos === BOARD.length - 1){
