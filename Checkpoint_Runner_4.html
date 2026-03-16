@@ -1934,10 +1934,17 @@ function renderBoard() {
       S.moveTrail.forEach((trailPos, ti) => {
         const fade = (ti + 1) / S.moveTrail.length; // oldest=dim, newest=bright
         const tp = nodePos(trailPos);
+        // Outer glow ring
         svg.appendChild(svgEl('circle', {
-          cx: tp.x.toFixed(1), cy: tp.y.toFixed(1), r: '9.5',
+          cx: tp.x.toFixed(1), cy: tp.y.toFixed(1), r: '12',
           fill: 'none', stroke: mover.color,
-          'stroke-width': '1.5', opacity: (fade * 0.45).toFixed(2)
+          'stroke-width': '2.5', opacity: (fade * 0.35).toFixed(2)
+        }));
+        // Inner bright ring
+        svg.appendChild(svgEl('circle', {
+          cx: tp.x.toFixed(1), cy: tp.y.toFixed(1), r: '8',
+          fill: 'none', stroke: mover.color,
+          'stroke-width': '1.5', opacity: (fade * 0.7).toFixed(2)
         }));
       });
     }
@@ -1987,36 +1994,41 @@ function drawToken(svg, e, gi, groupSize, bx, by, isCurrent) {
     // Outer ring — slow, wide, subtle
     const outerPulse = svgEl('circle', { cx:fx, cy:fy, r:'12',
       fill:'none', stroke:e.color, 'stroke-width':'0.8', opacity:'0' });
-    outerPulse.innerHTML = `
-      <animate attributeName="r" values="10;22;10" dur="2.2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.6;0;0.6" dur="2.2s" repeatCount="indefinite"/>`;
+    outerPulse.appendChild(svgEl('animate', { attributeName:'r', values:'10;22;10', dur:'2.2s', repeatCount:'indefinite' }));
+    outerPulse.appendChild(svgEl('animate', { attributeName:'opacity', values:'0.6;0;0.6', dur:'2.2s', repeatCount:'indefinite' }));
     svg.appendChild(outerPulse);
 
     // Inner ring — fast, bright heartbeat
     const innerPulse = svgEl('circle', { cx:fx, cy:fy, r:'8',
       fill:'none', stroke:e.color, 'stroke-width':'1.5', opacity:'0' });
-    innerPulse.innerHTML = `
-      <animate attributeName="r" values="6;12;6" dur="1.1s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="1;0.1;1" dur="1.1s" repeatCount="indefinite"/>`;
+    innerPulse.appendChild(svgEl('animate', { attributeName:'r', values:'6;12;6', dur:'1.1s', repeatCount:'indefinite' }));
+    innerPulse.appendChild(svgEl('animate', { attributeName:'opacity', values:'1;0.1;1', dur:'1.1s', repeatCount:'indefinite' }));
     svg.appendChild(innerPulse);
   }
 
-  // Token icon group — centered directly on the space
-  const iconScale = 0.72;
-  const g = svgEl('g', {
-    transform: `translate(${fx},${fy}) scale(${iconScale})`,
+  // Outer group: translate + drop-shadow (never animated)
+  const outer = svgEl('g', {
+    transform: `translate(${fx},${fy})`,
     filter: 'url(#shadow-token)'
   });
-  const initial = e.name.charAt(0).toUpperCase();
-  g.innerHTML = getTokenIconSVG(e.icon || 'chromosome', e.color, e.textColor, initial, 1, isCurrent);
 
-  // Hop bounce — plays once each time the token lands on a new space
+  // Inner group: scale only — this is what the bounce targets
+  const inner = svgEl('g', { transform: 'scale(0.72)' });
+  const initial = e.name.charAt(0).toUpperCase();
+  inner.innerHTML = getTokenIconSVG(e.icon || 'chromosome', e.color, e.textColor, initial, 1, isCurrent);
+
+  // Hop bounce — animateTransform on scale-only group so additive="sum" is unambiguous
   if(isHopping){
-    g.innerHTML += `<animateTransform attributeName="transform" type="scale"
-      values="0.65;1.45;0.88;1.08;1" dur="0.42s" repeatCount="1" fill="freeze" additive="sum"/>`;
+    const anim = svgEl('animateTransform', {
+      attributeName: 'transform', type: 'scale',
+      values: '0.55;1.5;0.85;1.1;1',
+      dur: '0.45s', repeatCount: '1', fill: 'freeze', additive: 'sum'
+    });
+    inner.appendChild(anim);
   }
 
-  svg.appendChild(g);
+  outer.appendChild(inner);
+  svg.appendChild(outer);
 }
 
 function renderScores(){
