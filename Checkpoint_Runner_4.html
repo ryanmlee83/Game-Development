@@ -173,7 +173,7 @@ body {
 }
 .circular-board-container {
   position: relative; width: 100%; height: 100%; background: #000;
-  aspect-ratio: 300/180; margin: 0 auto;
+  aspect-ratio: 300/190; margin: 0 auto;
   overflow: hidden;
 }
 #boardSVG { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; z-index:1; }
@@ -1808,6 +1808,7 @@ const SPACE_ICON = {
 // ══════════════════════════════════════════════
 // ViewBox: 300 × 180. Board is an ellipse tilted ~60° from viewer.
 const VW = 300, VH = 180;
+const BOARD_TOP_PAD = 10;  // SVG units of breathing room above the board ring
 const CX = 150, CY = 95;   // ellipse centre (lower to leave label room above)
 const RX = 105, RY = 42;   // semi-axes: wide x, foreshortened y
 const START_ANGLE = 20;     // G1 at top-ish, clockwise
@@ -2068,7 +2069,7 @@ function drawDNAPolymerase(svg, cx, cy, size) {
 function renderBoard() {
   const svg = document.getElementById('boardSVG');
   svg.innerHTML = '';
-  svg.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
+  svg.setAttribute('viewBox', `0 ${-BOARD_TOP_PAD} ${VW} ${VH + BOARD_TOP_PAD}`);
 
   const N = BOARD.length;
   const RING_START = 1, RING_COUNT = N - 1; // 15 ring spaces
