@@ -146,7 +146,6 @@ body {
   gap: 1rem;
 }
 .gh-title { font-family:'Cinzel Decorative',serif; font-size:0.8rem; color:var(--gold); white-space:nowrap; }
-.topbar-center { flex:1; display:flex; justify-content:center; align-items:center; gap:0.5rem; }
 .topbar-actions { display:flex; gap:0.4rem; }
 .current-player-badge {
   display: flex; align-items: center; gap: 0.5rem;
@@ -208,19 +207,6 @@ body {
   padding: 0.4rem 0.75rem; margin-top: 0.35rem;
   min-height: 54px;
 }
-.question-chooser { display:flex; gap:0.5rem; }
-.q-btn {
-  padding: 0.45rem 0.9rem; border-radius:6px; border:2px solid;
-  font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.04em;
-  cursor:pointer; transition:all 0.2s; text-align:center; line-height:1.4;
-}
-.q-sub { font-size:0.55rem; opacity:0.75; display:block; }
-.q-btn.green-q { border-color:var(--green-dim); background:rgba(6,214,160,0.08); color:var(--green); }
-.q-btn.green-q:hover { border-color:var(--green); box-shadow:0 0 14px rgba(6,214,160,0.3); background:rgba(6,214,160,0.14); }
-.q-btn.violet-q { border-color:var(--violet-dim); background:rgba(199,125,255,0.08); color:var(--violet-light); }
-.q-btn.violet-q:hover { border-color:var(--violet); box-shadow:0 0 14px rgba(199,125,255,0.3); background:rgba(199,125,255,0.14); }
-.q-btn:disabled { opacity:0.35; cursor:not-allowed; }
-
 .btn-next { display:none; padding:0.5rem 1.4rem; background:linear-gradient(135deg,var(--gold-dark),var(--gold-light),var(--gold-dark)); border:none; border-radius:4px; color:var(--text-dark); font-family:'Cinzel',serif; font-size:0.8rem; font-weight:700; letter-spacing:0.1em; cursor:pointer; text-transform:uppercase; transition:all 0.2s; white-space:nowrap; }
 .btn-next.show { display:block; }
 .btn-next:hover { filter:brightness(1.1); }
@@ -569,12 +555,12 @@ body {
 
     <!-- TOP BAR -->
     <div class="game-topbar frame"><div class="fc1"></div><div class="fc2"></div>
+      <div style="flex:1;"></div>
       <span class="gh-title">Checkpoint Runner</span>
-      <div class="topbar-center" id="topbarCenter">
-        <!-- current player badge injected here -->
-      </div>
-      <div class="topbar-actions">
-        <button class="icon-btn" onclick="openLog()" title="Chronicle">📜</button>
+      <div style="flex:1;display:flex;justify-content:flex-end;">
+        <div class="topbar-actions">
+          <button class="icon-btn" onclick="openLog()" title="Chronicle">📜</button>
+        </div>
       </div>
     </div>
 
@@ -596,14 +582,11 @@ body {
 
     </div>
 
-    <!-- BOTTOM BAR: question chooser + next turn -->
+    <!-- BOTTOM BAR: player badge + result + next turn -->
     <div class="game-bottombar frame"><div class="fc1"></div><div class="fc2"></div>
-      <div id="qChooser" class="question-chooser">
-        <button class="q-btn green-q" onclick="askQuestion('green')" id="btnGreen">🟢 Green<br><span class="q-sub">Move 1</span></button>
-        <button class="q-btn violet-q" onclick="askQuestion('violet')" id="btnViolet">🟣 Violet<br><span class="q-sub">Move 2</span></button>
-      </div>
-      <button class="btn-next" id="btnNext" onclick="nextTurn()">⟶ Next Turn</button>
+      <div id="bottomPlayerBadge"></div>
       <div class="aq-result" id="aqResult"></div>
+      <button class="btn-next" id="btnNext" onclick="nextTurn()">⟶ Next Turn</button>
     </div>
 
   </div><!-- end game-shell -->
@@ -1456,7 +1439,7 @@ function showScreen(id){
 // ══════════════════════════════════════════════
 function renderGame(){
   const cur=S.entries[S.current];
-  const badge=document.getElementById('topbarCenter');
+  const badge=document.getElementById('bottomPlayerBadge');
   if(badge) badge.innerHTML=`<div class="current-player-badge"><span style="color:${cur.color};font-size:0.9rem;">●</span><span class="cpb-name" style="color:${cur.color}">${cur.name}</span><span class="cpb-space">— ${BOARD[cur.pos].name}</span><span style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--text-dim);margin-left:0.5rem;">Turn ${S.turnNumber}</span></div>`;
   renderBoard(); renderScores(); resetQuestionUI();
 }
@@ -1903,7 +1886,9 @@ function renderBoard() {
   ];
   const DCY = 88, DW = 26, DH = 34;
   DECK_DEFS.forEach(({id, cx, color, label, icon}) => {
-    const g = svgEl('g', { id });
+    const g = svgEl('g', { id, style: 'transition:filter 0.15s,opacity 0.15s;' });
+    g.addEventListener('mouseenter', () => { if(g.style.cursor==='pointer') g.style.filter=`brightness(1.35) drop-shadow(0 0 4px ${color})`; });
+    g.addEventListener('mouseleave', () => { g.style.filter=''; });
     // Shadow cards (stacked depth)
     [2, 1].forEach(s => g.appendChild(svgEl('rect', {
       x: cx - DW/2 + s, y: DCY - DH/2 + s, width: DW, height: DH, rx: '1.5',
@@ -2016,10 +2001,24 @@ function renderScores(){
 function resetQuestionUI(){
   const cur = S.entries[S.current];
   const space = BOARD[cur.pos];
-  // Hide card chooser on checkpoint spaces UNLESS the player passed and now needs to draw a card
+  // Disable deck clicks on checkpoint/finish spaces unless player passed and needs to draw
   const hideChooser = ['checkpoint-g1','checkpoint-g2','checkpoint-m','finish'].includes(space.type)
                       && cur.checkpointState !== 'passed';
-  document.getElementById('qChooser').style.display = hideChooser ? 'none' : 'flex';
+  const deckGreen  = document.getElementById('deck-green');
+  const deckViolet = document.getElementById('deck-violet');
+  if(deckGreen){
+    if(!hideChooser){
+      deckGreen.style.cursor  = 'pointer';
+      deckViolet.style.cursor = 'pointer';
+      deckGreen.onclick  = () => askQuestion('green');
+      deckViolet.onclick = () => askQuestion('violet');
+    } else {
+      deckGreen.style.cursor  = 'default';
+      deckViolet.style.cursor = 'default';
+      deckGreen.onclick  = null;
+      deckViolet.onclick = null;
+    }
+  }
   document.getElementById('aqResult').className='aq-result';
   document.getElementById('btnNext').className='btn-next';
   closePopup();
