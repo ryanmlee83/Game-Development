@@ -238,6 +238,29 @@ body {
 }
 .icon-btn:hover { background:rgba(255,255,255,0.12); border-color:var(--gold-dark); }
 
+/* ── FLOATING RULES BUTTON ── */
+.rules-fab {
+  position:fixed; bottom:1rem; right:1rem; z-index:200;
+  width:40px; height:40px; border-radius:50%;
+  background:rgba(14,14,26,0.85); border:1px solid var(--gold-dark);
+  color:var(--gold); font-family:'Cinzel',serif; font-size:1rem; font-weight:700;
+  cursor:pointer; transition:all 0.2s;
+  box-shadow:0 2px 12px rgba(0,0,0,0.5);
+  display:flex; align-items:center; justify-content:center;
+}
+.rules-fab:hover { border-color:var(--gold-light); color:var(--gold-light); box-shadow:0 0 14px rgba(201,162,39,0.4); }
+
+/* ── RULES MODAL ── */
+.rules-overlay {
+  display:none; position:fixed; inset:0; z-index:300;
+  background:rgba(0,0,0,0.72); align-items:center; justify-content:center; padding:1.5rem;
+}
+.rules-overlay.open { display:flex; }
+.rules-modal {
+  max-width:640px; width:100%; max-height:90vh; overflow-y:auto;
+  padding:1.5rem; position:relative;
+}
+
 /* ══ POPUP OVERLAY ══ */
 .popup-overlay {
   display: none; position: fixed; inset: 0; z-index: 100;
@@ -453,59 +476,14 @@ body {
 <canvas id="titleCanvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
 
 <!-- TITLE SPLASH -->
-<div id="title" class="screen active">
+<div id="title" class="screen active" onclick="showScreen('setup')" style="cursor:pointer;">
   <div style="position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;box-sizing:border-box;">
       <div style="font-size:4rem;margin-bottom:0.5rem;animation:floatEmoji 3s ease-in-out infinite;">🧬</div>
       <h1 style="font-family:'Cinzel Decorative',serif;font-size:clamp(1.6rem,5vw,3rem);color:var(--gold-light);text-shadow:0 0 18px rgba(255,209,102,0.55);margin-bottom:0.3rem;letter-spacing:0.12em;word-spacing:0.15em;">Checkpoint Runner</h1>
       <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--violet-light);letter-spacing:0.3em;text-transform:uppercase;margin-bottom:0.2rem;">The Board Game</div>
       <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text-dim);font-style:italic;margin-bottom:2.5rem;">Race through the cell cycle — from interphase to cytokinesis</div>
-      <button class="btn-gold" style="max-width:320px;font-size:1.1rem;padding:1rem 2rem;" onclick="showScreen('howtoplay')">✦ Enter the Cell Cycle ✦</button>
-  </div>
-</div>
-
-<!-- HOW TO PLAY -->
-<div id="howtoplay" class="screen" style="display:none">
-  <div style="max-width:680px;margin:0 auto;padding:1.5rem;">
-    <h2 style="font-family:'Cinzel Decorative',serif;font-size:1.4rem;color:var(--gold-light);text-align:center;margin-bottom:0.3rem;">How to Play</h2>
-    <div style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--text-dim);text-align:center;font-style:italic;margin-bottom:1.5rem;">A quick guide to the cell cycle</div>
-
-    <div class="frame" style="padding:1rem;margin-bottom:0.8rem;"><div class="fc1"></div><div class="fc2"></div>
-      <div style="font-family:'Cinzel',serif;font-size:0.9rem;color:var(--cyan);letter-spacing:0.15em;margin-bottom:0.5rem;">🎯 OBJECTIVE</div>
-      <div style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--text);line-height:1.6;">Be the first player to reach <strong style="color:var(--gold)">Cytokinesis</strong> by correctly answering biology questions as you race through the cell cycle.</div>
-    </div>
-
-    <div class="frame" style="padding:1rem;margin-bottom:0.8rem;"><div class="fc1"></div><div class="fc2"></div>
-      <div style="font-family:'Cinzel',serif;font-size:0.9rem;color:var(--green);letter-spacing:0.15em;margin-bottom:0.6rem;">📋 ON YOUR TURN</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
-        <div style="background:rgba(6,214,160,0.08);border:1px solid var(--green-dim);border-radius:6px;padding:0.6rem;">
-          <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--green);margin-bottom:0.3rem;">🟢 GREEN QUESTION</div>
-          <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);line-height:1.5;">Basic recall. Answer correctly → move <strong>1 space</strong>.</div>
-        </div>
-        <div style="background:rgba(199,125,255,0.08);border:1px solid var(--violet-dim);border-radius:6px;padding:0.6rem;">
-          <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--violet-light);margin-bottom:0.3rem;">🟣 VIOLET QUESTION</div>
-          <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);line-height:1.5;">Application & analysis. Answer correctly → move <strong>2 spaces</strong>.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="frame" style="padding:1rem;margin-bottom:0.8rem;"><div class="fc1"></div><div class="fc2"></div>
-      <div style="font-family:'Cinzel',serif;font-size:0.9rem;color:var(--gold);letter-spacing:0.15em;margin-bottom:0.6rem;">⬦ SPECIAL SPACES</div>
-      <div style="display:flex;flex-direction:column;gap:0.4rem;">
-        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">💠</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--green);">CHECKPOINTS</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — Three checkpoint activities: DNA base-pair matching (G1), True/False rapid fire (G2), and vocabulary matching (M). Each has a 30-second timer. Pass or try again next turn.</span></div></div>
-        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">🃏</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--violet-light);">CELL EVENTS</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — Draw a card. Could boost you forward, grant immunity, or set you back. Such is biology.</span></div></div>
-        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">💤</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--g0-color);">G0 PHASE</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — The resting state. All players start here before entering the active cycle at G1.</span></div></div>
-      </div>
-    </div>
-
-    <div class="frame" style="padding:1rem;margin-bottom:1.5rem;"><div class="fc1"></div><div class="fc2"></div>
-      <div style="font-family:'Cinzel',serif;font-size:0.9rem;color:var(--pink);letter-spacing:0.15em;margin-bottom:0.5rem;">⚗ STUDY MODE</div>
-      <div style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--text);line-height:1.6;">Toggle <strong style="color:var(--sky)">Relaxed Mode</strong> on the setup screen to disable all checkpoint timers — checkpoints still require correct answers, but there's no time pressure. Great for classrooms learning the material for the first time.</div>
-    </div>
-
-    <div style="display:flex;gap:0.75rem;">
-      <button class="btn-gold" style="flex:1;background:linear-gradient(135deg,var(--surface-btn),var(--surface-btn2),var(--surface-btn));color:var(--text-dim);" onclick="showScreen('title')">← Back</button>
-      <button class="btn-gold" style="flex:2;" onclick="showScreen('setup')">Ready — Let's Play ✦</button>
-    </div>
+      <button class="btn-gold" style="max-width:320px;font-size:1.1rem;padding:1rem 2rem;" onclick="event.stopPropagation();showScreen('setup')">✦ Enter the Cell Cycle ✦</button>
+      <div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--text-dim);letter-spacing:0.2em;margin-top:1.2rem;opacity:0.6;">CLICK ANYWHERE OR PRESS ANY KEY TO CONTINUE</div>
   </div>
 </div>
 
@@ -574,10 +552,9 @@ body {
 
     </div><!-- end multiplayerSection -->
 
-    <!-- Begin button + HTP link -->
+    <!-- Begin button -->
     <div style="display:flex;align-items:center;gap:1rem;">
       <button class="btn-gold" style="flex:1;" onclick="startGame(setupStudyMode)">✦ Begin the Division ✦</button>
-      <button style="background:none;border:none;color:var(--text-dim);font-family:'Cinzel',serif;font-size:1rem;cursor:pointer;letter-spacing:0.1em;white-space:nowrap;" onclick="showScreen('howtoplay')">← How to Play</button>
     </div>
 
   </div>
@@ -1351,10 +1328,15 @@ function renderEntryInputs(){
     nameRow.innerHTML = `<div class="entry-num">${i+1}</div><input type="text" placeholder="${label} ${i+1}" value="${savedVal}" id="en${i}" ${active?'':'disabled'} style="flex:1;">`;
     row.appendChild(nameRow);
 
-    // Icon picker (all players)
-    const iconRow = document.createElement('div');
-    iconRow.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:0.35rem;padding-left:1.8rem;';
-    iconRow.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:0.75rem;color:var(--text-dim);letter-spacing:0.08em;margin-right:0.2rem;width:100%;flex-basis:100%;">ICON</span>`;
+    // Icon picker (all players) — 2 rows of 5
+    const iconWrap = document.createElement('div');
+    iconWrap.style.cssText = 'padding-left:1.8rem;';
+    const iconLabel = document.createElement('div');
+    iconLabel.style.cssText = "font-family:'Cinzel',serif;font-size:0.75rem;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:0.3rem;";
+    iconLabel.textContent = 'ICON';
+    iconWrap.appendChild(iconLabel);
+    const iconGrid = document.createElement('div');
+    iconGrid.style.cssText = 'display:grid;grid-template-columns:repeat(5,32px);gap:0.35rem;';
     TOKEN_ICONS.forEach(icon => {
       const btn = document.createElement('button');
       btn.title = icon;
@@ -1362,21 +1344,28 @@ function renderEntryInputs(){
       const miniSVG = `<svg viewBox="-8 -8 16 16" xmlns="http://www.w3.org/2000/svg" width="26" height="26">${getTokenIconSVG(icon, col.hex, col.text, '', 0.85, false)}</svg>`;
       btn.innerHTML = miniSVG;
       if(active) btn.onclick = () => { playerTokens[i].icon = icon; renderEntryInputs(); };
-      iconRow.appendChild(btn);
+      iconGrid.appendChild(btn);
     });
-    row.appendChild(iconRow);
+    iconWrap.appendChild(iconGrid);
+    row.appendChild(iconWrap);
 
     // Color picker (all players)
     const colorRow = document.createElement('div');
-    colorRow.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:0.35rem;padding-left:1.8rem;';
-    colorRow.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:0.75rem;color:var(--text-dim);letter-spacing:0.08em;margin-right:0.2rem;width:100%;flex-basis:100%;">COLOR</span>`;
+    colorRow.style.cssText = 'padding-left:1.8rem;margin-top:0.4rem;';
+    const colorLabel = document.createElement('div');
+    colorLabel.style.cssText = "font-family:'Cinzel',serif;font-size:0.75rem;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:0.3rem;";
+    colorLabel.textContent = 'COLOR';
+    colorRow.appendChild(colorLabel);
+    const colorSwatches = document.createElement('div');
+    colorSwatches.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.35rem;';
     TOKEN_COLORS.forEach((tc, ci) => {
       const swatch = document.createElement('button');
       swatch.title = tc.name;
       swatch.style.cssText = `width:24px;height:24px;border-radius:50%;background:${tc.hex};border:2px solid ${tok.colorIdx===ci ? 'white' : 'rgba(255,255,255,0.2)'};cursor:${active?'pointer':'default'};transition:all 0.15s;box-shadow:${tok.colorIdx===ci ? '0 0 8px '+tc.hex : 'none'};`;
       if(active) swatch.onclick = () => { playerTokens[i].colorIdx = ci; renderEntryInputs(); };
-      colorRow.appendChild(swatch);
+      colorSwatches.appendChild(swatch);
     });
+    colorRow.appendChild(colorSwatches);
     row.appendChild(colorRow);
 
     el.appendChild(row);
@@ -1435,7 +1424,8 @@ function startGame(studyMode=false){
 // ══════════════════════════════════════════════
 // SCREENS
 // ══════════════════════════════════════════════
-const SCREEN_DISPLAY = { title:'flex', howtoplay:'block', setup:'flex', game:'block', win:'flex' };
+const SCREEN_DISPLAY = { title:'flex', setup:'flex', game:'block', win:'flex' };
+let _titleKeyHandler = null;
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>{
     s.classList.remove('active');
@@ -1444,6 +1434,12 @@ function showScreen(id){
   const el = document.getElementById(id);
   el.classList.add('active');
   el.style.display = SCREEN_DISPLAY[id] || 'block';
+  // Attach one-shot keydown skip on title screen
+  if(_titleKeyHandler){ document.removeEventListener('keydown', _titleKeyHandler); _titleKeyHandler = null; }
+  if(id === 'title'){
+    _titleKeyHandler = function(e){ if(e.key === 'Tab') return; showScreen('setup'); };
+    document.addEventListener('keydown', _titleKeyHandler, { once: true });
+  }
   if(id === 'setup' && setupStudyMode){
     setupStudyMode = false;
     const card = document.getElementById('studyModeCard');
@@ -2890,6 +2886,60 @@ function log(msg,cls){
     }, WIPE + 20);
   }, HOLD);
 })();
+</script>
+
+<!-- FLOATING RULES BUTTON -->
+<button class="rules-fab" onclick="openRules()" title="How to Play">?</button>
+
+<!-- RULES MODAL -->
+<div class="rules-overlay" id="rulesOverlay" onclick="if(event.target===this)closeRules()">
+  <div class="rules-modal frame" id="rulesModal"><div class="fc1"></div><div class="fc2"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <h2 style="font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:var(--gold-light);">How to Play</h2>
+      <button class="icon-btn" onclick="closeRules()" style="font-size:1rem;">✕</button>
+    </div>
+    <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text-dim);font-style:italic;margin-bottom:1.2rem;text-align:center;">A quick guide to the cell cycle</div>
+
+    <div class="frame" style="padding:0.9rem;margin-bottom:0.7rem;"><div class="fc1"></div><div class="fc2"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--cyan);letter-spacing:0.15em;margin-bottom:0.4rem;">🎯 OBJECTIVE</div>
+      <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);line-height:1.6;">Be the first player to reach <strong style="color:var(--gold)">Cytokinesis</strong> by correctly answering biology questions as you race through the cell cycle.</div>
+    </div>
+
+    <div class="frame" style="padding:0.9rem;margin-bottom:0.7rem;"><div class="fc1"></div><div class="fc2"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--green);letter-spacing:0.15em;margin-bottom:0.5rem;">📋 ON YOUR TURN</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+        <div style="background:rgba(6,214,160,0.08);border:1px solid var(--green-dim);border-radius:6px;padding:0.5rem;">
+          <div style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--green);margin-bottom:0.25rem;">🟢 GREEN QUESTION</div>
+          <div style="font-family:'EB Garamond',serif;font-size:0.95rem;color:var(--text);line-height:1.5;">Basic recall. Answer correctly → move <strong>1 space</strong>.</div>
+        </div>
+        <div style="background:rgba(199,125,255,0.08);border:1px solid var(--violet-dim);border-radius:6px;padding:0.5rem;">
+          <div style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--violet-light);margin-bottom:0.25rem;">🟣 VIOLET QUESTION</div>
+          <div style="font-family:'EB Garamond',serif;font-size:0.95rem;color:var(--text);line-height:1.5;">Application & analysis. Answer correctly → move <strong>2 spaces</strong>.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame" style="padding:0.9rem;margin-bottom:0.7rem;"><div class="fc1"></div><div class="fc2"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gold);letter-spacing:0.15em;margin-bottom:0.5rem;">⬦ SPECIAL SPACES</div>
+      <div style="display:flex;flex-direction:column;gap:0.4rem;">
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1rem;flex-shrink:0;">💠</span><div><strong style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--green);">CHECKPOINTS</strong><span style="font-family:'EB Garamond',serif;font-size:0.95rem;color:var(--text);"> — DNA base-pair matching (G1), True/False rapid fire (G2), and vocabulary matching (M). Each has a 30-second timer. Pass or try again next turn.</span></div></div>
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1rem;flex-shrink:0;">🃏</span><div><strong style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--violet-light);">CELL EVENTS</strong><span style="font-family:'EB Garamond',serif;font-size:0.95rem;color:var(--text);"> — Draw a card. Could boost you forward, grant immunity, or set you back. Such is biology.</span></div></div>
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1rem;flex-shrink:0;">💤</span><div><strong style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--g0-color);">G0 PHASE</strong><span style="font-family:'EB Garamond',serif;font-size:0.95rem;color:var(--text);"> — The resting state. All players start here before entering the active cycle at G1.</span></div></div>
+      </div>
+    </div>
+
+    <div class="frame" style="padding:0.9rem;margin-bottom:1rem;"><div class="fc1"></div><div class="fc2"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--pink);letter-spacing:0.15em;margin-bottom:0.4rem;">⚗ STUDY MODE</div>
+      <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);line-height:1.6;">Toggle <strong style="color:var(--sky)">Relaxed Mode</strong> on the setup screen to disable all checkpoint timers — checkpoints still require correct answers, but there's no time pressure.</div>
+    </div>
+
+    <button class="btn-gold btn-secondary" style="width:100%;" onclick="closeRules()">✕ Close</button>
+  </div>
+</div>
+
+<script>
+function openRules(){ document.getElementById('rulesOverlay').classList.add('open'); }
+function closeRules(){ document.getElementById('rulesOverlay').classList.remove('open'); }
 </script>
 </body>
 </html>
