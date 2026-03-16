@@ -146,7 +146,6 @@ body {
   gap: 1rem;
 }
 .gh-title { font-family:'Cinzel Decorative',serif; font-size:0.8rem; color:var(--gold); white-space:nowrap; }
-.topbar-center { flex:1; display:flex; justify-content:center; align-items:center; gap:0.5rem; }
 .topbar-actions { display:flex; gap:0.4rem; }
 .current-player-badge {
   display: flex; align-items: center; gap: 0.5rem;
@@ -178,7 +177,6 @@ body {
   overflow: hidden;
 }
 #boardSVG { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; z-index:1; }
-#cellCanvas { display:none; }
 
 /* RIGHT SIDEBAR */
 .game-sidebar {
@@ -209,19 +207,6 @@ body {
   padding: 0.4rem 0.75rem; margin-top: 0.35rem;
   min-height: 54px;
 }
-.question-chooser { display:flex; gap:0.5rem; }
-.q-btn {
-  padding: 0.45rem 0.9rem; border-radius:6px; border:2px solid;
-  font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.04em;
-  cursor:pointer; transition:all 0.2s; text-align:center; line-height:1.4;
-}
-.q-sub { font-size:0.55rem; opacity:0.75; display:block; }
-.q-btn.green-q { border-color:var(--green-dim); background:rgba(6,214,160,0.08); color:var(--green); }
-.q-btn.green-q:hover { border-color:var(--green); box-shadow:0 0 14px rgba(6,214,160,0.3); background:rgba(6,214,160,0.14); }
-.q-btn.violet-q { border-color:var(--violet-dim); background:rgba(199,125,255,0.08); color:var(--violet-light); }
-.q-btn.violet-q:hover { border-color:var(--violet); box-shadow:0 0 14px rgba(199,125,255,0.3); background:rgba(199,125,255,0.14); }
-.q-btn:disabled { opacity:0.35; cursor:not-allowed; }
-
 .btn-next { display:none; padding:0.5rem 1.4rem; background:linear-gradient(135deg,var(--gold-dark),var(--gold-light),var(--gold-dark)); border:none; border-radius:4px; color:var(--text-dark); font-family:'Cinzel',serif; font-size:0.8rem; font-weight:700; letter-spacing:0.1em; cursor:pointer; text-transform:uppercase; transition:all 0.2s; white-space:nowrap; }
 .btn-next.show { display:block; }
 .btn-next:hover { filter:brightness(1.1); }
@@ -238,6 +223,29 @@ body {
   color:var(--text); transition:all 0.15s;
 }
 .icon-btn:hover { background:rgba(255,255,255,0.12); border-color:var(--gold-dark); }
+
+/* ── FLOATING RULES BUTTON ── */
+.rules-fab {
+  position:fixed; bottom:1rem; right:1rem; z-index:200;
+  width:40px; height:40px; border-radius:50%;
+  background:rgba(14,14,26,0.85); border:1px solid var(--gold-dark);
+  color:var(--gold); font-family:'Cinzel',serif; font-size:1rem; font-weight:700;
+  cursor:pointer; transition:all 0.2s;
+  box-shadow:0 2px 12px rgba(0,0,0,0.5);
+  display:flex; align-items:center; justify-content:center;
+}
+.rules-fab:hover { border-color:var(--gold-light); color:var(--gold-light); box-shadow:0 0 14px rgba(201,162,39,0.4); }
+
+/* ── RULES MODAL ── */
+.rules-overlay {
+  display:none; position:fixed; inset:0; z-index:300;
+  background:rgba(0,0,0,0.72); align-items:center; justify-content:center; padding:1.5rem;
+}
+.rules-overlay.open { display:flex; }
+.rules-modal {
+  max-width:640px; width:100%; max-height:90vh; overflow-y:auto;
+  padding:1.5rem; position:relative;
+}
 
 /* ══ POPUP OVERLAY ══ */
 .popup-overlay {
@@ -264,7 +272,6 @@ body {
 .popup-rule { font-family:'EB Garamond',serif; font-size:1.15rem; color:var(--text); text-align:center; line-height:1.65; margin-bottom:1.2rem; }
 .popup-ck-title { font-family:'Cinzel',serif; font-size:0.68rem; color:var(--gold); letter-spacing:0.1em; text-align:center; margin-bottom:0.5rem; text-transform:uppercase; }
 .popup-ck-sub { font-family:'Cinzel',serif; font-size:0.6rem; color:var(--text-dim); text-align:center; margin-bottom:0.4rem; }
-.popup-result-emoji { font-size:3.5rem; text-align:center; margin-bottom:0.6rem; }
 .popup-btn-next { width:100%; margin-top:1rem; padding:0.65rem; display:block; }
 
 /* .btn-splash defined below with splash-panel styles */
@@ -402,7 +409,6 @@ body {
 /* ── SPLASH SCREEN ── */
 .splash-panel { text-align:center; padding:1.5rem 1rem; animation:splashIn 0.35s ease; }
 @keyframes splashIn { from{transform:scale(0.85);opacity:0;} to{transform:scale(1);opacity:1;} }
-.splash-emoji { font-size:3rem; margin-bottom:0.6rem; }
 .splash-title { font-family:'Cinzel Decorative',serif; font-size:1.1rem; color:var(--gold-light); text-shadow:0 0 20px rgba(201,162,39,0.5); margin-bottom:0.4rem; letter-spacing:0.05em; }
 .splash-sub { font-family:'EB Garamond',serif; font-size:0.95rem; color:var(--text-dim); font-style:italic; margin-bottom:1rem; line-height:1.5; }
 .splash-rule { font-family:'Cinzel',serif; font-size:0.95rem; color:var(--text-dim); letter-spacing:0.06em; background:rgba(0,0,0,0.3); border:1px solid var(--gold-dark); border-radius:4px; padding:0.7rem 1rem; margin-bottom:1rem; line-height:1.7; }
@@ -456,65 +462,20 @@ body {
 <canvas id="titleCanvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
 
 <!-- TITLE SPLASH -->
-<div id="title" class="screen active">
+<div id="title" class="screen active" onclick="showScreen('setup')" style="cursor:pointer;">
   <div style="position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;box-sizing:border-box;">
       <div style="font-size:4rem;margin-bottom:0.5rem;animation:floatEmoji 3s ease-in-out infinite;">🧬</div>
       <h1 style="font-family:'Cinzel Decorative',serif;font-size:clamp(1.6rem,5vw,3rem);color:var(--gold-light);text-shadow:0 0 18px rgba(255,209,102,0.55);margin-bottom:0.3rem;letter-spacing:0.12em;word-spacing:0.15em;">Checkpoint Runner</h1>
       <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--violet-light);letter-spacing:0.3em;text-transform:uppercase;margin-bottom:0.2rem;">The Board Game</div>
       <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text-dim);font-style:italic;margin-bottom:2.5rem;">Race through the cell cycle — from interphase to cytokinesis</div>
-      <button class="btn-gold" style="max-width:320px;font-size:1.1rem;padding:1rem 2rem;" onclick="showScreen('howtoplay')">✦ Enter the Cell Cycle ✦</button>
-  </div>
-</div>
-
-<!-- HOW TO PLAY -->
-<div id="howtoplay" class="screen" style="display:none">
-  <div style="max-width:680px;margin:0 auto;padding:1.5rem;">
-    <h2 style="font-family:'Cinzel Decorative',serif;font-size:1.4rem;color:var(--gold-light);text-align:center;margin-bottom:0.3rem;">How to Play</h2>
-    <div style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--text-dim);text-align:center;font-style:italic;margin-bottom:1.5rem;">A quick guide to the cell cycle</div>
-
-    <div class="frame" style="padding:1rem;margin-bottom:0.8rem;"><div class="fc1"></div><div class="fc2"></div>
-      <div style="font-family:'Cinzel',serif;font-size:0.9rem;color:var(--cyan);letter-spacing:0.15em;margin-bottom:0.5rem;">🎯 OBJECTIVE</div>
-      <div style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--text);line-height:1.6;">Be the first player to reach <strong style="color:var(--gold)">Cytokinesis</strong> by correctly answering biology questions as you race through the cell cycle.</div>
-    </div>
-
-    <div class="frame" style="padding:1rem;margin-bottom:0.8rem;"><div class="fc1"></div><div class="fc2"></div>
-      <div style="font-family:'Cinzel',serif;font-size:0.9rem;color:var(--green);letter-spacing:0.15em;margin-bottom:0.6rem;">📋 ON YOUR TURN</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
-        <div style="background:rgba(6,214,160,0.08);border:1px solid var(--green-dim);border-radius:6px;padding:0.6rem;">
-          <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--green);margin-bottom:0.3rem;">🟢 GREEN QUESTION</div>
-          <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);line-height:1.5;">Basic recall. Answer correctly → move <strong>1 space</strong>.</div>
-        </div>
-        <div style="background:rgba(199,125,255,0.08);border:1px solid var(--violet-dim);border-radius:6px;padding:0.6rem;">
-          <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--violet-light);margin-bottom:0.3rem;">🟣 VIOLET QUESTION</div>
-          <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);line-height:1.5;">Application & analysis. Answer correctly → move <strong>2 spaces</strong>.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="frame" style="padding:1rem;margin-bottom:0.8rem;"><div class="fc1"></div><div class="fc2"></div>
-      <div style="font-family:'Cinzel',serif;font-size:0.9rem;color:var(--gold);letter-spacing:0.15em;margin-bottom:0.6rem;">⬦ SPECIAL SPACES</div>
-      <div style="display:flex;flex-direction:column;gap:0.4rem;">
-        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">💠</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--green);">CHECKPOINTS</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — Three checkpoint activities: DNA base-pair matching (G1), True/False rapid fire (G2), and vocabulary matching (M). Each has a 30-second timer. Pass or try again next turn.</span></div></div>
-        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">🃏</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--violet-light);">CELL EVENTS</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — Draw a card. Could boost you forward, grant immunity, or set you back. Such is biology.</span></div></div>
-        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1.1rem;flex-shrink:0;">💤</span><div><strong style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--g0-color);">G0 PHASE</strong><span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);"> — The resting state. All players start here before entering the active cycle at G1.</span></div></div>
-      </div>
-    </div>
-
-    <div class="frame" style="padding:1rem;margin-bottom:1.5rem;"><div class="fc1"></div><div class="fc2"></div>
-      <div style="font-family:'Cinzel',serif;font-size:0.9rem;color:var(--pink);letter-spacing:0.15em;margin-bottom:0.5rem;">⚗ STUDY MODE</div>
-      <div style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--text);line-height:1.6;">Toggle <strong style="color:var(--sky)">Relaxed Mode</strong> on the setup screen to disable all checkpoint timers — checkpoints still require correct answers, but there's no time pressure. Great for classrooms learning the material for the first time.</div>
-    </div>
-
-    <div style="display:flex;gap:0.75rem;">
-      <button class="btn-gold" style="flex:1;background:linear-gradient(135deg,var(--surface-btn),var(--surface-btn2),var(--surface-btn));color:var(--text-dim);" onclick="showScreen('title')">← Back</button>
-      <button class="btn-gold" style="flex:2;" onclick="showScreen('setup')">Ready — Let's Play ✦</button>
-    </div>
+      <button class="btn-gold" style="max-width:320px;font-size:1.1rem;padding:1rem 2rem;" onclick="event.stopPropagation();showScreen('setup')">✦ Enter the Cell Cycle ✦</button>
+      <div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--text-dim);letter-spacing:0.2em;margin-top:1.2rem;opacity:0.6;">CLICK ANYWHERE OR PRESS ANY KEY TO CONTINUE</div>
   </div>
 </div>
 
 <!-- SETUP -->
 <div id="setup" class="screen" style="display:none">
-  <div class="frame" style="max-width:860px;margin:0 auto;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.7rem;"><div class="fc1"></div><div class="fc2"></div>
+  <div class="frame" style="max-width:860px;margin:1rem auto;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.7rem;"><div class="fc1"></div><div class="fc2"></div>
 
     <!-- Top row: Study Mode + Relaxed toggle side by side -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;">
@@ -537,7 +498,7 @@ body {
         </div>
         <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0;margin-left:0.75rem;">
           <input type="checkbox" id="relaxedToggle" style="opacity:0;width:0;height:0;">
-          <span onclick="this.previousElementSibling.click()" style="position:absolute;cursor:pointer;inset:0;background:var(--surface-btn);border-radius:22px;transition:0.3s;border:1px solid rgba(255,255,255,0.15);">
+          <span style="position:absolute;cursor:pointer;inset:0;background:var(--surface-btn);border-radius:22px;transition:0.3s;border:1px solid rgba(255,255,255,0.15);">
             <span id="relaxedKnob" style="position:absolute;height:16px;width:16px;left:2px;bottom:2px;background:var(--text-dim);border-radius:50%;transition:0.3s;"></span>
           </span>
         </label>
@@ -577,10 +538,9 @@ body {
 
     </div><!-- end multiplayerSection -->
 
-    <!-- Begin button + HTP link -->
+    <!-- Begin button -->
     <div style="display:flex;align-items:center;gap:1rem;">
       <button class="btn-gold" style="flex:1;" onclick="startGame(setupStudyMode)">✦ Begin the Division ✦</button>
-      <button style="background:none;border:none;color:var(--text-dim);font-family:'Cinzel',serif;font-size:1rem;cursor:pointer;letter-spacing:0.1em;white-space:nowrap;" onclick="showScreen('howtoplay')">← How to Play</button>
     </div>
 
   </div>
@@ -595,12 +555,12 @@ body {
 
     <!-- TOP BAR -->
     <div class="game-topbar frame"><div class="fc1"></div><div class="fc2"></div>
+      <div style="flex:1;"></div>
       <span class="gh-title">Checkpoint Runner</span>
-      <div class="topbar-center" id="topbarCenter">
-        <!-- current player badge injected here -->
-      </div>
-      <div class="topbar-actions">
-        <button class="icon-btn" onclick="openLog()" title="Chronicle">📜</button>
+      <div style="flex:1;display:flex;justify-content:flex-end;">
+        <div class="topbar-actions">
+          <button class="icon-btn" onclick="openLog()" title="Chronicle">📜</button>
+        </div>
       </div>
     </div>
 
@@ -610,7 +570,6 @@ body {
       <!-- BOARD -->
       <div class="board-frame frame"><div class="fc1"></div><div class="fc2"></div>
         <div class="circular-board-container" id="boardContainer">
-          <canvas id="cellCanvas"></canvas>
           <svg id="boardSVG" viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
       </div>
@@ -623,14 +582,11 @@ body {
 
     </div>
 
-    <!-- BOTTOM BAR: question chooser + next turn -->
+    <!-- BOTTOM BAR: player badge + result + next turn -->
     <div class="game-bottombar frame"><div class="fc1"></div><div class="fc2"></div>
-      <div id="qChooser" class="question-chooser">
-        <button class="q-btn green-q" onclick="askQuestion('green')" id="btnGreen">🟢 Green<br><span class="q-sub">Move 1</span></button>
-        <button class="q-btn violet-q" onclick="askQuestion('violet')" id="btnViolet">🟣 Violet<br><span class="q-sub">Move 2</span></button>
-      </div>
-      <button class="btn-next" id="btnNext" onclick="nextTurn()">⟶ Next Turn</button>
+      <div id="bottomPlayerBadge"></div>
       <div class="aq-result" id="aqResult"></div>
+      <button class="btn-next" id="btnNext" onclick="nextTurn()">⟶ Next Turn</button>
     </div>
 
   </div><!-- end game-shell -->
@@ -706,14 +662,6 @@ body {
         </div>
         <div class="aq-result" id="eventResult"></div>
         <button class="btn-next popup-btn-next" id="btnEventNext" style="display:none">OK</button>
-      </div>
-
-      <!-- RESULT popup (standalone correct/wrong feedback) -->
-      <div id="resultPanel" style="display:none">
-        <div class="popup-result-emoji" id="resultEmoji"></div>
-        <div class="popup-title" id="resultTitle"></div>
-        <div class="popup-sub" id="resultSub"></div>
-        <button class="btn-next popup-btn-next" id="btnResultNext" onclick="closePopup()">⟶ Continue</button>
       </div>
 
     </div><!-- end popup-box -->
@@ -838,31 +786,22 @@ function startWinConfetti(){
 }
 // ══════════════════════════════════════════════
 const BOARD = [
-  { id:'g0',    name:'G0 Phase',       emoji:'💤', type:'regular',       tag:'START',      desc:'Cell exits cycle, awaits signal' },
-  { id:'g1',    name:'G1 Phase',       emoji:'🔵', type:'regular',       tag:'INTERPHASE', desc:'Cell grows, makes proteins' },
-  { id:'ev-g1', name:'Cell Event',     emoji:'🃏', type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
-  { id:'cp-g1', name:'G1 Checkpoint',  emoji:'🧬', type:'checkpoint-g1', tag:'CHECKPOINT', desc:'DNA integrity verified before S phase' },
-  { id:'s',     name:'S Phase',        emoji:'__DNAP__', type:'regular',       tag:'INTERPHASE', desc:'DNA fully replicated, chromosomes doubled' },
-  { id:'g2',    name:'G2 Phase',       emoji:'⚡', type:'regular',       tag:'INTERPHASE', desc:'Cell preps organelles for division' },
-  { id:'ev-g2', name:'Cell Event',     emoji:'🃏', type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
-  { id:'cp-g2', name:'G2 Checkpoint',  emoji:'⏱️', type:'checkpoint-g2', tag:'CHECKPOINT', desc:'Replication errors caught here' },
-  { id:'pro',   name:'Prophase',       emoji:'🌀', type:'regular',       tag:'MITOSIS',    desc:'Chromosomes condense, spindle forms' },
-  { id:'ev1',   name:'Cell Event',     emoji:'🃏', type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
-  { id:'meta',  name:'Metaphase',      emoji:'📐', type:'regular',       tag:'MITOSIS',    desc:'Chromosomes align at cell plate' },
-  { id:'cp-m',  name:'M Checkpoint',   emoji:'🔬', type:'checkpoint-m',  tag:'CHECKPOINT', desc:'Spindle must attach before division' },
-  { id:'ana',   name:'Anaphase',       emoji:'↔️', type:'regular',       tag:'MITOSIS',    desc:'Sister chromatids pulled to poles' },
-  { id:'ev2',   name:'Cell Event',     emoji:'🃏', type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
-  { id:'telo',  name:'Telophase',      emoji:'🔴', type:'regular',       tag:'MITOSIS',    desc:'Nuclear envelopes re-form around chromosomes' },
-  { id:'cyto',  name:'Cytokinesis',    emoji:'✂️', type:'finish',        tag:'FINISH',     desc:'Cytoplasm splits — two daughter cells!' },
-];
-
-const PAWN_COLORS = [
-  ['#ff2d78','#fff'],   // hot magenta
-  ['#00f5a0','#000'],   // electric mint
-  ['#ffb800','#000'],   // vivid amber
-  ['#00cfff','#000'],   // sky cyan
-  ['#bf5fff','#fff'],   // bright purple
-  ['#ff6b35','#fff'],   // vivid orange
+  { id:'g0',    name:'G0 Phase',       type:'regular',       tag:'START',      desc:'Cell exits cycle, awaits signal' },
+  { id:'g1',    name:'G1 Phase',       type:'regular',       tag:'INTERPHASE', desc:'Cell grows, makes proteins' },
+  { id:'ev-g1', name:'Cell Event',     type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
+  { id:'cp-g1', name:'G1 Checkpoint',  type:'checkpoint-g1', tag:'CHECKPOINT', desc:'DNA integrity verified before S phase' },
+  { id:'s',     name:'S Phase',        type:'regular',       tag:'INTERPHASE', desc:'DNA fully replicated, chromosomes doubled' },
+  { id:'g2',    name:'G2 Phase',       type:'regular',       tag:'INTERPHASE', desc:'Cell preps organelles for division' },
+  { id:'ev-g2', name:'Cell Event',     type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
+  { id:'cp-g2', name:'G2 Checkpoint',  type:'checkpoint-g2', tag:'CHECKPOINT', desc:'Replication errors caught here' },
+  { id:'pro',   name:'Prophase',       type:'regular',       tag:'MITOSIS',    desc:'Chromosomes condense, spindle forms' },
+  { id:'ev1',   name:'Cell Event',     type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
+  { id:'meta',  name:'Metaphase',      type:'regular',       tag:'MITOSIS',    desc:'Chromosomes align at cell plate' },
+  { id:'cp-m',  name:'M Checkpoint',   type:'checkpoint-m',  tag:'CHECKPOINT', desc:'Spindle must attach before division' },
+  { id:'ana',   name:'Anaphase',       type:'regular',       tag:'MITOSIS',    desc:'Sister chromatids pulled to poles' },
+  { id:'ev2',   name:'Cell Event',     type:'event',         tag:'EVENT',      desc:'Something stirs in the cytoplasm' },
+  { id:'telo',  name:'Telophase',      type:'regular',       tag:'MITOSIS',    desc:'Nuclear envelopes re-form around chromosomes' },
+  { id:'cyto',  name:'Cytokinesis',    type:'finish',        tag:'FINISH',     desc:'Cytoplasm splits — two daughter cells!' },
 ];
 
 const TOKEN_COLORS = [
@@ -1087,47 +1026,26 @@ const GREEN_Q = [
 ];
 
 const VIOLET_Q = [
-  // V1: answer B trimmed (removed "correctly, leading to aneuploidy")
   { q:"If a mutation caused spindle fibers to malfunction, what would happen during mitosis?", opts:["Cells would grow larger","Chromosomes might not separate","DNA replication would stop","The nucleus would dissolve permanently"], ans:1 },
-  // V2: answer C trimmed; option D "retry" → "restart"
   { q:"What would happen if cytokinesis failed after telophase?", opts:["The cell would die immediately","Two tiny cells would form","The cell would have two nuclei","Nothing — division would just restart"], ans:2 },
-  // V3: answer B → "Cancer cells divide continuously"
   { q:"How does cancer relate to the mitotic cell cycle?", opts:["Cancer cells skip interphase","Cancer cells divide continuously","Cancer prevents all cell division","Cancer cells undergo meiosis instead"], ans:1 },
-  // V4 deleted (was "Why do cells spend most of their time in interphase")
-  // V5: answer B shortened; option D adds "would"
   { q:"How would a cell in prophase look different from one in interphase under a microscope?", opts:["Prophase cells are smaller","Chromosomes are visible in prophase","Interphase cells have no nucleus","They would look identical"], ans:1 },
-  // V6: rewritten with parallel answer choices per comment
   { q:"Why is it important for sister chromatids to separate evenly during mitosis?", opts:["To conserve energy during division","To ensure each daughter cell receives an identical set of chromosomes","To increase the speed of division","To prevent errors in RNA transcription"], ans:1 },
-  // V7: "directly" added to stem
   { q:"What phase of mitosis would be most directly affected by a drug that prevents spindle fiber attachment?", opts:["Prophase","Telophase","Anaphase","Metaphase"], ans:3 },
-  // V8: answer B → "remain in G0 phase"
   { q:"Why do some cells, like neurons, rarely undergo mitosis?", opts:["They are too large","They remain in G0 phase","They lack DNA","Neurons only use meiosis"], ans:1 },
-  // V9: rewritten with parallel answer choices per comment
   { q:"What structural difference means plant cells handle cytokinesis differently than animal cells?", opts:["Plant cells lack a nucleus during division","Plant cells have rigid cell walls, so they build a cell plate instead of pinching apart","Plant cells complete cytokinesis more quickly","Plant cells form two nuclei before dividing"], ans:1 },
-  // V10: options A, C, D reworded
   { q:"What is the consequence of aneuploidy caused by mitotic errors?", opts:["Cells become more efficient because they gain genetic material","It can lead to cell malfunction, genetic disorders, or cancer","The cell must repair itself by making a new copy of the chromosome","Somatic cells are affected, but germ-line cells will not be"], ans:1 },
-  // V11 deleted (was "A cell treated with a drug that destroys microtubules")
-  // V12: "most" removed from stem; answer B trimmed
   { q:"If the G1 checkpoint fails to detect DNA damage, what is the likely long-term consequence?", opts:["The cell becomes larger than normal","Mutations are passed to daughter cells","The cell enters G0 permanently","DNA replication is repeated"], ans:1 },
-  // V13: answer B → "produces identical daughter cells"
   { q:"Why is mitosis considered a conservative process?", opts:["It conserves energy by dividing slowly","It produces identical daughter cells","It keeps one original DNA strand in the parent","It avoids making any new proteins"], ans:1 },
-  // V14: "body" removed; "gametes" → "cells"
   { q:"A student claims that mitosis and meiosis produce the same type of cells. What is wrong with this statement?", opts:["Nothing — both produce diploid cells","Mitosis produces diploid cells; meiosis produces haploid cells","Meiosis produces diploid cells; mitosis produces haploid cells","Both produce haploid cells, but at different rates"], ans:1 },
   { q:"If a human cell with 46 chromosomes undergoes mitosis, how many chromosomes will each daughter cell have?", opts:["23","46","92","It depends on which chromosomes are replicated"], ans:1 },
-  // V16: answer B trimmed ("all" and "before anaphase proceeds" removed)
   { q:"How does the M checkpoint protect the cell?", opts:["It ensures DNA has been replicated before division","It confirms chromosomes are attached to spindle fibers","It checks that the cell is large enough to divide","It verifies that cytokinesis completed successfully"], ans:1 },
-  // V17: answer B and option C reworded
   { q:"What would most likely happen if a cell skipped the S phase and went directly into mitosis?", opts:["Division would proceed normally but more quickly","Chromosomes would not have sister chromatids","The cell would not produce homologous chromosomes","The chromosomes would condense more tightly"], ans:1 },
-  // V18: answer B and option C trimmed
   { q:"Why is uncontrolled cell division dangerous to an organism?", opts:["It uses too much ATP","It can form tumors","It produces haploid cells","It speeds up aging"], ans:1 },
   { q:"A cell has twice the normal amount of DNA but has not yet divided. Which phase is it most likely in?", opts:["G1 phase","S phase","G2 phase","G0 phase"], ans:2 },
-  // V20: answer B trimmed
   { q:"Which best explains why skin cells divide frequently while heart muscle cells rarely do?", opts:["Skin cells have more DNA","Skin cells need constant replacement","Heart muscle cells lack mitochondria","Skin cells perform meiosis instead"], ans:1 },
-  // V21: answer B → "same DNA"
   { q:"What is the significance of the fact that mitosis produces genetically identical cells?", opts:["It allows for genetic variation in a population","It ensures that all body cells carry the same DNA","It prevents cells from making proteins","It means mutations can never occur"], ans:1 },
   { q:"A researcher observes a cell where chromosomes are moving toward opposite poles but no nuclear envelope has formed yet. Which phase is this?", opts:["Metaphase","Anaphase","Telophase","Prophase"], ans:1 },
-  // V23 moved to GREEN bank as Q41 (contact inhibition)
-  // V24: "(programmed cell death)" removed; answer B trimmed
   { q:"Why is apoptosis considered important for normal development?", opts:["It removes cells that divide too slowly","It eliminates damaged or unneeded cells","It replaces mitosis during organ formation","It ensures chromosomes are evenly distributed"], ans:1 },
 ];
 
@@ -1393,10 +1311,15 @@ function renderEntryInputs(){
     nameRow.innerHTML = `<div class="entry-num">${i+1}</div><input type="text" placeholder="${label} ${i+1}" value="${savedVal}" id="en${i}" ${active?'':'disabled'} style="flex:1;">`;
     row.appendChild(nameRow);
 
-    // Icon picker (all players)
-    const iconRow = document.createElement('div');
-    iconRow.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:0.35rem;padding-left:1.8rem;';
-    iconRow.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:0.75rem;color:var(--text-dim);letter-spacing:0.08em;margin-right:0.2rem;width:100%;flex-basis:100%;">ICON</span>`;
+    // Icon picker (all players) — 2 rows of 5
+    const iconWrap = document.createElement('div');
+    iconWrap.style.cssText = 'padding-left:1.8rem;';
+    const iconLabel = document.createElement('div');
+    iconLabel.style.cssText = "font-family:'Cinzel',serif;font-size:0.75rem;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:0.3rem;";
+    iconLabel.textContent = 'ICON';
+    iconWrap.appendChild(iconLabel);
+    const iconGrid = document.createElement('div');
+    iconGrid.style.cssText = 'display:grid;grid-template-columns:repeat(5,32px);gap:0.35rem;';
     TOKEN_ICONS.forEach(icon => {
       const btn = document.createElement('button');
       btn.title = icon;
@@ -1404,21 +1327,28 @@ function renderEntryInputs(){
       const miniSVG = `<svg viewBox="-8 -8 16 16" xmlns="http://www.w3.org/2000/svg" width="26" height="26">${getTokenIconSVG(icon, col.hex, col.text, '', 0.85, false)}</svg>`;
       btn.innerHTML = miniSVG;
       if(active) btn.onclick = () => { playerTokens[i].icon = icon; renderEntryInputs(); };
-      iconRow.appendChild(btn);
+      iconGrid.appendChild(btn);
     });
-    row.appendChild(iconRow);
+    iconWrap.appendChild(iconGrid);
+    row.appendChild(iconWrap);
 
     // Color picker (all players)
     const colorRow = document.createElement('div');
-    colorRow.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:0.35rem;padding-left:1.8rem;';
-    colorRow.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:0.75rem;color:var(--text-dim);letter-spacing:0.08em;margin-right:0.2rem;width:100%;flex-basis:100%;">COLOR</span>`;
+    colorRow.style.cssText = 'padding-left:1.8rem;margin-top:0.4rem;';
+    const colorLabel = document.createElement('div');
+    colorLabel.style.cssText = "font-family:'Cinzel',serif;font-size:0.75rem;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:0.3rem;";
+    colorLabel.textContent = 'COLOR';
+    colorRow.appendChild(colorLabel);
+    const colorSwatches = document.createElement('div');
+    colorSwatches.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.35rem;';
     TOKEN_COLORS.forEach((tc, ci) => {
       const swatch = document.createElement('button');
       swatch.title = tc.name;
       swatch.style.cssText = `width:24px;height:24px;border-radius:50%;background:${tc.hex};border:2px solid ${tok.colorIdx===ci ? 'white' : 'rgba(255,255,255,0.2)'};cursor:${active?'pointer':'default'};transition:all 0.15s;box-shadow:${tok.colorIdx===ci ? '0 0 8px '+tc.hex : 'none'};`;
       if(active) swatch.onclick = () => { playerTokens[i].colorIdx = ci; renderEntryInputs(); };
-      colorRow.appendChild(swatch);
+      colorSwatches.appendChild(swatch);
     });
+    colorRow.appendChild(colorSwatches);
     row.appendChild(colorRow);
 
     el.appendChild(row);
@@ -1470,7 +1400,6 @@ function startGame(studyMode=false){
   dnaStrandDeck=shuffle(DNA_STRANDS); eventDeck=shuffle(EVENT_CARDS);
   showScreen('game');
   log(studyMode ? '⚗ Study mode — solo run through the cell cycle!' : 'The mitosis challenge begins!','hi');
-  startCellCanvas();
   startGameBgCanvas();
   renderGame();
 }
@@ -1478,7 +1407,8 @@ function startGame(studyMode=false){
 // ══════════════════════════════════════════════
 // SCREENS
 // ══════════════════════════════════════════════
-const SCREEN_DISPLAY = { title:'flex', howtoplay:'block', setup:'flex', game:'block', win:'flex' };
+const SCREEN_DISPLAY = { title:'flex', setup:'block', game:'block', win:'flex' };
+let _titleKeyHandler = null;
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>{
     s.classList.remove('active');
@@ -1487,6 +1417,12 @@ function showScreen(id){
   const el = document.getElementById(id);
   el.classList.add('active');
   el.style.display = SCREEN_DISPLAY[id] || 'block';
+  // Attach one-shot keydown skip on title screen
+  if(_titleKeyHandler){ document.removeEventListener('keydown', _titleKeyHandler); _titleKeyHandler = null; }
+  if(id === 'title'){
+    _titleKeyHandler = function(e){ if(e.key === 'Tab') return; showScreen('setup'); };
+    document.addEventListener('keydown', _titleKeyHandler, { once: true });
+  }
   if(id === 'setup' && setupStudyMode){
     setupStudyMode = false;
     const card = document.getElementById('studyModeCard');
@@ -1503,7 +1439,7 @@ function showScreen(id){
 // ══════════════════════════════════════════════
 function renderGame(){
   const cur=S.entries[S.current];
-  const badge=document.getElementById('topbarCenter');
+  const badge=document.getElementById('bottomPlayerBadge');
   if(badge) badge.innerHTML=`<div class="current-player-badge"><span style="color:${cur.color};font-size:0.9rem;">●</span><span class="cpb-name" style="color:${cur.color}">${cur.name}</span><span class="cpb-space">— ${BOARD[cur.pos].name}</span><span style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--text-dim);margin-left:0.5rem;">Turn ${S.turnNumber}</span></div>`;
   renderBoard(); renderScores(); resetQuestionUI();
 }
@@ -1950,7 +1886,9 @@ function renderBoard() {
   ];
   const DCY = 88, DW = 26, DH = 34;
   DECK_DEFS.forEach(({id, cx, color, label, icon}) => {
-    const g = svgEl('g', { id });
+    const g = svgEl('g', { id, style: 'transition:filter 0.15s,opacity 0.15s;' });
+    g.addEventListener('mouseenter', () => { if(g.style.cursor==='pointer') g.style.filter=`brightness(1.35) drop-shadow(0 0 4px ${color})`; });
+    g.addEventListener('mouseleave', () => { g.style.filter=''; });
     // Shadow cards (stacked depth)
     [2, 1].forEach(s => g.appendChild(svgEl('rect', {
       x: cx - DW/2 + s, y: DCY - DH/2 + s, width: DW, height: DH, rx: '1.5',
@@ -2044,136 +1982,6 @@ function drawToken(svg, e, gi, groupSize, bx, by, isCurrent) {
   svg.appendChild(g);
 }
 
-// ── CELL CANVAS ANIMATION ──
-let cellAnim = null;
-
-function startCellCanvas(){
-  const canvas = document.getElementById('cellCanvas');
-  if(!canvas) return;
-  if(cellAnim) cancelAnimationFrame(cellAnim);
-
-  function resize(){
-    const container = canvas.parentElement;
-    const size = container.offsetWidth * 0.48;
-    canvas.width  = size;
-    canvas.height = size;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  const ctx = canvas.getContext('2d');
-  let t = 0;
-
-  // Organelle particles
-  const particles = Array.from({length: 22}, (_, i) => ({
-    angle: (i / 22) * Math.PI * 2 + Math.random(),
-    r: 0.15 + Math.random() * 0.25,
-    speed: (0.003 + Math.random() * 0.004) * (Math.random() > 0.5 ? 1 : -1),
-    size: 2 + Math.random() * 3,
-    hue: [120, 200, 280, 60][Math.floor(Math.random() * 4)],
-    alpha: 0.4 + Math.random() * 0.4,
-  }));
-
-  // Chromatin strands
-  const strands = Array.from({length: 5}, (_, i) => ({
-    offset: (i / 5) * Math.PI * 2,
-    speed: 0.004 + Math.random() * 0.003,
-    hue: 200 + i * 30,
-  }));
-
-  function draw(){
-    t += 0.01;
-    const W = canvas.width, H = canvas.height;
-    const cx = W / 2, cy = H / 2, R = W / 2;
-    ctx.clearRect(0, 0, W, H);
-
-    // Outer cell membrane
-    const pulse = 0.96 + 0.04 * Math.sin(t * 0.8);
-    const memGrad = ctx.createRadialGradient(cx, cy, R*0.7*pulse, cx, cy, R*0.99*pulse);
-    memGrad.addColorStop(0, 'rgba(0,0,0,0)');
-    memGrad.addColorStop(0.75, 'rgba(106,13,173,0.06)');
-    memGrad.addColorStop(0.88, 'rgba(106,13,173,0.18)');
-    memGrad.addColorStop(0.95, 'rgba(156,60,220,0.28)');
-    memGrad.addColorStop(1,    'rgba(180,80,255,0.12)');
-    ctx.beginPath();
-    ctx.arc(cx, cy, R * 0.97 * pulse, 0, Math.PI * 2);
-    ctx.fillStyle = memGrad;
-    ctx.fill();
-
-    // Cell membrane border shimmer
-    ctx.beginPath();
-    ctx.arc(cx, cy, R * 0.96 * pulse, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(160,80,255,${0.3 + 0.15 * Math.sin(t)})`;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Cytoplasm glow
-    const cytoGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 0.8);
-    cytoGrad.addColorStop(0, 'rgba(20,5,40,0.0)');
-    cytoGrad.addColorStop(1, 'rgba(10,0,20,0.4)');
-    ctx.beginPath();
-    ctx.arc(cx, cy, R * 0.8, 0, Math.PI * 2);
-    ctx.fillStyle = cytoGrad;
-    ctx.fill();
-
-    // Chromatin strands inside nucleus
-    strands.forEach(s => {
-      const nucR = R * 0.32;
-      ctx.beginPath();
-      for(let a = 0; a < Math.PI * 2; a += 0.08){
-        const wobble = nucR * (0.6 + 0.15 * Math.sin(a * 3 + s.offset + t * s.speed * 60));
-        const px = cx + wobble * Math.cos(a + s.offset + t * s.speed);
-        const py = cy + wobble * Math.sin(a + s.offset + t * s.speed);
-        a === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      }
-      ctx.strokeStyle = `hsla(${s.hue}, 70%, 65%, 0.35)`;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    });
-
-    // Nucleus
-    const nucPulse = 0.98 + 0.02 * Math.sin(t * 1.2);
-    const nucGrad = ctx.createRadialGradient(cx - R*0.05, cy - R*0.05, R*0.02, cx, cy, R * 0.33 * nucPulse);
-    nucGrad.addColorStop(0, 'rgba(80,40,140,0.85)');
-    nucGrad.addColorStop(0.6, 'rgba(50,15,90,0.8)');
-    nucGrad.addColorStop(1, 'rgba(30,5,60,0.6)');
-    ctx.beginPath();
-    ctx.arc(cx, cy, R * 0.33 * nucPulse, 0, Math.PI * 2);
-    ctx.fillStyle = nucGrad;
-    ctx.fill();
-    ctx.strokeStyle = `rgba(180,120,255,${0.5 + 0.2 * Math.sin(t * 0.9)})`;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Nucleolus
-    const nlGrad = ctx.createRadialGradient(cx + R*0.05, cy + R*0.05, 0, cx + R*0.05, cy + R*0.05, R * 0.1);
-    nlGrad.addColorStop(0, 'rgba(200,160,255,0.6)');
-    nlGrad.addColorStop(1, 'rgba(120,60,200,0.2)');
-    ctx.beginPath();
-    ctx.arc(cx + R * 0.06, cy + R * 0.06, R * 0.09, 0, Math.PI * 2);
-    ctx.fillStyle = nlGrad;
-    ctx.fill();
-
-    // Organelle particles in cytoplasm
-    particles.forEach(p => {
-      p.angle += p.speed;
-      const orR = R * p.r * (0.9 + 0.1 * Math.sin(t + p.angle));
-      const ox = cx + orR * Math.cos(p.angle) * (0.38 + p.r * 1.2);
-      const oy = cy + orR * Math.sin(p.angle) * (0.38 + p.r * 1.2);
-      // Only draw if outside nucleus
-      const dist = Math.sqrt((ox - cx) ** 2 + (oy - cy) ** 2);
-      if(dist < R * 0.36) return;
-      ctx.beginPath();
-      ctx.arc(ox, oy, p.size * (0.8 + 0.2 * Math.sin(t * 2 + p.angle)), 0, Math.PI * 2);
-      ctx.fillStyle = `hsla(${p.hue}, 70%, 65%, ${p.alpha * (0.7 + 0.3 * Math.sin(t + p.angle))})`;
-      ctx.fill();
-    });
-
-    cellAnim = requestAnimationFrame(draw);
-  }
-  draw();
-}
-
 function renderScores(){
   const sg=document.getElementById('scoresGrid');
   sg.innerHTML='';
@@ -2193,10 +2001,24 @@ function renderScores(){
 function resetQuestionUI(){
   const cur = S.entries[S.current];
   const space = BOARD[cur.pos];
-  // Hide card chooser on checkpoint spaces UNLESS the player passed and now needs to draw a card
+  // Disable deck clicks on checkpoint/finish spaces unless player passed and needs to draw
   const hideChooser = ['checkpoint-g1','checkpoint-g2','checkpoint-m','finish'].includes(space.type)
                       && cur.checkpointState !== 'passed';
-  document.getElementById('qChooser').style.display = hideChooser ? 'none' : 'flex';
+  const deckGreen  = document.getElementById('deck-green');
+  const deckViolet = document.getElementById('deck-violet');
+  if(deckGreen){
+    if(!hideChooser){
+      deckGreen.style.cursor  = 'pointer';
+      deckViolet.style.cursor = 'pointer';
+      deckGreen.onclick  = () => askQuestion('green');
+      deckViolet.onclick = () => askQuestion('violet');
+    } else {
+      deckGreen.style.cursor  = 'default';
+      deckViolet.style.cursor = 'default';
+      deckGreen.onclick  = null;
+      deckViolet.onclick = null;
+    }
+  }
   document.getElementById('aqResult').className='aq-result';
   document.getElementById('btnNext').className='btn-next';
   closePopup();
@@ -2217,7 +2039,7 @@ function resetQuestionUI(){
 }
 
 function hideAllPanels(){
-  ['splashPanel','triviaPanel','dnaPanel','tfPanel','vocabPanel','eventPanel','resultPanel'].forEach(id=>{
+  ['splashPanel','triviaPanel','dnaPanel','tfPanel','vocabPanel','eventPanel'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
   if(S.dnaTimer){ clearInterval(S.dnaTimer); S.dnaTimer=null; }
@@ -3063,6 +2885,60 @@ function log(msg,cls){
     }, WIPE + 20);
   }, HOLD);
 })();
+</script>
+
+<!-- FLOATING RULES BUTTON -->
+<button class="rules-fab" onclick="openRules()" title="How to Play">?</button>
+
+<!-- RULES MODAL -->
+<div class="rules-overlay" id="rulesOverlay" onclick="if(event.target===this)closeRules()">
+  <div class="rules-modal frame" id="rulesModal"><div class="fc1"></div><div class="fc2"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <h2 style="font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:var(--gold-light);">How to Play</h2>
+      <button class="icon-btn" onclick="closeRules()" style="font-size:1rem;">✕</button>
+    </div>
+    <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text-dim);font-style:italic;margin-bottom:1.2rem;text-align:center;">A quick guide to the cell cycle</div>
+
+    <div class="frame" style="padding:0.9rem;margin-bottom:0.7rem;"><div class="fc1"></div><div class="fc2"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--cyan);letter-spacing:0.15em;margin-bottom:0.4rem;">🎯 OBJECTIVE</div>
+      <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);line-height:1.6;">Be the first player to reach <strong style="color:var(--gold)">Cytokinesis</strong> by correctly answering biology questions as you race through the cell cycle.</div>
+    </div>
+
+    <div class="frame" style="padding:0.9rem;margin-bottom:0.7rem;"><div class="fc1"></div><div class="fc2"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--green);letter-spacing:0.15em;margin-bottom:0.5rem;">📋 ON YOUR TURN</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+        <div style="background:rgba(6,214,160,0.08);border:1px solid var(--green-dim);border-radius:6px;padding:0.5rem;">
+          <div style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--green);margin-bottom:0.25rem;">🟢 GREEN QUESTION</div>
+          <div style="font-family:'EB Garamond',serif;font-size:0.95rem;color:var(--text);line-height:1.5;">Basic recall. Answer correctly → move <strong>1 space</strong>.</div>
+        </div>
+        <div style="background:rgba(199,125,255,0.08);border:1px solid var(--violet-dim);border-radius:6px;padding:0.5rem;">
+          <div style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--violet-light);margin-bottom:0.25rem;">🟣 VIOLET QUESTION</div>
+          <div style="font-family:'EB Garamond',serif;font-size:0.95rem;color:var(--text);line-height:1.5;">Application & analysis. Answer correctly → move <strong>2 spaces</strong>.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame" style="padding:0.9rem;margin-bottom:0.7rem;"><div class="fc1"></div><div class="fc2"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gold);letter-spacing:0.15em;margin-bottom:0.5rem;">⬦ SPECIAL SPACES</div>
+      <div style="display:flex;flex-direction:column;gap:0.4rem;">
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1rem;flex-shrink:0;">💠</span><div><strong style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--green);">CHECKPOINTS</strong><span style="font-family:'EB Garamond',serif;font-size:0.95rem;color:var(--text);"> — DNA base-pair matching (G1), True/False rapid fire (G2), and vocabulary matching (M). Each has a 30-second timer. Pass or try again next turn.</span></div></div>
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1rem;flex-shrink:0;">🃏</span><div><strong style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--violet-light);">CELL EVENTS</strong><span style="font-family:'EB Garamond',serif;font-size:0.95rem;color:var(--text);"> — Draw a card. Could boost you forward, grant immunity, or set you back. Such is biology.</span></div></div>
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;"><span style="font-size:1rem;flex-shrink:0;">💤</span><div><strong style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--g0-color);">G0 PHASE</strong><span style="font-family:'EB Garamond',serif;font-size:0.95rem;color:var(--text);"> — The resting state. All players start here before entering the active cycle at G1.</span></div></div>
+      </div>
+    </div>
+
+    <div class="frame" style="padding:0.9rem;margin-bottom:1rem;"><div class="fc1"></div><div class="fc2"></div>
+      <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--pink);letter-spacing:0.15em;margin-bottom:0.4rem;">⚗ STUDY MODE</div>
+      <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);line-height:1.6;">Toggle <strong style="color:var(--sky)">Relaxed Mode</strong> on the setup screen to disable all checkpoint timers — checkpoints still require correct answers, but there's no time pressure.</div>
+    </div>
+
+    <button class="btn-gold btn-secondary" style="width:100%;" onclick="closeRules()">✕ Close</button>
+  </div>
+</div>
+
+<script>
+function openRules(){ document.getElementById('rulesOverlay').classList.add('open'); }
+function closeRules(){ document.getElementById('rulesOverlay').classList.remove('open'); }
 </script>
 </body>
 </html>
