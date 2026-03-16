@@ -1200,6 +1200,8 @@ let S = {
   vocabSet:[], vocabSelectedTerm:null, vocabMatchedCount:0, vocabDefOrder:[],
   vocabTimer:null, vocabTimeLeft:30,
   immuneNext: {},
+  // Token movement animation state
+  isMoving: false, movingIdx: -1, moveTrail: [],
 };
 
 // Relaxed toggle visual
@@ -1395,6 +1397,7 @@ function startGame(studyMode=false){
     }
   }
   S.current=0; S.turnNumber=1;
+  S.isMoving=false; S.movingIdx=-1; S.moveTrail=[];
   greenDeck=shuffle(GREEN_Q); violetDeck=shuffle(VIOLET_Q);
   tfDeck=shuffle(TF_QUESTIONS); vocabDeck=shuffle(VOCAB_TERMS);
   dnaStrandDeck=shuffle(DNA_STRANDS); eventDeck=shuffle(EVENT_CARDS);
@@ -1923,6 +1926,22 @@ function renderBoard() {
     }));
     svg.appendChild(g);
   });
+
+  // ── Movement trail — faint glowing rings at recently vacated spaces ──
+  if(S.isMoving && S.moveTrail.length > 0 && S.movingIdx >= 0){
+    const mover = S.entries[S.movingIdx];
+    if(mover){
+      S.moveTrail.forEach((trailPos, ti) => {
+        const fade = (ti + 1) / S.moveTrail.length; // oldest=dim, newest=bright
+        const tp = nodePos(trailPos);
+        svg.appendChild(svgEl('circle', {
+          cx: tp.x.toFixed(1), cy: tp.y.toFixed(1), r: '9.5',
+          fill: 'none', stroke: mover.color,
+          'stroke-width': '1.5', opacity: (fade * 0.45).toFixed(2)
+        }));
+      });
+    }
+  }
 }
 
 // ── Label placement using ellipse geometry ──
@@ -1961,14 +1980,25 @@ function drawToken(svg, e, gi, groupSize, bx, by, isCurrent) {
   const fx = bx + offsetR * Math.cos(offsetAng);
   const fy = by + offsetR * Math.sin(offsetAng) * 0.4;
 
-  // Active pulse ring on the space
+  const isHopping = isCurrent && S.isMoving;
+
+  // Dual pulse rings for the active player
   if(isCurrent){
-    const pulse = svgEl('circle', { cx:fx, cy:fy, r:'10.5',
-      fill:'none', stroke:e.color, 'stroke-width':'1', opacity:'0' });
-    pulse.innerHTML = `
-      <animate attributeName="r" values="8;16;8" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.9;0;0.9" dur="1.6s" repeatCount="indefinite"/>`;
-    svg.appendChild(pulse);
+    // Outer ring — slow, wide, subtle
+    const outerPulse = svgEl('circle', { cx:fx, cy:fy, r:'12',
+      fill:'none', stroke:e.color, 'stroke-width':'0.8', opacity:'0' });
+    outerPulse.innerHTML = `
+      <animate attributeName="r" values="10;22;10" dur="2.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0;0.6" dur="2.2s" repeatCount="indefinite"/>`;
+    svg.appendChild(outerPulse);
+
+    // Inner ring — fast, bright heartbeat
+    const innerPulse = svgEl('circle', { cx:fx, cy:fy, r:'8',
+      fill:'none', stroke:e.color, 'stroke-width':'1.5', opacity:'0' });
+    innerPulse.innerHTML = `
+      <animate attributeName="r" values="6;12;6" dur="1.1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.1;1" dur="1.1s" repeatCount="indefinite"/>`;
+    svg.appendChild(innerPulse);
   }
 
   // Token icon group — centered directly on the space
@@ -1979,6 +2009,13 @@ function drawToken(svg, e, gi, groupSize, bx, by, isCurrent) {
   });
   const initial = e.name.charAt(0).toUpperCase();
   g.innerHTML = getTokenIconSVG(e.icon || 'chromosome', e.color, e.textColor, initial, 1, isCurrent);
+
+  // Hop bounce — plays once each time the token lands on a new space
+  if(isHopping){
+    g.innerHTML += `<animateTransform attributeName="transform" type="scale"
+      values="0.65;1.45;0.88;1.08;1" dur="0.42s" repeatCount="1" fill="freeze" additive="sum"/>`;
+  }
+
   svg.appendChild(g);
 }
 
@@ -2242,10 +2279,16 @@ function autoNextTurn(delay=2200){
 }
 
 function movePlayer(entry, spaces, idx, onDone){
+  S.isMoving = true;
+  S.movingIdx = idx;
+  S.moveTrail = [];
   let step = 0;
   function doStep(){
     const nextPos = entry.pos + 1;
     if(step >= spaces || nextPos >= BOARD.length){ finishMove(); return; }
+    // Record the space we're leaving as a trail breadcrumb (keep last 3)
+    S.moveTrail.push(entry.pos);
+    if(S.moveTrail.length > 3) S.moveTrail.shift();
     entry.pos = nextPos;
     renderBoard();
     step++;
@@ -2256,6 +2299,9 @@ function movePlayer(entry, spaces, idx, onDone){
     setTimeout(doStep, 700);
   }
   function finishMove(){
+    S.isMoving = false;
+    S.moveTrail = [];
+    renderBoard(); // clean render — removes trail and bounce
     log(`✓ ${entry.name} moves to ${BOARD[entry.pos].name}!`, 'good');
     renderScores();
     if(entry.pos === BOARD.length - 1){
