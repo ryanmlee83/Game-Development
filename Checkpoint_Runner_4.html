@@ -560,6 +560,7 @@ body {
       <div style="flex:1;display:flex;justify-content:flex-end;">
         <div class="topbar-actions">
           <button class="icon-btn" onclick="openLog()" title="Chronicle">📜</button>
+          <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Toggle Sound">🔊</button>
         </div>
       </div>
     </div>
@@ -1205,6 +1206,156 @@ let S = {
   animX: null, animY: null, animArc: 0,
 };
 
+// ══════════════════════════════════════════════
+// SOUND ENGINE — SFX + procedural theme music
+// Key: B♭ double harmonic minor  Tempo: 88 BPM
+// ══════════════════════════════════════════════
+const SFX = (() => {
+  let ctx = null, themeGain = null;
+  let _muted = false, themeTimeout = null;
+
+  function ac() {
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      themeGain = ctx.createGain();
+      themeGain.gain.value = 0.75;
+      themeGain.connect(ctx.destination);
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+
+  // Single synthesized note — SFX route directly to ctx.destination (bypass theme gain)
+  function note(freq, dur, type, vol, delay = 0) {
+    if (_muted) return;
+    const c = ac();
+    const osc = c.createOscillator(), g = c.createGain();
+    osc.connect(g); g.connect(c.destination);
+    osc.type = type; osc.frequency.value = freq;
+    const t = c.currentTime + delay, d = Math.max(dur, 0.05);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + Math.min(0.03, d * 0.15));
+    g.gain.setValueAtTime(vol, t + Math.max(d - 0.1, d * 0.8));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    osc.start(t); osc.stop(t + d + 0.05);
+  }
+
+  // ── Theme music ──
+  // B♭ double harmonic minor scale: Bb  B  D  Eb  F  Gb  A
+  // 4-bar loop, 8 eighth-note steps per bar = 32 steps total
+  const BPM  = 88;
+  const STEP = 60 / (BPM * 2);   // eighth-note duration in seconds (~0.341s)
+  const LOOP = 32 * STEP;         // total loop duration (~10.9s)
+
+  const Hz = {
+    Bb2:116.54, B2:123.47,  D3:146.83, Eb3:155.56, F3:174.61, A3:220.00,
+    Bb3:233.08, B3:246.94,  D4:293.66, Eb4:311.13, F4:349.23, Gb4:369.99,
+    A4:440.00,  Bb4:466.16, B4:493.88, D5:587.33,  A5:880.00,
+  };
+
+  // [freq, startStep, durationSteps, volume, waveType]
+  const SCORE = [
+    // ── Bass (sine, deep) ──
+    [Hz.Bb2,  0, 4, 0.26,'sine'], [Hz.F3,   4, 4, 0.22,'sine'],   // bar 1
+    [Hz.Eb3,  8, 4, 0.24,'sine'], [Hz.B2,  12, 4, 0.20,'sine'],   // bar 2 — B2 is the exotic ♭2
+    [Hz.Bb2, 16, 4, 0.26,'sine'], [Hz.A3,  20, 4, 0.22,'sine'],   // bar 3
+    [Hz.D3,  24, 4, 0.24,'sine'], [Hz.Bb2, 28, 4, 0.26,'sine'],   // bar 4
+
+    // ── Pads / harmony (sine, very soft sustained chords) ──
+    [Hz.Bb3,  0, 8,0.05,'sine'], [Hz.D4,   0, 8,0.04,'sine'], [Hz.F4,  0, 8,0.03,'sine'],
+    [Hz.Eb4,  8, 8,0.05,'sine'], [Hz.Gb4,  8, 8,0.04,'sine'], [Hz.Bb3, 8, 8,0.03,'sine'],
+    [Hz.Bb3, 16, 8,0.05,'sine'], [Hz.D4,  16, 8,0.04,'sine'], [Hz.A4, 16, 8,0.03,'sine'],
+    [Hz.D4,  24, 8,0.05,'sine'], [Hz.F4,  24, 8,0.04,'sine'], [Hz.A4, 24, 8,0.03,'sine'],
+
+    // ── Lead melody (triangle) ──
+    // Bar 1: ascending Bb-D-F-A, peak Bb4, resolve down
+    [Hz.Bb4,  0,1,0.16,'triangle'], [Hz.D4,   1,1,0.15,'triangle'],
+    [Hz.F4,   2,1,0.15,'triangle'], [Hz.A4,   3,1,0.16,'triangle'],
+    [Hz.Bb4,  4,2,0.18,'triangle'], [Hz.Gb4,  6,1,0.14,'triangle'],
+    [Hz.F4,   7,1,0.14,'triangle'],
+    // Bar 2: Eb-F then B4 (the exotic ♭2!) pulls back to Bb, descends
+    [Hz.Eb4,  8,1,0.15,'triangle'], [Hz.F4,   9,1,0.15,'triangle'],
+    [Hz.B4,  10,1,0.18,'triangle'], [Hz.Bb4, 11,1,0.17,'triangle'],
+    [Hz.A4,  12,1,0.15,'triangle'], [Hz.Gb4, 13,1,0.14,'triangle'],
+    [Hz.F4,  14,1,0.14,'triangle'], [Hz.Eb4, 15,1,0.14,'triangle'],
+    // Bar 3: D-F-A ascent, B4 again, settle on Bb
+    [Hz.D4,  16,1,0.15,'triangle'], [Hz.F4,  17,1,0.15,'triangle'],
+    [Hz.A4,  18,1,0.16,'triangle'], [Hz.B4,  19,1,0.18,'triangle'],
+    [Hz.Bb4, 20,2,0.18,'triangle'], [Hz.A4,  22,1,0.15,'triangle'],
+    [Hz.Gb4, 23,1,0.14,'triangle'],
+    // Bar 4: Eb-D-F-A climb, Bb peak, resolve to Gb (leads back to bar 1)
+    [Hz.Eb4, 24,1,0.14,'triangle'], [Hz.D4,  25,1,0.14,'triangle'],
+    [Hz.F4,  26,1,0.15,'triangle'], [Hz.A4,  27,1,0.16,'triangle'],
+    [Hz.Bb4, 28,2,0.18,'triangle'], [Hz.A4,  30,1,0.15,'triangle'],
+    [Hz.Gb4, 31,1,0.14,'triangle'],
+  ];
+
+  function scheduleLoop(t0) {
+    const c = ac();
+    SCORE.forEach(([freq, step, dur, vol, type]) => {
+      const t = t0 + step * STEP;
+      if (t < c.currentTime - 0.05) return; // skip notes already past
+      const osc = c.createOscillator(), g = c.createGain();
+      osc.connect(g); g.connect(themeGain);
+      osc.type = type; osc.frequency.value = freq;
+      const d = dur * STEP;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(vol, t + Math.min(0.05, d * 0.2));
+      g.gain.setValueAtTime(vol, t + Math.max(d - 0.12, d * 0.75));
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      osc.start(t); osc.stop(t + d + 0.05);
+    });
+    // Schedule next loop slightly before this one ends to avoid any gap
+    themeTimeout = setTimeout(() => scheduleLoop(t0 + LOOP), (LOOP - 0.4) * 1000);
+  }
+
+  function startTheme() {
+    if (_muted || themeTimeout) return;
+    const c = ac();
+    themeGain.gain.cancelScheduledValues(c.currentTime);
+    themeGain.gain.setValueAtTime(0.75, c.currentTime);
+    scheduleLoop(c.currentTime + 0.2);
+  }
+
+  function stopTheme() {
+    if (themeTimeout) { clearTimeout(themeTimeout); themeTimeout = null; }
+    if (themeGain && ctx) {
+      themeGain.gain.cancelScheduledValues(ctx.currentTime);
+      themeGain.gain.setValueAtTime(themeGain.gain.value, ctx.currentTime);
+      themeGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
+    }
+  }
+
+  function toggleMute() {
+    _muted = !_muted;
+    if (_muted) stopTheme();
+    return _muted;
+  }
+
+  return {
+    hop()        { note(540,  0.06, 'sine',     0.13); },
+    land()       { note(295,  0.07, 'sine',     0.20); note(440, 0.13, 'triangle', 0.14, 0.04); },
+    correct()    { note(523,  0.10, 'triangle', 0.28); note(659, 0.20, 'triangle', 0.28, 0.10); },
+    wrong()      { note(240,  0.05, 'sawtooth', 0.18); note(180, 0.22, 'sawtooth', 0.15, 0.05); },
+    checkpoint() { note(660,  0.14, 'triangle', 0.28); note(880, 0.22, 'triangle', 0.24, 0.13);
+                   note(1100, 0.28, 'triangle', 0.18, 0.26); },
+    event() {
+      if (_muted) return;
+      const c = ac();
+      const osc = c.createOscillator(), g = c.createGain();
+      osc.connect(g); g.connect(c.destination);
+      osc.frequency.setValueAtTime(200, c.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(860, c.currentTime + 0.32);
+      g.gain.setValueAtTime(0.22, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.38);
+      osc.start(); osc.stop(c.currentTime + 0.42);
+    },
+    win() { [523,659,784,1047,1319].forEach((f,i) => note(f, 0.30, 'triangle', 0.28, i*0.13)); },
+    startTheme, stopTheme, toggleMute,
+    get muted() { return _muted; },
+  };
+})();
+
 // Relaxed toggle visual
 document.getElementById('relaxedToggle').addEventListener('change', function(){
   const knob = document.getElementById('relaxedKnob');
@@ -1415,6 +1566,7 @@ function startGame(studyMode=false){
 const SCREEN_DISPLAY = { title:'flex', setup:'block', game:'block', win:'flex' };
 let _titleKeyHandler = null;
 function showScreen(id){
+  if(id === 'game') SFX.startTheme(); else SFX.stopTheme();
   document.querySelectorAll('.screen').forEach(s=>{
     s.classList.remove('active');
     s.style.display = 'none';
@@ -2193,6 +2345,14 @@ function overlayClickDismiss(e){
   if(_popupUserDismissable && e.target === document.getElementById('popupOverlay')) closePopup();
 }
 
+function toggleMute(){
+  const muted = SFX.toggleMute();
+  const btn = document.getElementById('muteBtn');
+  if(btn) btn.textContent = muted ? '🔇' : '🔊';
+  // Restart theme if unmuting while on the game screen
+  if(!muted && document.getElementById('game')?.classList.contains('active')) SFX.startTheme();
+}
+
 function openLog(){
   document.getElementById('logDrawer').classList.add('open');
 }
@@ -2227,6 +2387,7 @@ function askQuestion(type){
 function handleTrivia(chosen){
   if(S.answered) return; S.answered=true;
   const correct = chosen === S.shuffledAns;
+  if(correct) SFX.correct(); else SFX.wrong();
   const cur = S.entries[S.current];
   const isCheckpointCard = cur.checkpointState === 'passed';
   cur.totalCount++; if(correct) cur.correctCount++;
@@ -2286,6 +2447,7 @@ function autoNextTurn(delay=2200){
 // Interpolate a token visually from one board space to the next.
 // Calls renderBoard() at each frame so the token appears to glide.
 function animateHop(fromIdx, toIdx, onComplete){
+  SFX.hop();
   const from = nodePos(fromIdx);
   const to   = nodePos(toIdx);
   const STEPS = 8, MS = 50; // 8 frames × 50ms = 400ms per hop
@@ -2330,6 +2492,13 @@ function movePlayer(entry, spaces, idx, onDone){
     S.moveTrail = [];
     S.animX = null; S.animY = null; S.animArc = 0;
     renderBoard();
+    // Landing sound — win fanfare handled separately in triggerWin
+    if(entry.pos < BOARD.length - 1){
+      const _lt = BOARD[entry.pos]?.type;
+      if(CHECKPOINT_TYPES.includes(_lt)) SFX.checkpoint();
+      else if(_lt === 'event') SFX.event();
+      else SFX.land();
+    }
     log(`✓ ${entry.name} moves to ${BOARD[entry.pos].name}!`, 'good');
     renderScores();
     if(entry.pos === BOARD.length - 1){
@@ -2917,6 +3086,7 @@ function triggerWin(idx){
     const tableTitle = S.colonizeMode ? '— COLONY RESULTS —' : '— QUESTION RESULTS —';
     statsEl.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--gold);letter-spacing:0.1em;margin-bottom:0.5rem;text-align:center;">${tableTitle}</div><table style="width:100%;border-collapse:collapse;margin:0 auto;"><thead><tr style="color:var(--text-dim)"><th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;text-align:left;">Player</th>${cellHeader}<th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;">Correct</th><th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;">Score</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
+  SFX.win();
   setTimeout(()=>{ showScreen('win'); startWinConfetti(); }, 700);
 }
 
