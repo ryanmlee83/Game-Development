@@ -1260,7 +1260,7 @@ const SFX = (() => {
 
   // Frequency table (Hz)
   const _ = {
-    Bb1: 58.27, F2: 87.31,
+    Bb1: 58.27, F2: 87.31, Ab2:103.83,
     Bb2:116.54, B2:123.47, C3:130.81, Db3:138.59, D3:146.83,
     Eb3:155.56, E3:164.81, F3:174.61, Gb3:185.00, G3:196.00,
     Ab3:207.65, A3:220.00, Bb3:233.08, B3:246.94, C4:261.63,
@@ -1296,17 +1296,22 @@ const SFX = (() => {
 
     // ═══════════════════════════════════════════════
     // §B  ELFMAN "CREEP"  (steps 16–31)
-    // Chromatic descending bass: Bb→A→Ab→G (passus duriusculus).
+    // Bass: 5-note diatonic walk DOWN (Bb→Ab→Gb→F→Eb) then 3-note walk UP
+    // (F→G→A) — raised 6th/7th on the ascent leaves leading-tone tension.
     // A countermelody (sawtooth, mid-volume) enters above the main melody.
     // ═══════════════════════════════════════════════
-    // Bass — one step per chromatic semitone downward
-    [_.Bb2, 16, 4, 0.24,'triangle'],  // Bb
-    [_.A3,  20, 4, 0.22,'triangle'],  // A  (a half-step down creates immediate unease)
-    [_.Ab3, 24, 4, 0.22,'triangle'],  // Ab (another half-step — classic Elfman creep)
-    [_.G3,  28, 4, 0.20,'triangle'],  // G  (lands on the natural 6th — modal ambiguity)
-    // Pads — held through entire section, chromatic inner movement
+    // Bass — 2 steps per note, 5 down + 3 up (all Bb harmonic-minor scale tones)
+    [_.Bb3, 16, 2, 0.24,'triangle'],  // Bb  (step 1 down)
+    [_.Ab3, 18, 2, 0.23,'triangle'],  // Ab  (step 2 down)
+    [_.Gb3, 20, 2, 0.22,'triangle'],  // Gb  (step 3 down)
+    [_.F3,  22, 2, 0.22,'triangle'],  // F   (step 4 down)
+    [_.Eb3, 24, 2, 0.21,'triangle'],  // Eb  (step 5 down — lowest point)
+    [_.F3,  26, 2, 0.22,'triangle'],  // F   (step 1 up)
+    [_.G3,  28, 2, 0.22,'triangle'],  // G   (step 2 up — natural 6th, brightness)
+    [_.A3,  30, 2, 0.23,'triangle'],  // A   (step 3 up — raised 7th, leading tone → Bb)
+    // Pads — Bbm first half, Ebm colour second half
     [_.Bb2, 16, 8, 0.04,'sine'], [_.F3,  16, 8, 0.03,'sine'], [_.Db3, 16, 8, 0.02,'sine'],
-    [_.A3,  24, 8, 0.04,'sine'], [_.E3,  24, 8, 0.03,'sine'], [_.C3,  24, 8, 0.02,'sine'],
+    [_.Eb3, 24, 8, 0.04,'sine'], [_.Gb3, 24, 8, 0.03,'sine'], [_.Bb3, 24, 8, 0.02,'sine'],
     // Main melody repeats (same motif — Elfman loves exact repetition)
     [_.C4,  16, 1, 0.17,'triangle'], [_.Db4, 17, 1, 0.17,'triangle'],
     [_.C4,  18, 1, 0.17,'triangle'], [_.Db4, 19, 1, 0.17,'triangle'],
