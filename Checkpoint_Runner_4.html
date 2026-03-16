@@ -560,6 +560,7 @@ body {
       <div style="flex:1;display:flex;justify-content:flex-end;">
         <div class="topbar-actions">
           <button class="icon-btn" onclick="openLog()" title="Chronicle">📜</button>
+          <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Toggle Sound">🔊</button>
         </div>
       </div>
     </div>
@@ -1200,7 +1201,340 @@ let S = {
   vocabSet:[], vocabSelectedTerm:null, vocabMatchedCount:0, vocabDefOrder:[],
   vocabTimer:null, vocabTimeLeft:30,
   immuneNext: {},
+  // Token movement animation state
+  isMoving: false, movingIdx: -1, moveTrail: [],
+  animX: null, animY: null, animArc: 0,
 };
+
+// ══════════════════════════════════════════════
+// SOUND ENGINE — SFX + procedural theme music
+// Key: B♭ double harmonic minor  Tempo: 88 BPM
+// ══════════════════════════════════════════════
+const SFX = (() => {
+  let ctx = null, themeGain = null;
+  let _muted = false, themeTimeout = null;
+
+  function ac() {
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      themeGain = ctx.createGain();
+      themeGain.gain.value = 0.75;
+      themeGain.connect(ctx.destination);
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+
+  // Single synthesized note — SFX route directly to ctx.destination (bypass theme gain)
+  function note(freq, dur, type, vol, delay = 0) {
+    if (_muted) return;
+    const c = ac();
+    const osc = c.createOscillator(), g = c.createGain();
+    osc.connect(g); g.connect(c.destination);
+    osc.type = type; osc.frequency.value = freq;
+    const t = c.currentTime + delay, d = Math.max(dur, 0.05);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + Math.min(0.03, d * 0.15));
+    g.gain.setValueAtTime(vol, t + Math.max(d - 0.1, d * 0.8));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    osc.start(t); osc.stop(t + d + 0.05);
+  }
+
+  // ── Theme music ──
+  // Reconstructed from BeepBox-Song.wav, expanded to ~30s in Danny Elfman style.
+  // Key: Bb harmonic minor (Bb C Db Eb F Gb Ab A)
+  // Tempo: 88 BPM  |  88 eighth-note steps ≈ 29.97s loop
+  //
+  // Structure:
+  //   §A  steps  0–15  Original 2-bar motif  (Bbm → Db → Cm)
+  //   §B  steps 16–31  Elfman "creep" — chromatic descending bass, countermelody
+  //   §C  steps 32–47  March / "ticking clock" ostinato — sparse, unsettling
+  //   §D  steps 48–63  Development — A melody over B harmony + Faug tension
+  //   §E  steps 64–79  Climax — all voices, major-V pull (F major), chromatic inner voice
+  //   §F  steps 80–87  Coda — stripped to bass + one voice, resolves to A3 → loops to Bb
+  //
+  // Triangle-wave basses double as harmony: their 3rd harmonic enriches the texture.
+  const BPM  = 88;
+  const STEP = 60 / (BPM * 2);   // eighth-note (~0.341s)
+  const LOOP = 88 * STEP;         // 11-bar loop (~29.97s)
+
+  // Frequency table (Hz)
+  const _ = {
+    Bb1: 58.27, F2: 87.31, Ab2:103.83,
+    Bb2:116.54, B2:123.47, C3:130.81, Db3:138.59, D3:146.83,
+    Eb3:155.56, E3:164.81, F3:174.61, Gb3:185.00, G3:196.00,
+    Ab3:207.65, A3:220.00, Bb3:233.08, B3:246.94, C4:261.63,
+    Db4:277.18, D4:293.66, Eb4:311.13, E4:329.63, F4:349.23,
+    Gb4:370.00, G4:392.00, Ab4:415.30, A4:440.00, Bb4:466.16,
+    B4:493.88,  C5:523.25, Db5:554.37, Eb5:622.25, F5:698.46,
+    Gb5:739.99, Ab5:830.61,
+  };
+
+  // [freq, startStep, durationSteps, volume, waveType]
+  const SCORE = [
+
+    // ═══════════════════════════════════════════════
+    // §A  ORIGINAL MOTIF  (steps 0–15)
+    // ═══════════════════════════════════════════════
+    // Bass
+    [_.Bb2,  0, 8, 0.25,'triangle'],  // Bb2 bar A
+    [_.Db3,  8, 4, 0.22,'triangle'],  // Db3 bar B-i
+    [_.C3,  12, 4, 0.22,'triangle'],  // C3  bar B-ii
+    // Pads
+    [_.Bb2,  0, 8, 0.04,'sine'], [_.Db3,  0, 8, 0.03,'sine'], [_.F3,   0, 8, 0.02,'sine'],
+    [_.Db3,  8, 4, 0.04,'sine'], [_.Ab3,  8, 4, 0.03,'sine'],
+    [_.C3,  12, 4, 0.04,'sine'], [_.G3,  12, 4, 0.03,'sine'], [_.Bb2, 12, 4, 0.02,'sine'],
+    // Melody: C4/Db4 half-step trill → Ab4 peak → Gb4 F4 G4 A3
+    [_.C4,   0, 1, 0.18,'triangle'], [_.Db4,  1, 1, 0.18,'triangle'],
+    [_.C4,   2, 1, 0.18,'triangle'], [_.Db4,  3, 1, 0.18,'triangle'],
+    [_.C4,   4, 1, 0.18,'triangle'], [_.Db4,  5, 1, 0.18,'triangle'],
+    [_.C4,   6, 1, 0.18,'triangle'], [_.Ab4,  7, 1, 0.20,'triangle'],
+    [_.Ab4,  8, 1, 0.20,'triangle'], [_.Db4,  9, 1, 0.17,'triangle'],
+    [_.Ab4, 10, 1, 0.20,'triangle'], [_.Gb4, 11, 1, 0.21,'triangle'],
+    [_.F4,  12, 1, 0.18,'triangle'], [_.G4,  13, 1, 0.16,'triangle'],
+    [_.G4,  14, 1, 0.15,'triangle'], [_.A3,  15, 1, 0.21,'triangle'],
+
+    // ═══════════════════════════════════════════════
+    // §B  ELFMAN "CREEP"  (steps 16–31)
+    // Bass: 5-note diatonic walk DOWN (Bb→Ab→Gb→F→Eb) then 3-note walk UP
+    // (F→G→A) — raised 6th/7th on the ascent leaves leading-tone tension.
+    // A countermelody (sawtooth, mid-volume) enters above the main melody.
+    // ═══════════════════════════════════════════════
+    // Bass — 2 steps per note, 5 down + 3 up (all Bb harmonic-minor scale tones)
+    [_.Bb3, 16, 2, 0.24,'triangle'],  // Bb  (step 1 down)
+    [_.Ab3, 18, 2, 0.23,'triangle'],  // Ab  (step 2 down)
+    [_.Gb3, 20, 2, 0.22,'triangle'],  // Gb  (step 3 down)
+    [_.F3,  22, 2, 0.22,'triangle'],  // F   (step 4 down)
+    [_.Eb3, 24, 2, 0.21,'triangle'],  // Eb  (step 5 down — lowest point)
+    [_.F3,  26, 2, 0.22,'triangle'],  // F   (step 1 up)
+    [_.G3,  28, 2, 0.22,'triangle'],  // G   (step 2 up — natural 6th, brightness)
+    [_.A3,  30, 2, 0.23,'triangle'],  // A   (step 3 up — raised 7th, leading tone → Bb)
+    // Pads — Bbm first half, Ebm colour second half
+    [_.Bb2, 16, 8, 0.04,'sine'], [_.F3,  16, 8, 0.03,'sine'], [_.Db3, 16, 8, 0.02,'sine'],
+    [_.Eb3, 24, 8, 0.04,'sine'], [_.Gb3, 24, 8, 0.03,'sine'], [_.Bb3, 24, 8, 0.02,'sine'],
+    // Main melody repeats (same motif — Elfman loves exact repetition)
+    [_.C4,  16, 1, 0.17,'triangle'], [_.Db4, 17, 1, 0.17,'triangle'],
+    [_.C4,  18, 1, 0.17,'triangle'], [_.Db4, 19, 1, 0.17,'triangle'],
+    [_.C4,  20, 1, 0.17,'triangle'], [_.Db4, 21, 1, 0.17,'triangle'],
+    [_.C4,  22, 1, 0.17,'triangle'], [_.Ab4, 23, 1, 0.19,'triangle'],
+    [_.Ab4, 24, 1, 0.19,'triangle'], [_.Db4, 25, 1, 0.16,'triangle'],
+    [_.Ab4, 26, 1, 0.19,'triangle'], [_.Gb4, 27, 1, 0.20,'triangle'],
+    [_.F4,  28, 1, 0.17,'triangle'], [_.G4,  29, 1, 0.15,'triangle'],
+    [_.G4,  30, 1, 0.14,'triangle'], [_.A3,  31, 1, 0.20,'triangle'],
+    // Countermelody (sawtooth — "strings" pizzicato feel, half-time rhythm)
+    [_.F4,  16, 2, 0.09,'sawtooth'], [_.Eb4, 18, 2, 0.09,'sawtooth'],
+    [_.Db4, 20, 2, 0.09,'sawtooth'], [_.C4,  22, 2, 0.09,'sawtooth'],
+    [_.B3,  24, 2, 0.10,'sawtooth'], [_.Bb3, 26, 2, 0.10,'sawtooth'],
+    [_.A3,  28, 2, 0.10,'sawtooth'], [_.G3,  30, 2, 0.09,'sawtooth'],
+
+    // ═══════════════════════════════════════════════
+    // §C  MARCH / "TICKING CLOCK"  (steps 32–47)
+    // Sparse — bass drops out for 4 steps, ticking high-register ostinato
+    // enters (Elfman's music-box signature), then a sudden Gb major stab.
+    // ═══════════════════════════════════════════════
+    // Bass — Gb pedal (tritone from C → maximum tension)
+    [_.Gb3, 32, 8, 0.20,'triangle'],  // Gb pedal — tritone from C, very unsettling
+    [_.Eb3, 40, 4, 0.21,'triangle'],  // Eb — Elfman loves sudden Eb minor
+    [_.Bb2, 44, 4, 0.24,'triangle'],  // Bb returns — relief
+    // Pads
+    [_.Gb3, 32, 8, 0.04,'sine'], [_.Bb3, 32, 8, 0.03,'sine'], [_.Db4, 32, 8, 0.02,'sine'],
+    [_.Eb3, 40, 4, 0.04,'sine'], [_.G3,  40, 4, 0.03,'sine'], [_.Bb3, 40, 4, 0.02,'sine'],
+    [_.Bb2, 44, 4, 0.04,'sine'], [_.Db3, 44, 4, 0.03,'sine'], [_.F3,  44, 4, 0.02,'sine'],
+    // "Ticking clock" ostinato — single high note every other step (music-box)
+    [_.Bb4, 32, 1, 0.11,'triangle'], [_.Bb4, 34, 1, 0.11,'triangle'],
+    [_.Bb4, 36, 1, 0.11,'triangle'], [_.Bb4, 38, 1, 0.11,'triangle'],
+    [_.Bb4, 40, 1, 0.10,'triangle'], [_.Ab4, 42, 1, 0.10,'triangle'],
+    [_.Bb4, 44, 1, 0.10,'triangle'], [_.Bb4, 46, 1, 0.10,'triangle'],
+    // Sparse melody — only hits the structural notes, space left intentionally
+    [_.Db5, 32, 2, 0.16,'triangle'],  // Db5 — high and exposed
+    [_.Ab4, 35, 1, 0.14,'triangle'],
+    [_.Gb4, 36, 2, 0.15,'triangle'],
+    [_.Eb4, 39, 1, 0.14,'triangle'],
+    [_.F4,  40, 2, 0.15,'triangle'],
+    [_.Gb4, 43, 1, 0.16,'triangle'],
+    [_.C4,  44, 2, 0.17,'triangle'],  // C4 over Bb bass — sus2 ambiguity
+    [_.Db4, 47, 1, 0.17,'triangle'],
+
+    // ═══════════════════════════════════════════════
+    // §D  DEVELOPMENT  (steps 48–63)
+    // Original A melody returns, but now riding over §B's chromatic bass.
+    // Faug (F + A + C#/Db) chord appears as a passing stab — very Elfman.
+    // ═══════════════════════════════════════════════
+    // Bass — chromatic walk again, but compressed to 4-step units
+    [_.Bb2, 48, 4, 0.24,'triangle'],
+    [_.Ab2, 52, 4, 0.22,'triangle'],  // Ab2 — unexpected low register
+    [_.Gb3, 56, 4, 0.21,'triangle'],
+    [_.F3,  60, 4, 0.23,'triangle'],  // F3 — sets up major V feeling
+    // Pads — include the Faug colour at step 52
+    [_.Bb2, 48, 4, 0.04,'sine'], [_.Db3, 48, 4, 0.03,'sine'], [_.F3,  48, 4, 0.02,'sine'],
+    [_.Ab2, 52, 4, 0.04,'sine'], [_.C3,  52, 4, 0.03,'sine'], [_.Eb3, 52, 4, 0.02,'sine'],
+    [_.Gb3, 56, 4, 0.04,'sine'], [_.Bb3, 56, 4, 0.03,'sine'], [_.Db4, 56, 4, 0.02,'sine'],
+    [_.F3,  60, 4, 0.05,'sine'], [_.A3,  60, 4, 0.04,'sine'], [_.Db4, 60, 4, 0.03,'sine'], // Faug!
+    // Melody (A motif) — slightly louder, building
+    [_.C4,  48, 1, 0.19,'triangle'], [_.Db4, 49, 1, 0.19,'triangle'],
+    [_.C4,  50, 1, 0.19,'triangle'], [_.Db4, 51, 1, 0.19,'triangle'],
+    [_.C4,  52, 1, 0.19,'triangle'], [_.Db4, 53, 1, 0.19,'triangle'],
+    [_.Eb4, 54, 1, 0.19,'triangle'], [_.Ab4, 55, 1, 0.22,'triangle'],  // Eb4 variant — surprise
+    [_.Ab4, 56, 1, 0.22,'triangle'], [_.Gb4, 57, 1, 0.19,'triangle'],
+    [_.F4,  58, 1, 0.18,'triangle'], [_.Gb4, 59, 1, 0.19,'triangle'],  // F→Gb echo
+    [_.A4,  60, 2, 0.23,'triangle'],                                    // A4 over Faug — peak tension
+    [_.Bb4, 62, 1, 0.22,'triangle'],                                    // Bb4 arrival
+    [_.A4,  63, 1, 0.20,'triangle'],
+
+    // ═══════════════════════════════════════════════
+    // §E  CLIMAX  (steps 64–79)
+    // All voices at once. F major (major V of Bb) gives bittersweet Elfman
+    // quality — the raised 3rd (A natural) creates the characteristic longing.
+    // Chromatic inner voice descends under melody.
+    // ═══════════════════════════════════════════════
+    // Bass — Bb | F major (major V!) | Gb | Bb
+    [_.Bb2, 64, 8, 0.26,'triangle'],  // Home
+    [_.F2,  72, 4, 0.25,'triangle'],  // F major V — bright and dramatic
+    [_.Gb3, 76, 2, 0.22,'triangle'],  // Gb stab
+    [_.Bb2, 78, 2, 0.25,'triangle'],  // Return
+    // Full pads — richer voicing at climax
+    [_.Bb2, 64, 8, 0.05,'sine'], [_.F3,  64, 8, 0.04,'sine'], [_.Db3, 64, 8, 0.03,'sine'], [_.Ab3, 64, 8, 0.02,'sine'],
+    [_.F2,  72, 4, 0.05,'sine'], [_.A3,  72, 4, 0.04,'sine'], [_.C4,  72, 4, 0.03,'sine'],  // F major triad
+    [_.Gb3, 76, 2, 0.04,'sine'], [_.Bb3, 76, 2, 0.03,'sine'], [_.Db4, 76, 2, 0.02,'sine'],
+    [_.Bb2, 78, 2, 0.05,'sine'], [_.Db3, 78, 2, 0.04,'sine'], [_.F3,  78, 2, 0.03,'sine'],
+    // Melody — louder, full trill, peaks at Bb4
+    [_.C4,  64, 1, 0.20,'triangle'], [_.Db4, 65, 1, 0.20,'triangle'],
+    [_.C4,  66, 1, 0.20,'triangle'], [_.Db4, 67, 1, 0.20,'triangle'],
+    [_.C4,  68, 1, 0.20,'triangle'], [_.Db4, 69, 1, 0.20,'triangle'],
+    [_.Eb4, 70, 1, 0.20,'triangle'], [_.Bb4, 71, 1, 0.25,'triangle'],  // Peak Bb4!
+    [_.A4,  72, 2, 0.24,'triangle'],                                    // A4 over F major — longing
+    [_.C5,  74, 1, 0.22,'triangle'],                                    // C5 — highest point
+    [_.Bb4, 75, 1, 0.21,'triangle'],
+    [_.Ab4, 76, 1, 0.19,'triangle'], [_.Gb4, 77, 1, 0.18,'triangle'],
+    [_.F4,  78, 1, 0.18,'triangle'], [_.A3,  79, 1, 0.21,'triangle'],
+    // Chromatic inner voice descending (counterpoint under melody)
+    [_.Db4, 64, 2, 0.07,'sawtooth'], [_.C4,  66, 2, 0.07,'sawtooth'],
+    [_.B3,  68, 2, 0.07,'sawtooth'], [_.Bb3, 70, 2, 0.07,'sawtooth'],
+    [_.A3,  72, 2, 0.07,'sawtooth'], [_.Ab3, 74, 2, 0.07,'sawtooth'],
+    [_.G3,  76, 2, 0.07,'sawtooth'], [_.F3,  78, 2, 0.06,'sawtooth'],
+
+    // ═══════════════════════════════════════════════
+    // §F  CODA  (steps 80–87)
+    // Strips back to near-silence — just bass and a single exposed voice.
+    // Elfman's "peek-a-boo" quiet moment before the loop restarts.
+    // Ends on A3 (raised 7th, unresolved) — leading tone pulls straight back to Bb.
+    // ═══════════════════════════════════════════════
+    [_.Bb2, 80, 8, 0.18,'triangle'],   // Bb2 — alone, quieter
+    [_.Bb2, 80, 8, 0.03,'sine'],       // pad barely present
+    // Single exposed melodic line — slow, deliberate
+    [_.F4,  80, 2, 0.13,'triangle'],   // F4
+    [_.Eb4, 82, 2, 0.12,'triangle'],   // Eb4
+    [_.Db4, 84, 2, 0.13,'triangle'],   // Db4 — settling
+    [_.A3,  86, 2, 0.16,'triangle'],   // A3 ← raised 7th, unresolved → loops back to Bb
+  ];
+
+  function scheduleLoop(t0) {
+    const c = ac();
+    SCORE.forEach(([freq, step, dur, vol, type]) => {
+      const t = t0 + step * STEP;
+      if (t < c.currentTime - 0.05) return; // skip notes already past
+      const osc = c.createOscillator(), g = c.createGain();
+      osc.connect(g); g.connect(themeGain);
+      osc.type = type; osc.frequency.value = freq;
+      const d = dur * STEP;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(vol, t + Math.min(0.05, d * 0.2));
+      g.gain.setValueAtTime(vol, t + Math.max(d - 0.12, d * 0.75));
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      osc.start(t); osc.stop(t + d + 0.05);
+    });
+    // Schedule next loop slightly before this one ends to avoid any gap
+    themeTimeout = setTimeout(() => scheduleLoop(t0 + LOOP), (LOOP - 0.4) * 1000);
+  }
+
+  function startTheme() {
+    if (_muted || themeTimeout) return;
+    const c = ac();
+    themeGain.gain.cancelScheduledValues(c.currentTime);
+    themeGain.gain.setValueAtTime(0.75, c.currentTime);
+    scheduleLoop(c.currentTime + 0.2);
+  }
+
+  function stopTheme() {
+    if (themeTimeout) { clearTimeout(themeTimeout); themeTimeout = null; }
+    if (themeGain && ctx) {
+      themeGain.gain.cancelScheduledValues(ctx.currentTime);
+      themeGain.gain.setValueAtTime(themeGain.gain.value, ctx.currentTime);
+      themeGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
+    }
+  }
+
+  function toggleMute() {
+    _muted = !_muted;
+    if (_muted) stopTheme();
+    return _muted;
+  }
+
+  return {
+    hop()        { note(540,  0.06, 'sine',     0.13); },
+    land()       { note(295,  0.07, 'sine',     0.20); note(440, 0.13, 'triangle', 0.14, 0.04); },
+    correct()    { note(523,  0.10, 'triangle', 0.28); note(659, 0.20, 'triangle', 0.28, 0.10); },
+    wrong() {
+      // Sad-trombone womp — sawtooth sweep 350→120 Hz over 0.55s
+      if (_muted) return;
+      const c = ac();
+      const osc = c.createOscillator(), g = c.createGain();
+      osc.connect(g); g.connect(c.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(350, c.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(120, c.currentTime + 0.55);
+      g.gain.setValueAtTime(0.20, c.currentTime);
+      g.gain.setValueAtTime(0.20, c.currentTime + 0.45);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.62);
+      osc.start(); osc.stop(c.currentTime + 0.65);
+    },
+    checkpoint() {
+      // Double dong — two sine bell hits (A4+octave, then D5+octave), 0.45s apart
+      note(440,  0.90, 'sine', 0.28);        // first dong — fundamental
+      note(880,  0.50, 'sine', 0.11);        // first dong — octave overtone
+      note(587,  0.90, 'sine', 0.28, 0.45); // second dong — fundamental
+      note(1174, 0.50, 'sine', 0.11, 0.45); // second dong — octave overtone
+    },
+    flip() {
+      // Paper rustle + card-slap thud
+      // Four closely-detuned sawtooths create a rough, noise-like texture
+      if (_muted) return;
+      const c = ac();
+      [1200, 1340, 1480, 1600].forEach(f => {
+        const osc = c.createOscillator(), g = c.createGain();
+        osc.connect(g); g.connect(c.destination);
+        osc.type = 'sawtooth'; osc.frequency.value = f;
+        g.gain.setValueAtTime(0.055, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.07);
+        osc.start(); osc.stop(c.currentTime + 0.08);
+      });
+      // Low thud follows the rustle for the "slap" of card settling
+      const thud = c.createOscillator(), tg = c.createGain();
+      thud.connect(tg); tg.connect(c.destination);
+      thud.type = 'sine';
+      thud.frequency.setValueAtTime(180, c.currentTime + 0.03);
+      thud.frequency.exponentialRampToValueAtTime(80, c.currentTime + 0.12);
+      tg.gain.setValueAtTime(0.18, c.currentTime + 0.03);
+      tg.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.15);
+      thud.start(c.currentTime + 0.03); thud.stop(c.currentTime + 0.17);
+    },
+    click()      { note(1800, 0.04, 'sine', 0.07); },
+    event() {
+      if (_muted) return;
+      const c = ac();
+      const osc = c.createOscillator(), g = c.createGain();
+      osc.connect(g); g.connect(c.destination);
+      osc.frequency.setValueAtTime(200, c.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(860, c.currentTime + 0.32);
+      g.gain.setValueAtTime(0.22, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.38);
+      osc.start(); osc.stop(c.currentTime + 0.42);
+    },
+    win() { [523,659,784,1047,1319].forEach((f,i) => note(f, 0.30, 'triangle', 0.28, i*0.13)); },
+    startTheme, stopTheme, toggleMute,
+    get muted() { return _muted; },
+  };
+})();
 
 // Relaxed toggle visual
 document.getElementById('relaxedToggle').addEventListener('change', function(){
@@ -1395,6 +1729,8 @@ function startGame(studyMode=false){
     }
   }
   S.current=0; S.turnNumber=1;
+  S.isMoving=false; S.movingIdx=-1; S.moveTrail=[];
+  S.animX=null; S.animY=null; S.animArc=0;
   greenDeck=shuffle(GREEN_Q); violetDeck=shuffle(VIOLET_Q);
   tfDeck=shuffle(TF_QUESTIONS); vocabDeck=shuffle(VOCAB_TERMS);
   dnaStrandDeck=shuffle(DNA_STRANDS); eventDeck=shuffle(EVENT_CARDS);
@@ -1410,6 +1746,7 @@ function startGame(studyMode=false){
 const SCREEN_DISPLAY = { title:'flex', setup:'block', game:'block', win:'flex' };
 let _titleKeyHandler = null;
 function showScreen(id){
+  if(id === 'game') SFX.startTheme(); else SFX.stopTheme();
   document.querySelectorAll('.screen').forEach(s=>{
     s.classList.remove('active');
     s.style.display = 'none';
@@ -1880,12 +2217,12 @@ function renderBoard() {
 
   // ── Card deck stacks in board interior ──
   const DECK_DEFS = [
-    { id:'deck-green',  cx:115, color:'#06d6a0', label:'Green',  icon:'?' },
-    { id:'deck-violet', cx:150, color:'#c77dff', label:'Violet', icon:'?' },
-    { id:'deck-event',  cx:185, color:'#00d4ff', label:'Events', icon:'⚡' },
+    { id:'deck-green',  cx:115, color:'#06d6a0', label:'Green',  icon:'?', moveText:'MOVE 1 SPACE' },
+    { id:'deck-violet', cx:150, color:'#c77dff', label:'Violet', icon:'?', moveText:'MOVE 2 SPACES' },
+    { id:'deck-event',  cx:185, color:'#00d4ff', label:'Events', icon:'⚡', moveText:null },
   ];
   const DCY = 88, DW = 26, DH = 34;
-  DECK_DEFS.forEach(({id, cx, color, label, icon}) => {
+  DECK_DEFS.forEach(({id, cx, color, label, icon, moveText}) => {
     const g = svgEl('g', { id, style: 'transition:filter 0.15s,opacity 0.15s;' });
     g.addEventListener('mouseenter', () => { if(g.style.cursor==='pointer') g.style.filter=`brightness(1.35) drop-shadow(0 0 4px ${color})`; });
     g.addEventListener('mouseleave', () => { g.style.filter=''; });
@@ -1911,6 +2248,11 @@ function renderBoard() {
       'text-anchor': 'middle', 'dominant-baseline': 'middle',
       style: `filter:drop-shadow(0 0 2px ${color})`
     }));
+    // Move text (green/violet only)
+    if(moveText) g.appendChild(svgTxt(cx, DCY + 9, moveText, {
+      'font-size': '2.0', fill: color, 'text-anchor': 'middle',
+      'font-family': 'Cinzel,serif', 'letter-spacing': '0.15', opacity: '0.80'
+    }));
     // "RUNNER" footer
     g.appendChild(svgTxt(cx, DCY + 13, 'RUNNER', {
       'font-size': '2.4', fill: color, 'text-anchor': 'middle',
@@ -1923,6 +2265,29 @@ function renderBoard() {
     }));
     svg.appendChild(g);
   });
+
+  // ── Movement trail — faint glowing rings at recently vacated spaces ──
+  if(S.isMoving && S.moveTrail.length > 0 && S.movingIdx >= 0){
+    const mover = S.entries[S.movingIdx];
+    if(mover){
+      S.moveTrail.forEach((trailPos, ti) => {
+        const fade = (ti + 1) / S.moveTrail.length; // oldest=dim, newest=bright
+        const tp = nodePos(trailPos);
+        // Outer glow ring
+        svg.appendChild(svgEl('circle', {
+          cx: tp.x.toFixed(1), cy: tp.y.toFixed(1), r: '12',
+          fill: 'none', stroke: mover.color,
+          'stroke-width': '2.5', opacity: (fade * 0.35).toFixed(2)
+        }));
+        // Inner bright ring
+        svg.appendChild(svgEl('circle', {
+          cx: tp.x.toFixed(1), cy: tp.y.toFixed(1), r: '8',
+          fill: 'none', stroke: mover.color,
+          'stroke-width': '1.5', opacity: (fade * 0.7).toFixed(2)
+        }));
+      });
+    }
+  }
 }
 
 // ── Label placement using ellipse geometry ──
@@ -1955,26 +2320,40 @@ function _placeLabel(layer, pos, nodeR, angleDeg, nameText, descText, color, isD
 // UPRIGHT TOKEN — tRNA icon stands perpendicular to board surface
 // ══════════════════════════════════════════════
 function drawToken(svg, e, gi, groupSize, bx, by, isCurrent) {
-  // Offset for multiple tokens on same space
+  // When this token is mid-hop, override its board position with the
+  // interpolated animation coordinates so it visually moves between spaces.
+  if(isCurrent && S.animX !== null){
+    bx = S.animX;
+    by = S.animY;
+  }
+
   const offsetAng = (gi / Math.max(groupSize,1)) * Math.PI * 2;
   const offsetR = groupSize > 1 ? 6 : 0;
   const fx = bx + offsetR * Math.cos(offsetAng);
   const fy = by + offsetR * Math.sin(offsetAng) * 0.4;
 
-  // Active pulse ring on the space
-  if(isCurrent){
-    const pulse = svgEl('circle', { cx:fx, cy:fy, r:'10.5',
-      fill:'none', stroke:e.color, 'stroke-width':'1', opacity:'0' });
-    pulse.innerHTML = `
-      <animate attributeName="r" values="8;16;8" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.9;0;0.9" dur="1.6s" repeatCount="indefinite"/>`;
-    svg.appendChild(pulse);
+  // Dual pulse rings — only shown when token is resting (not mid-hop)
+  if(isCurrent && S.animX === null){
+    // Outer ring — slow, wide, subtle
+    const outerPulse = svgEl('circle', { cx:fx, cy:fy, r:'12',
+      fill:'none', stroke:e.color, 'stroke-width':'0.8', opacity:'0' });
+    outerPulse.appendChild(svgEl('animate', { attributeName:'r', values:'10;22;10', dur:'2.2s', repeatCount:'indefinite' }));
+    outerPulse.appendChild(svgEl('animate', { attributeName:'opacity', values:'0.6;0;0.6', dur:'2.2s', repeatCount:'indefinite' }));
+    svg.appendChild(outerPulse);
+
+    // Inner ring — fast, bright heartbeat
+    const innerPulse = svgEl('circle', { cx:fx, cy:fy, r:'8',
+      fill:'none', stroke:e.color, 'stroke-width':'1.5', opacity:'0' });
+    innerPulse.appendChild(svgEl('animate', { attributeName:'r', values:'6;12;6', dur:'1.1s', repeatCount:'indefinite' }));
+    innerPulse.appendChild(svgEl('animate', { attributeName:'opacity', values:'1;0.1;1', dur:'1.1s', repeatCount:'indefinite' }));
+    svg.appendChild(innerPulse);
   }
 
-  // Token icon group — centered directly on the space
-  const iconScale = 0.72;
+  // Scale pops up to ~1.07× at the peak of the arc (S.animArc peaks at 1.0 mid-hop)
+  const iconScale = 0.72 * (1 + 0.49 * (isCurrent ? S.animArc : 0));
+
   const g = svgEl('g', {
-    transform: `translate(${fx},${fy}) scale(${iconScale})`,
+    transform: `translate(${fx},${fy}) scale(${iconScale.toFixed(3)})`,
     filter: 'url(#shadow-token)'
   });
   const initial = e.name.charAt(0).toUpperCase();
@@ -2062,7 +2441,7 @@ function openPopup(dismissable = false, flipIn = false){
   document.getElementById('popupOverlay').classList.add('open');
   const box = document.getElementById('popupBox');
   box.classList.remove('flip-in');
-  if(flipIn){ void box.offsetWidth; box.classList.add('flip-in'); }
+  if(flipIn){ void box.offsetWidth; box.classList.add('flip-in'); SFX.flip(); }
 }
 
 function closePopup(){
@@ -2151,6 +2530,14 @@ function overlayClickDismiss(e){
   if(_popupUserDismissable && e.target === document.getElementById('popupOverlay')) closePopup();
 }
 
+function toggleMute(){
+  const muted = SFX.toggleMute();
+  const btn = document.getElementById('muteBtn');
+  if(btn) btn.textContent = muted ? '🔇' : '🔊';
+  // Restart theme if unmuting while on the game screen
+  if(!muted && document.getElementById('game')?.classList.contains('active')) SFX.startTheme();
+}
+
 function openLog(){
   document.getElementById('logDrawer').classList.add('open');
 }
@@ -2185,6 +2572,7 @@ function askQuestion(type){
 function handleTrivia(chosen){
   if(S.answered) return; S.answered=true;
   const correct = chosen === S.shuffledAns;
+  if(correct) SFX.correct(); else SFX.wrong();
   const cur = S.entries[S.current];
   const isCheckpointCard = cur.checkpointState === 'passed';
   cur.totalCount++; if(correct) cur.correctCount++;
@@ -2224,6 +2612,7 @@ function handleTrivia(chosen){
 
 function selectOption(i){
   if(S.answered) return;
+  SFX.click();
   S.selectedOpt = i;
   document.querySelectorAll('.opt-btn').forEach((b,j) => b.classList.toggle('selected', j===i));
   document.getElementById('btnSubmitAnswer').disabled = false;
@@ -2241,21 +2630,60 @@ function autoNextTurn(delay=2200){
   setTimeout(()=>{ nextTurn(); }, delay);
 }
 
+// Interpolate a token visually from one board space to the next.
+// Calls renderBoard() at each frame so the token appears to glide.
+function animateHop(fromIdx, toIdx, onComplete){
+  SFX.hop();
+  const from = nodePos(fromIdx);
+  const to   = nodePos(toIdx);
+  const STEPS = 8, MS = 50; // 8 frames × 50ms = 400ms per hop
+  let i = 0;
+  function tick(){
+    const t = (i + 1) / STEPS;
+    const ease = t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t; // ease-in-out
+    S.animX   = from.x + (to.x - from.x) * ease;
+    S.animY   = from.y + (to.y - from.y) * ease;
+    S.animArc = Math.sin(t * Math.PI); // 0 → peak 1.0 → 0, gives hop arc
+    renderBoard();
+    i++;
+    if(i < STEPS) setTimeout(tick, MS);
+    else { S.animX = null; S.animY = null; S.animArc = 0; onComplete(); }
+  }
+  tick();
+}
+
 function movePlayer(entry, spaces, idx, onDone){
+  S.isMoving = true;
+  S.movingIdx = idx;
+  S.moveTrail = [];
   let step = 0;
   function doStep(){
     const nextPos = entry.pos + 1;
     if(step >= spaces || nextPos >= BOARD.length){ finishMove(); return; }
+    S.moveTrail.push(entry.pos);
+    if(S.moveTrail.length > 3) S.moveTrail.shift();
+    const fromPos = entry.pos;
     entry.pos = nextPos;
-    renderBoard();
     step++;
-    if(CHECKPOINT_TYPES.includes(BOARD[entry.pos].type)){
-      log(`⛔ ${entry.name} is stopped at ${BOARD[entry.pos].name} — checkpoint must be completed!`, 'info');
-      finishMove(); return;
-    }
-    setTimeout(doStep, 700);
+    animateHop(fromPos, nextPos, () => {
+      if(CHECKPOINT_TYPES.includes(BOARD[entry.pos].type)){
+        log(`⛔ ${entry.name} is stopped at ${BOARD[entry.pos].name} — checkpoint must be completed!`, 'info');
+        finishMove(); return;
+      }
+      setTimeout(doStep, 120); // brief pause between hops
+    });
   }
   function finishMove(){
+    S.isMoving = false;
+    S.moveTrail = [];
+    S.animX = null; S.animY = null; S.animArc = 0;
+    renderBoard();
+    // Landing sound — win fanfare handled separately in triggerWin
+    if(entry.pos < BOARD.length - 1){
+      const _lt = BOARD[entry.pos]?.type;
+      if(_lt === 'event') SFX.event();
+      else SFX.land();
+    }
     log(`✓ ${entry.name} moves to ${BOARD[entry.pos].name}!`, 'good');
     renderScores();
     if(entry.pos === BOARD.length - 1){
@@ -2373,6 +2801,7 @@ function launchDNA(){
       result.className = 'aq-result show bad';
       result.textContent = `✗ Time's up! ${S.entries[S.current].name} loses their turn.`;
       log(`✗ ${S.entries[S.current].name} ran out of time on the G1 Checkpoint.`,'bad');
+      SFX.wrong();
       S.entries[S.current].checkpointState = 'blocked';
       autoNextTurn();
     }
@@ -2388,7 +2817,7 @@ function setDNAPickersEnabled(enabled){
     b.className = `pick-btn pick-${base}`;
     b.textContent = base;
     b.disabled = !enabled;
-    if(enabled) b.addEventListener('click', () => pickBase(base));
+    if(enabled) b.addEventListener('click', () => { SFX.click(); pickBase(base); });
     bp.appendChild(b);
   });
 }
@@ -2448,6 +2877,7 @@ function pickBase(base){
     result.className = 'aq-result show bad';
     result.textContent = `✗ "${base}" doesn't pair with "${templateBase}" — correct is "${DNA_PAIRS[templateBase]}". Turn lost.`;
     log(`✗ ${S.entries[S.current].name} failed the G1 Checkpoint.`, 'bad');
+    SFX.wrong();
     S.entries[S.current].checkpointState = 'blocked';
     autoNextTurn();
     return;
@@ -2466,6 +2896,7 @@ function pickBase(base){
     closePopup();
     renderDNA();
     const cur = S.entries[S.current];
+    SFX.checkpoint();
     cur.checkpointState = 'passed';
     result.className = 'aq-result show ok';
     result.textContent = `✓ Perfect strand! ${cur.name} passes the G1 Checkpoint — draw a card next turn to advance!`;
@@ -2520,6 +2951,7 @@ function startTFTimer(){
 
 function tfAnswer(val){
   if(S.answered) return;
+  SFX.click();
   const correct=val===S.currentTF.ans;
   if(correct) S.tfCorrectCount++;
   else S.tfWrongCount++;
@@ -2547,6 +2979,7 @@ function endTF(){
   closePopup();
   if(passed){
     const cur = S.entries[S.current];
+    SFX.checkpoint();
     cur.checkpointState = 'passed';
     result.className='aq-result show ok';
     result.textContent=`✓ Passed! ${S.tfCorrectCount} correct. ${cur.name} passes the G2 Checkpoint — draw a card next turn to advance!`;
@@ -2557,6 +2990,7 @@ function endTF(){
     result.className='aq-result show bad';
     result.textContent=`✗ ${S.tfWrongCount>=3?'3 wrong answers':'Only '+S.tfCorrectCount+' correct'} — checkpoint failed. Turn lost.`;
     log(`✗ ${S.entries[S.current].name} failed the G2 Checkpoint (${S.tfCorrectCount}/${S.tfTotalAnswered}).`,'bad');
+    SFX.wrong();
     S.entries[S.current].checkpointState = 'blocked';
     autoNextTurn();
   }
@@ -2598,6 +3032,7 @@ function launchVocab(){
       result.className = 'aq-result show bad';
       result.textContent = `✗ Time's up! ${S.entries[S.current].name} loses their turn.`;
       log(`✗ ${S.entries[S.current].name} ran out of time on the M Checkpoint.`,'bad');
+      SFX.wrong();
       S.entries[S.current].checkpointState = 'blocked';
       autoNextTurn();
     }
@@ -2627,6 +3062,7 @@ function renderVocab(){
 }
 
 function selectVocabTerm(idx){
+  SFX.click();
   S.vocabSelectedTerm=idx;
   renderVocab();
   document.querySelectorAll('.vocab-term').forEach(t=>{ if(parseInt(t.dataset.idx)===idx) t.classList.add('selected'); });
@@ -2634,6 +3070,7 @@ function selectVocabTerm(idx){
 
 function selectVocabDef(idx){
   if(S.vocabSelectedTerm===null) return;
+  SFX.click();
   const correct=S.vocabSelectedTerm===idx;
   const vcur=S.entries[S.current]; vcur.totalCount++; if(correct) vcur.correctCount++;
   if(correct){
@@ -2644,6 +3081,7 @@ function selectVocabDef(idx){
       closePopup();
       const result=document.getElementById('aqResult');
       const cur = S.entries[S.current];
+      SFX.checkpoint();
       cur.checkpointState = 'passed';
       result.className='aq-result show ok';
       result.textContent=`✓ All matched! ${cur.name} passes the M Checkpoint — draw a card next turn to advance!`;
@@ -2665,6 +3103,7 @@ function selectVocabDef(idx){
       result.className='aq-result show bad';
       result.textContent=`✗ Incorrect match. ${S.entries[S.current].name} loses their turn.`;
       log(`✗ ${S.entries[S.current].name} failed the M Checkpoint.`,'bad');
+      SFX.wrong();
       S.entries[S.current].checkpointState = 'blocked';
       document.querySelectorAll('.vocab-term,.vocab-def').forEach(e=>{e.classList.remove('wrong-flash');e.onclick=null;});
       autoNextTurn();
@@ -2843,6 +3282,7 @@ function triggerWin(idx){
     const tableTitle = S.colonizeMode ? '— COLONY RESULTS —' : '— QUESTION RESULTS —';
     statsEl.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--gold);letter-spacing:0.1em;margin-bottom:0.5rem;text-align:center;">${tableTitle}</div><table style="width:100%;border-collapse:collapse;margin:0 auto;"><thead><tr style="color:var(--text-dim)"><th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;text-align:left;">Player</th>${cellHeader}<th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;">Correct</th><th style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:0.2rem 0.6rem;">Score</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
+  SFX.win();
   setTimeout(()=>{ showScreen('win'); startWinConfetti(); }, 700);
 }
 
