@@ -1246,9 +1246,9 @@ const SFX = (() => {
   // Tempo: 88 BPM  |  2-bar loop (16 eighth-note steps = 5.45s), repeating
   //
   // KEY INSIGHT: triangle-wave bass generates its own upper harmonics:
-  //   Bb3 bass → 3rd harmonic = F5  (fills bar A texture)
-  //   Db4 bass → 3rd harmonic = Ab5 (fills bar B beat 1-4 texture)
-  //   C4  bass → 3rd harmonic = G5  (fills bar B beat 5-8 texture)
+  //   Bb2 bass → 3rd harmonic = F4  (fills bar A texture)
+  //   Db3 bass → 3rd harmonic = Ab4 (fills bar B beat 1-4 texture)
+  //   C3  bass → 3rd harmonic = G4  (fills bar B beat 5-8 texture)
   // So 3 oscillators carry the whole arrangement.
   const BPM  = 88;
   const STEP = 60 / (BPM * 2);   // eighth-note duration in seconds (~0.341s)
@@ -1257,42 +1257,42 @@ const SFX = (() => {
   // [freq, startStep, durationSteps, volume, waveType]
   const SCORE = [
     // ── Bass (triangle — overtones widen the harmonic texture) ──
-    // Bar A (steps 0-7): Bb3  — harmonics land on F5 (3rd) and Bb5 (5th)
-    [233.08,  0, 8, 0.25,'triangle'],
-    // Bar B beats 1-4 (steps 8-11): Db4 — harmonics land on Db5 (2nd) and Ab5 (3rd)
-    [277.18,  8, 4, 0.22,'triangle'],
-    // Bar B beats 5-8 (steps 12-15): C4  — harmonics land on G5 (3rd)
-    [261.63, 12, 4, 0.22,'triangle'],
+    // Bar A (steps 0-7): Bb2  — harmonics land on F4 (3rd) and Bb4 (5th)
+    [116.54,  0, 8, 0.25,'triangle'],
+    // Bar B beats 1-4 (steps 8-11): Db3 — harmonics land on Db4 (2nd) and Ab4 (3rd)
+    [138.59,  8, 4, 0.22,'triangle'],
+    // Bar B beats 5-8 (steps 12-15): C3  — harmonics land on G4 (3rd)
+    [130.81, 12, 4, 0.22,'triangle'],
 
     // ── Pads / harmony (sine — warmth without adding extra overtones) ──
-    // Bar A: Bb minor triad (Bb3 + Db4 + F4)
-    [233.08,  0, 8, 0.04,'sine'], [277.18,  0, 8, 0.03,'sine'], [349.23,  0, 8, 0.02,'sine'],
-    // Bar B beats 1-4: Db major colour (Db4 + Ab4)
-    [277.18,  8, 4, 0.04,'sine'], [415.30,  8, 4, 0.03,'sine'],
-    // Bar B beats 5-8: C minor colour (C4 + G4 + Bb3)
-    [261.63, 12, 4, 0.04,'sine'], [392.00, 12, 4, 0.03,'sine'], [233.08, 12, 4, 0.02,'sine'],
+    // Bar A: Bb minor triad (Bb2 + Db3 + F3)
+    [116.54,  0, 8, 0.04,'sine'], [138.59,  0, 8, 0.03,'sine'], [174.61,  0, 8, 0.02,'sine'],
+    // Bar B beats 1-4: Db major colour (Db3 + Ab3)
+    [138.59,  8, 4, 0.04,'sine'], [207.65,  8, 4, 0.03,'sine'],
+    // Bar B beats 5-8: C minor colour (C3 + G3 + Bb2)
+    [130.81, 12, 4, 0.04,'sine'], [196.00, 12, 4, 0.03,'sine'], [116.54, 12, 4, 0.02,'sine'],
 
     // ── Lead melody (triangle) ──
-    // Bar A: C5/Db5 half-step oscillation (characteristic Bb harmonic minor tension)
-    [523.25,  0, 1, 0.18,'triangle'],  // C5
-    [554.37,  1, 1, 0.18,'triangle'],  // Db5
-    [523.25,  2, 1, 0.18,'triangle'],  // C5
-    [554.37,  3, 1, 0.18,'triangle'],  // Db5
-    [523.25,  4, 1, 0.18,'triangle'],  // C5
-    [554.37,  5, 1, 0.18,'triangle'],  // Db5
-    [523.25,  6, 1, 0.18,'triangle'],  // C5
-    // Bar boundary — jump to Ab5 (min 7th) as Db4 bass enters
-    [830.61,  7, 1, 0.20,'triangle'],  // Ab5
-    // Bar B beats 1-4: Ab5/Db5 arc over Db4 bass
-    [830.61,  8, 1, 0.20,'triangle'],  // Ab5
-    [554.37,  9, 1, 0.17,'triangle'],  // Db5
-    [830.61, 10, 1, 0.20,'triangle'],  // Ab5
-    [739.99, 11, 1, 0.21,'triangle'],  // Gb5 ← flat-6, the defining note of Bb harmonic minor
+    // Bar A: C4/Db4 half-step oscillation (characteristic Bb harmonic minor tension)
+    [261.63,  0, 1, 0.18,'triangle'],  // C4
+    [277.18,  1, 1, 0.18,'triangle'],  // Db4
+    [261.63,  2, 1, 0.18,'triangle'],  // C4
+    [277.18,  3, 1, 0.18,'triangle'],  // Db4
+    [261.63,  4, 1, 0.18,'triangle'],  // C4
+    [277.18,  5, 1, 0.18,'triangle'],  // Db4
+    [261.63,  6, 1, 0.18,'triangle'],  // C4
+    // Bar boundary — jump to Ab4 (min 7th) as Db3 bass enters
+    [415.30,  7, 1, 0.20,'triangle'],  // Ab4
+    // Bar B beats 1-4: Ab4/Db4 arc over Db3 bass
+    [415.30,  8, 1, 0.20,'triangle'],  // Ab4
+    [277.18,  9, 1, 0.17,'triangle'],  // Db4
+    [415.30, 10, 1, 0.20,'triangle'],  // Ab4
+    [370.00, 11, 1, 0.21,'triangle'],  // Gb4 ← flat-6, the defining note of Bb harmonic minor
     // Bar B beats 5-8: descend to resolution, then raised-7th leading tone
-    [698.46, 12, 1, 0.18,'triangle'],  // F5  (perfect 5th — arrives home)
-    [783.99, 13, 1, 0.16,'triangle'],  // G5  (natural 6th — modal colour)
-    [783.99, 14, 1, 0.15,'triangle'],  // G5  (sustained)
-    [440.00, 15, 1, 0.21,'triangle'],  // A4  ← raised 7th, leading tone straight back to Bb
+    [349.23, 12, 1, 0.18,'triangle'],  // F4  (perfect 5th — arrives home)
+    [392.00, 13, 1, 0.16,'triangle'],  // G4  (natural 6th — modal colour)
+    [392.00, 14, 1, 0.15,'triangle'],  // G4  (sustained)
+    [220.00, 15, 1, 0.21,'triangle'],  // A3  ← raised 7th, leading tone straight back to Bb
   ];
 
   function scheduleLoop(t0) {
