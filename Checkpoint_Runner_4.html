@@ -1241,58 +1241,186 @@ const SFX = (() => {
   }
 
   // ── Theme music ──
-  // Reconstructed from BeepBox-Song.wav via spectral analysis
-  // Key: Bb harmonic minor (Bb C Db F Gb Ab A)
-  // Tempo: 88 BPM  |  2-bar loop (16 eighth-note steps = 5.45s), repeating
+  // Reconstructed from BeepBox-Song.wav, expanded to ~30s in Danny Elfman style.
+  // Key: Bb harmonic minor (Bb C Db Eb F Gb Ab A)
+  // Tempo: 88 BPM  |  88 eighth-note steps ≈ 29.97s loop
   //
-  // KEY INSIGHT: triangle-wave bass generates its own upper harmonics:
-  //   Bb2 bass → 3rd harmonic = F4  (fills bar A texture)
-  //   Db3 bass → 3rd harmonic = Ab4 (fills bar B beat 1-4 texture)
-  //   C3  bass → 3rd harmonic = G4  (fills bar B beat 5-8 texture)
-  // So 3 oscillators carry the whole arrangement.
+  // Structure:
+  //   §A  steps  0–15  Original 2-bar motif  (Bbm → Db → Cm)
+  //   §B  steps 16–31  Elfman "creep" — chromatic descending bass, countermelody
+  //   §C  steps 32–47  March / "ticking clock" ostinato — sparse, unsettling
+  //   §D  steps 48–63  Development — A melody over B harmony + Faug tension
+  //   §E  steps 64–79  Climax — all voices, major-V pull (F major), chromatic inner voice
+  //   §F  steps 80–87  Coda — stripped to bass + one voice, resolves to A3 → loops to Bb
+  //
+  // Triangle-wave basses double as harmony: their 3rd harmonic enriches the texture.
   const BPM  = 88;
-  const STEP = 60 / (BPM * 2);   // eighth-note duration in seconds (~0.341s)
-  const LOOP = 16 * STEP;         // 2-bar loop duration (~5.45s)
+  const STEP = 60 / (BPM * 2);   // eighth-note (~0.341s)
+  const LOOP = 88 * STEP;         // 11-bar loop (~29.97s)
+
+  // Frequency table (Hz)
+  const _ = {
+    Bb1: 58.27, F2: 87.31,
+    Bb2:116.54, B2:123.47, C3:130.81, Db3:138.59, D3:146.83,
+    Eb3:155.56, E3:164.81, F3:174.61, Gb3:185.00, G3:196.00,
+    Ab3:207.65, A3:220.00, Bb3:233.08, B3:246.94, C4:261.63,
+    Db4:277.18, D4:293.66, Eb4:311.13, E4:329.63, F4:349.23,
+    Gb4:370.00, G4:392.00, Ab4:415.30, A4:440.00, Bb4:466.16,
+    B4:493.88,  C5:523.25, Db5:554.37, Eb5:622.25, F5:698.46,
+    Gb5:739.99, Ab5:830.61,
+  };
 
   // [freq, startStep, durationSteps, volume, waveType]
   const SCORE = [
-    // ── Bass (triangle — overtones widen the harmonic texture) ──
-    // Bar A (steps 0-7): Bb2  — harmonics land on F4 (3rd) and Bb4 (5th)
-    [116.54,  0, 8, 0.25,'triangle'],
-    // Bar B beats 1-4 (steps 8-11): Db3 — harmonics land on Db4 (2nd) and Ab4 (3rd)
-    [138.59,  8, 4, 0.22,'triangle'],
-    // Bar B beats 5-8 (steps 12-15): C3  — harmonics land on G4 (3rd)
-    [130.81, 12, 4, 0.22,'triangle'],
 
-    // ── Pads / harmony (sine — warmth without adding extra overtones) ──
-    // Bar A: Bb minor triad (Bb2 + Db3 + F3)
-    [116.54,  0, 8, 0.04,'sine'], [138.59,  0, 8, 0.03,'sine'], [174.61,  0, 8, 0.02,'sine'],
-    // Bar B beats 1-4: Db major colour (Db3 + Ab3)
-    [138.59,  8, 4, 0.04,'sine'], [207.65,  8, 4, 0.03,'sine'],
-    // Bar B beats 5-8: C minor colour (C3 + G3 + Bb2)
-    [130.81, 12, 4, 0.04,'sine'], [196.00, 12, 4, 0.03,'sine'], [116.54, 12, 4, 0.02,'sine'],
+    // ═══════════════════════════════════════════════
+    // §A  ORIGINAL MOTIF  (steps 0–15)
+    // ═══════════════════════════════════════════════
+    // Bass
+    [_.Bb2,  0, 8, 0.25,'triangle'],  // Bb2 bar A
+    [_.Db3,  8, 4, 0.22,'triangle'],  // Db3 bar B-i
+    [_.C3,  12, 4, 0.22,'triangle'],  // C3  bar B-ii
+    // Pads
+    [_.Bb2,  0, 8, 0.04,'sine'], [_.Db3,  0, 8, 0.03,'sine'], [_.F3,   0, 8, 0.02,'sine'],
+    [_.Db3,  8, 4, 0.04,'sine'], [_.Ab3,  8, 4, 0.03,'sine'],
+    [_.C3,  12, 4, 0.04,'sine'], [_.G3,  12, 4, 0.03,'sine'], [_.Bb2, 12, 4, 0.02,'sine'],
+    // Melody: C4/Db4 half-step trill → Ab4 peak → Gb4 F4 G4 A3
+    [_.C4,   0, 1, 0.18,'triangle'], [_.Db4,  1, 1, 0.18,'triangle'],
+    [_.C4,   2, 1, 0.18,'triangle'], [_.Db4,  3, 1, 0.18,'triangle'],
+    [_.C4,   4, 1, 0.18,'triangle'], [_.Db4,  5, 1, 0.18,'triangle'],
+    [_.C4,   6, 1, 0.18,'triangle'], [_.Ab4,  7, 1, 0.20,'triangle'],
+    [_.Ab4,  8, 1, 0.20,'triangle'], [_.Db4,  9, 1, 0.17,'triangle'],
+    [_.Ab4, 10, 1, 0.20,'triangle'], [_.Gb4, 11, 1, 0.21,'triangle'],
+    [_.F4,  12, 1, 0.18,'triangle'], [_.G4,  13, 1, 0.16,'triangle'],
+    [_.G4,  14, 1, 0.15,'triangle'], [_.A3,  15, 1, 0.21,'triangle'],
 
-    // ── Lead melody (triangle) ──
-    // Bar A: C4/Db4 half-step oscillation (characteristic Bb harmonic minor tension)
-    [261.63,  0, 1, 0.18,'triangle'],  // C4
-    [277.18,  1, 1, 0.18,'triangle'],  // Db4
-    [261.63,  2, 1, 0.18,'triangle'],  // C4
-    [277.18,  3, 1, 0.18,'triangle'],  // Db4
-    [261.63,  4, 1, 0.18,'triangle'],  // C4
-    [277.18,  5, 1, 0.18,'triangle'],  // Db4
-    [261.63,  6, 1, 0.18,'triangle'],  // C4
-    // Bar boundary — jump to Ab4 (min 7th) as Db3 bass enters
-    [415.30,  7, 1, 0.20,'triangle'],  // Ab4
-    // Bar B beats 1-4: Ab4/Db4 arc over Db3 bass
-    [415.30,  8, 1, 0.20,'triangle'],  // Ab4
-    [277.18,  9, 1, 0.17,'triangle'],  // Db4
-    [415.30, 10, 1, 0.20,'triangle'],  // Ab4
-    [370.00, 11, 1, 0.21,'triangle'],  // Gb4 ← flat-6, the defining note of Bb harmonic minor
-    // Bar B beats 5-8: descend to resolution, then raised-7th leading tone
-    [349.23, 12, 1, 0.18,'triangle'],  // F4  (perfect 5th — arrives home)
-    [392.00, 13, 1, 0.16,'triangle'],  // G4  (natural 6th — modal colour)
-    [392.00, 14, 1, 0.15,'triangle'],  // G4  (sustained)
-    [220.00, 15, 1, 0.21,'triangle'],  // A3  ← raised 7th, leading tone straight back to Bb
+    // ═══════════════════════════════════════════════
+    // §B  ELFMAN "CREEP"  (steps 16–31)
+    // Chromatic descending bass: Bb→A→Ab→G (passus duriusculus).
+    // A countermelody (sawtooth, mid-volume) enters above the main melody.
+    // ═══════════════════════════════════════════════
+    // Bass — one step per chromatic semitone downward
+    [_.Bb2, 16, 4, 0.24,'triangle'],  // Bb
+    [_.A3,  20, 4, 0.22,'triangle'],  // A  (a half-step down creates immediate unease)
+    [_.Ab3, 24, 4, 0.22,'triangle'],  // Ab (another half-step — classic Elfman creep)
+    [_.G3,  28, 4, 0.20,'triangle'],  // G  (lands on the natural 6th — modal ambiguity)
+    // Pads — held through entire section, chromatic inner movement
+    [_.Bb2, 16, 8, 0.04,'sine'], [_.F3,  16, 8, 0.03,'sine'], [_.Db3, 16, 8, 0.02,'sine'],
+    [_.A3,  24, 8, 0.04,'sine'], [_.E3,  24, 8, 0.03,'sine'], [_.C3,  24, 8, 0.02,'sine'],
+    // Main melody repeats (same motif — Elfman loves exact repetition)
+    [_.C4,  16, 1, 0.17,'triangle'], [_.Db4, 17, 1, 0.17,'triangle'],
+    [_.C4,  18, 1, 0.17,'triangle'], [_.Db4, 19, 1, 0.17,'triangle'],
+    [_.C4,  20, 1, 0.17,'triangle'], [_.Db4, 21, 1, 0.17,'triangle'],
+    [_.C4,  22, 1, 0.17,'triangle'], [_.Ab4, 23, 1, 0.19,'triangle'],
+    [_.Ab4, 24, 1, 0.19,'triangle'], [_.Db4, 25, 1, 0.16,'triangle'],
+    [_.Ab4, 26, 1, 0.19,'triangle'], [_.Gb4, 27, 1, 0.20,'triangle'],
+    [_.F4,  28, 1, 0.17,'triangle'], [_.G4,  29, 1, 0.15,'triangle'],
+    [_.G4,  30, 1, 0.14,'triangle'], [_.A3,  31, 1, 0.20,'triangle'],
+    // Countermelody (sawtooth — "strings" pizzicato feel, half-time rhythm)
+    [_.F4,  16, 2, 0.09,'sawtooth'], [_.Eb4, 18, 2, 0.09,'sawtooth'],
+    [_.Db4, 20, 2, 0.09,'sawtooth'], [_.C4,  22, 2, 0.09,'sawtooth'],
+    [_.B3,  24, 2, 0.10,'sawtooth'], [_.Bb3, 26, 2, 0.10,'sawtooth'],
+    [_.A3,  28, 2, 0.10,'sawtooth'], [_.G3,  30, 2, 0.09,'sawtooth'],
+
+    // ═══════════════════════════════════════════════
+    // §C  MARCH / "TICKING CLOCK"  (steps 32–47)
+    // Sparse — bass drops out for 4 steps, ticking high-register ostinato
+    // enters (Elfman's music-box signature), then a sudden Gb major stab.
+    // ═══════════════════════════════════════════════
+    // Bass — Gb pedal (tritone from C → maximum tension)
+    [_.Gb3, 32, 8, 0.20,'triangle'],  // Gb pedal — tritone from C, very unsettling
+    [_.Eb3, 40, 4, 0.21,'triangle'],  // Eb — Elfman loves sudden Eb minor
+    [_.Bb2, 44, 4, 0.24,'triangle'],  // Bb returns — relief
+    // Pads
+    [_.Gb3, 32, 8, 0.04,'sine'], [_.Bb3, 32, 8, 0.03,'sine'], [_.Db4, 32, 8, 0.02,'sine'],
+    [_.Eb3, 40, 4, 0.04,'sine'], [_.G3,  40, 4, 0.03,'sine'], [_.Bb3, 40, 4, 0.02,'sine'],
+    [_.Bb2, 44, 4, 0.04,'sine'], [_.Db3, 44, 4, 0.03,'sine'], [_.F3,  44, 4, 0.02,'sine'],
+    // "Ticking clock" ostinato — single high note every other step (music-box)
+    [_.Bb4, 32, 1, 0.11,'triangle'], [_.Bb4, 34, 1, 0.11,'triangle'],
+    [_.Bb4, 36, 1, 0.11,'triangle'], [_.Bb4, 38, 1, 0.11,'triangle'],
+    [_.Bb4, 40, 1, 0.10,'triangle'], [_.Ab4, 42, 1, 0.10,'triangle'],
+    [_.Bb4, 44, 1, 0.10,'triangle'], [_.Bb4, 46, 1, 0.10,'triangle'],
+    // Sparse melody — only hits the structural notes, space left intentionally
+    [_.Db5, 32, 2, 0.16,'triangle'],  // Db5 — high and exposed
+    [_.Ab4, 35, 1, 0.14,'triangle'],
+    [_.Gb4, 36, 2, 0.15,'triangle'],
+    [_.Eb4, 39, 1, 0.14,'triangle'],
+    [_.F4,  40, 2, 0.15,'triangle'],
+    [_.Gb4, 43, 1, 0.16,'triangle'],
+    [_.C4,  44, 2, 0.17,'triangle'],  // C4 over Bb bass — sus2 ambiguity
+    [_.Db4, 47, 1, 0.17,'triangle'],
+
+    // ═══════════════════════════════════════════════
+    // §D  DEVELOPMENT  (steps 48–63)
+    // Original A melody returns, but now riding over §B's chromatic bass.
+    // Faug (F + A + C#/Db) chord appears as a passing stab — very Elfman.
+    // ═══════════════════════════════════════════════
+    // Bass — chromatic walk again, but compressed to 4-step units
+    [_.Bb2, 48, 4, 0.24,'triangle'],
+    [_.Ab2, 52, 4, 0.22,'triangle'],  // Ab2 — unexpected low register
+    [_.Gb3, 56, 4, 0.21,'triangle'],
+    [_.F3,  60, 4, 0.23,'triangle'],  // F3 — sets up major V feeling
+    // Pads — include the Faug colour at step 52
+    [_.Bb2, 48, 4, 0.04,'sine'], [_.Db3, 48, 4, 0.03,'sine'], [_.F3,  48, 4, 0.02,'sine'],
+    [_.Ab2, 52, 4, 0.04,'sine'], [_.C3,  52, 4, 0.03,'sine'], [_.Eb3, 52, 4, 0.02,'sine'],
+    [_.Gb3, 56, 4, 0.04,'sine'], [_.Bb3, 56, 4, 0.03,'sine'], [_.Db4, 56, 4, 0.02,'sine'],
+    [_.F3,  60, 4, 0.05,'sine'], [_.A3,  60, 4, 0.04,'sine'], [_.Db4, 60, 4, 0.03,'sine'], // Faug!
+    // Melody (A motif) — slightly louder, building
+    [_.C4,  48, 1, 0.19,'triangle'], [_.Db4, 49, 1, 0.19,'triangle'],
+    [_.C4,  50, 1, 0.19,'triangle'], [_.Db4, 51, 1, 0.19,'triangle'],
+    [_.C4,  52, 1, 0.19,'triangle'], [_.Db4, 53, 1, 0.19,'triangle'],
+    [_.Eb4, 54, 1, 0.19,'triangle'], [_.Ab4, 55, 1, 0.22,'triangle'],  // Eb4 variant — surprise
+    [_.Ab4, 56, 1, 0.22,'triangle'], [_.Gb4, 57, 1, 0.19,'triangle'],
+    [_.F4,  58, 1, 0.18,'triangle'], [_.Gb4, 59, 1, 0.19,'triangle'],  // F→Gb echo
+    [_.A4,  60, 2, 0.23,'triangle'],                                    // A4 over Faug — peak tension
+    [_.Bb4, 62, 1, 0.22,'triangle'],                                    // Bb4 arrival
+    [_.A4,  63, 1, 0.20,'triangle'],
+
+    // ═══════════════════════════════════════════════
+    // §E  CLIMAX  (steps 64–79)
+    // All voices at once. F major (major V of Bb) gives bittersweet Elfman
+    // quality — the raised 3rd (A natural) creates the characteristic longing.
+    // Chromatic inner voice descends under melody.
+    // ═══════════════════════════════════════════════
+    // Bass — Bb | F major (major V!) | Gb | Bb
+    [_.Bb2, 64, 8, 0.26,'triangle'],  // Home
+    [_.F2,  72, 4, 0.25,'triangle'],  // F major V — bright and dramatic
+    [_.Gb3, 76, 2, 0.22,'triangle'],  // Gb stab
+    [_.Bb2, 78, 2, 0.25,'triangle'],  // Return
+    // Full pads — richer voicing at climax
+    [_.Bb2, 64, 8, 0.05,'sine'], [_.F3,  64, 8, 0.04,'sine'], [_.Db3, 64, 8, 0.03,'sine'], [_.Ab3, 64, 8, 0.02,'sine'],
+    [_.F2,  72, 4, 0.05,'sine'], [_.A3,  72, 4, 0.04,'sine'], [_.C4,  72, 4, 0.03,'sine'],  // F major triad
+    [_.Gb3, 76, 2, 0.04,'sine'], [_.Bb3, 76, 2, 0.03,'sine'], [_.Db4, 76, 2, 0.02,'sine'],
+    [_.Bb2, 78, 2, 0.05,'sine'], [_.Db3, 78, 2, 0.04,'sine'], [_.F3,  78, 2, 0.03,'sine'],
+    // Melody — louder, full trill, peaks at Bb4
+    [_.C4,  64, 1, 0.20,'triangle'], [_.Db4, 65, 1, 0.20,'triangle'],
+    [_.C4,  66, 1, 0.20,'triangle'], [_.Db4, 67, 1, 0.20,'triangle'],
+    [_.C4,  68, 1, 0.20,'triangle'], [_.Db4, 69, 1, 0.20,'triangle'],
+    [_.Eb4, 70, 1, 0.20,'triangle'], [_.Bb4, 71, 1, 0.25,'triangle'],  // Peak Bb4!
+    [_.A4,  72, 2, 0.24,'triangle'],                                    // A4 over F major — longing
+    [_.C5,  74, 1, 0.22,'triangle'],                                    // C5 — highest point
+    [_.Bb4, 75, 1, 0.21,'triangle'],
+    [_.Ab4, 76, 1, 0.19,'triangle'], [_.Gb4, 77, 1, 0.18,'triangle'],
+    [_.F4,  78, 1, 0.18,'triangle'], [_.A3,  79, 1, 0.21,'triangle'],
+    // Chromatic inner voice descending (counterpoint under melody)
+    [_.Db4, 64, 2, 0.07,'sawtooth'], [_.C4,  66, 2, 0.07,'sawtooth'],
+    [_.B3,  68, 2, 0.07,'sawtooth'], [_.Bb3, 70, 2, 0.07,'sawtooth'],
+    [_.A3,  72, 2, 0.07,'sawtooth'], [_.Ab3, 74, 2, 0.07,'sawtooth'],
+    [_.G3,  76, 2, 0.07,'sawtooth'], [_.F3,  78, 2, 0.06,'sawtooth'],
+
+    // ═══════════════════════════════════════════════
+    // §F  CODA  (steps 80–87)
+    // Strips back to near-silence — just bass and a single exposed voice.
+    // Elfman's "peek-a-boo" quiet moment before the loop restarts.
+    // Ends on A3 (raised 7th, unresolved) — leading tone pulls straight back to Bb.
+    // ═══════════════════════════════════════════════
+    [_.Bb2, 80, 8, 0.18,'triangle'],   // Bb2 — alone, quieter
+    [_.Bb2, 80, 8, 0.03,'sine'],       // pad barely present
+    // Single exposed melodic line — slow, deliberate
+    [_.F4,  80, 2, 0.13,'triangle'],   // F4
+    [_.Eb4, 82, 2, 0.12,'triangle'],   // Eb4
+    [_.Db4, 84, 2, 0.13,'triangle'],   // Db4 — settling
+    [_.A3,  86, 2, 0.16,'triangle'],   // A3 ← raised 7th, unresolved → loops back to Bb
   ];
 
   function scheduleLoop(t0) {
