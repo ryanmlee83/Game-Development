@@ -2447,11 +2447,14 @@ function drawParallaxBg(ctx, canvas, biomeKey, scrollX, ts){
   ctx.fillStyle = skyGrad;
   ctx.fillRect(0, 0, W, groundY);
 
+  // Biome-specific sky/background landmarks (before flora)
+  drawBiomeLandmarks(ctx, W, H, groundY, biomeKey, pal, scrollX, ts);
+
   // Layer 1: distant flora (parallax factor 0.12)
-  drawFloraLayer(ctx, W, H, groundY, pal, scrollX * 0.12, ts, 0.55, 0.38, 18, 12, 8);
+  drawFloraLayer(ctx, W, H, groundY, pal, scrollX * 0.12, ts, 0.55, 0.38, 18, 12, 8, biomeKey);
 
   // Layer 2: mid flora (parallax factor 0.38)
-  drawFloraLayer(ctx, W, H, groundY, pal, scrollX * 0.38, ts, 0.75, 0.55, 28, 16, 6);
+  drawFloraLayer(ctx, W, H, groundY, pal, scrollX * 0.38, ts, 0.75, 0.55, 28, 16, 6, biomeKey);
 
   // Ground band with gradient
   const gndGrad = ctx.createLinearGradient(0, groundY, 0, H);
@@ -2469,36 +2472,322 @@ function drawParallaxBg(ctx, canvas, biomeKey, scrollX, ts){
   ctx.globalAlpha = 1;
 
   // Layer 3: near flora (parallax factor 0.82)
-  drawFloraLayer(ctx, W, H, groundY, pal, scrollX * 0.82, ts, 0.92, 0.72, 40, 22, 5);
+  drawFloraLayer(ctx, W, H, groundY, pal, scrollX * 0.82, ts, 0.92, 0.72, 40, 22, 5, biomeKey);
+
+  // Atmospheric particles (floats above ground layer)
+  drawAtmosphericParticles(ctx, W, H, groundY, biomeKey, pal, scrollX, ts);
 
   // Scan-line overlay (subtle)
   ctx.fillStyle = 'rgba(0,0,0,0.06)';
   for(let y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 2);
 }
 
-function drawFloraLayer(ctx, W, H, groundY, pal, offsetX, ts, alphaBase, alphaFlora, maxH, capR, count){
+function drawFloraLayer(ctx, W, H, groundY, pal, offsetX, ts, alphaBase, alphaFlora, maxH, capR, count, biomeKey){
   const period = W / count;
-  ctx.fillStyle = pal.flora;
-  ctx.globalAlpha = alphaFlora;
 
   for(let i = -1; i < count + 2; i++){
-    // Tile flora using pseudo-random seed based on index
-    const seed  = ((i * 31337) & 0xffff) / 0xffff;
-    const x     = ((i * period - (offsetX % (period * (count + 1)))) + W * 2) % (W + period * 2) - period;
-    const hBase = maxH * (0.5 + seed * 0.5);
-    const wobble= Math.sin(ts * 0.001 + i * 1.3) * 2;
+    const seed   = ((i * 31337) & 0xffff) / 0xffff;
+    const x      = ((i * period - (offsetX % (period * (count + 1)))) + W * 2) % (W + period * 2) - period;
+    const hBase  = maxH * (0.5 + seed * 0.5);
+    const wobble = Math.sin(ts * 0.001 + i * 1.3) * 2;
+    const tipY   = groundY - hBase + wobble;
 
-    // Stem
-    ctx.fillRect(x - 2, groundY - hBase, 4, hBase);
+    ctx.fillStyle = pal.flora;
+    ctx.globalAlpha = alphaFlora;
 
-    // Cap (biome-specific shape)
-    const cx = x, cy = groundY - hBase + wobble;
-    const r  = capR * (0.6 + seed * 0.6);
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fill();
+    if(biomeKey === 'thermal'){
+      // Jagged mineral spike cluster
+      const spikes = 2 + Math.floor(seed * 3);
+      for(let s = 0; s < spikes; s++){
+        const sx = x + (s - (spikes - 1) / 2) * (capR * 0.55);
+        const sh = hBase * (0.35 + (((s + seed * 17) & 3) / 3) * 0.65);
+        const sw = Math.max(1.5, capR * 0.15);
+        ctx.fillStyle = s % 2 === 0 ? pal.flora : pal.accent;
+        ctx.globalAlpha = alphaFlora * (0.6 + seed * 0.4);
+        ctx.beginPath();
+        ctx.moveTo(sx - sw, groundY);
+        ctx.lineTo(sx, groundY - sh);
+        ctx.lineTo(sx + sw, groundY);
+        ctx.fill();
+      }
+    } else if(biomeKey === 'caverns'){
+      // Tapered crystal pillar with glowing tip
+      const cw = capR * 0.22 + seed * capR * 0.18;
+      ctx.beginPath();
+      ctx.moveTo(x - cw, groundY);
+      ctx.lineTo(x - cw * 0.30, tipY);
+      ctx.lineTo(x + cw * 0.30, tipY);
+      ctx.lineTo(x + cw, groundY);
+      ctx.fill();
+      ctx.fillStyle = pal.accent;
+      ctx.globalAlpha = alphaFlora * (0.35 + 0.25 * Math.sin(ts * 0.002 + i));
+      ctx.beginPath(); ctx.arc(x, tipY, cw * 0.65, 0, Math.PI * 2); ctx.fill();
+    } else if(biomeKey === 'marsh'){
+      // Reed: thin stem + narrow oval cattail head
+      ctx.fillRect(x - 1.5, groundY - hBase, 3, hBase);
+      ctx.beginPath();
+      ctx.ellipse(x, tipY + capR * 0.45, capR * 0.17, capR * 0.52, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if(biomeKey === 'canals'){
+      // Stone pillar with capital block
+      const pw = capR * 0.42 + seed * capR * 0.25;
+      ctx.fillRect(x - pw, groundY - hBase * 0.88, pw * 2, hBase * 0.88);
+      ctx.fillStyle = pal.accent;
+      ctx.globalAlpha = alphaFlora * 0.5;
+      ctx.fillRect(x - pw * 1.35, groundY - hBase * 0.88, pw * 2.7, capR * 0.22);
+    } else if(biomeKey === 'shore'){
+      // Grass tufts: curved blades fanned from base
+      const blades = 3 + Math.floor(seed * 3);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = pal.flora;
+      for(let b = 0; b < blades; b++){
+        const bseed = ((b * i * 7 + b * b) & 0xff) / 0xff;
+        const angle = (b / (blades - 1) - 0.5) * 0.9 + bseed * 0.2;
+        const bh    = hBase * (0.4 + bseed * 0.6);
+        const bend  = Math.sin(ts * 0.0012 + i) * 0.18;
+        ctx.globalAlpha = alphaFlora * (0.6 + bseed * 0.4);
+        ctx.beginPath();
+        ctx.moveTo(x, groundY);
+        ctx.quadraticCurveTo(
+          x + Math.sin(angle + bend) * bh * 0.45,
+          groundY - bh * 0.55,
+          x + Math.sin(angle + bend) * bh * 0.42,
+          groundY - bh
+        );
+        ctx.stroke();
+      }
+    } else {
+      // Default / canopy: stem + rounded mushroom cap
+      ctx.fillRect(x - 2, groundY - hBase, 4, hBase);
+      const r = capR * (0.6 + seed * 0.6);
+      ctx.beginPath(); ctx.arc(x, tipY, r, 0, Math.PI * 2); ctx.fill();
+    }
   }
   ctx.globalAlpha = 1;
+  ctx.lineWidth = 1;
+}
+
+// ─── BIOME LANDMARKS ────────────────────────────────
+// Drawn after sky, before flora layers. Each biome gets unique far-background
+// silhouettes and ground-level details. All positions are ts/scrollX-driven.
+function drawBiomeLandmarks(ctx, W, H, groundY, biomeKey, pal, scrollX, ts){
+  ctx.save();
+  const lx = (scrollX * 0.04) % (W * 2); // very slow far-parallax offset
+
+  if(biomeKey === 'canopy'){
+    // Alien moon — fixed in upper sky
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = '#c8deff';
+    ctx.beginPath(); ctx.arc(W * 0.78, H * 0.14, 26, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = pal.sky; // shadow crescent
+    ctx.beginPath(); ctx.arc(W * 0.78 + 8, H * 0.14 - 5, 26, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    // Giant background tree trunks
+    [0.16, 0.50, 0.83].forEach((fx, i) => {
+      const tx = ((fx * W - lx * (0.4 + i * 0.15) + W * 4) % (W + 60)) - 30;
+      const tw = 14 + i * 6, th = groundY * 0.80;
+      ctx.fillStyle = '#020a02'; ctx.globalAlpha = 0.88;
+      ctx.fillRect(tx - tw / 2, groundY - th, tw, th);
+      ctx.fillStyle = pal.flora; ctx.globalAlpha = 0.45;
+      ctx.beginPath();
+      ctx.ellipse(tx, groundY - th + 4, tw * 2.2, th * 0.16, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+  } else if(biomeKey === 'thermal'){
+    // Volcano silhouette in the far background
+    const vx = ((W * 0.68 - lx * 0.18 + W * 4) % (W + 240)) - 120;
+    ctx.fillStyle = '#160400'; ctx.globalAlpha = 0.92;
+    ctx.beginPath();
+    ctx.moveTo(vx - 115, groundY);
+    ctx.lineTo(vx, groundY - H * 0.56);
+    ctx.lineTo(vx + 115, groundY);
+    ctx.fill();
+    // Lava glow at crater rim
+    ctx.fillStyle = '#ff4800';
+    ctx.globalAlpha = 0.12 + 0.07 * Math.sin(ts * 0.003);
+    ctx.beginPath(); ctx.ellipse(vx, groundY - H * 0.56, 30, 9, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    // Geyser steam columns (slow parallax)
+    [0.22, 0.54, 0.80].forEach((fx, i) => {
+      const gx = ((fx * W - lx * (0.5 + i * 0.2) + W * 4) % (W + 40)) - 20;
+      const phase = ts * 0.0014 + i * 2.2;
+      const ht = groundY * 0.20 * (0.55 + 0.45 * Math.abs(Math.sin(phase)));
+      const grad = ctx.createLinearGradient(gx, groundY - ht, gx, groundY);
+      grad.addColorStop(0, 'rgba(255,200,100,0)');
+      grad.addColorStop(0.5, 'rgba(255,180,60,0.20)');
+      grad.addColorStop(1, 'rgba(255,140,20,0.38)');
+      ctx.fillStyle = grad; ctx.globalAlpha = 1;
+      ctx.fillRect(gx - 6, groundY - ht, 12, ht);
+    });
+
+  } else if(biomeKey === 'caverns'){
+    // Stalactites hanging from ceiling
+    for(let i = 0; i < 13; i++){
+      const seed = ((i * 13337) & 0xffff) / 0xffff;
+      const sx = ((i / 12 * W * 1.1 - lx * 0.14 + W * 4) % (W + 60)) - 30;
+      const slen = H * 0.09 + seed * H * 0.17;
+      const sw   = 5 + seed * 9;
+      ctx.fillStyle = pal.flora; ctx.globalAlpha = 0.55 + seed * 0.3;
+      ctx.beginPath();
+      ctx.moveTo(sx - sw / 2, 0);
+      ctx.lineTo(sx + sw / 2, 0);
+      ctx.lineTo(sx + (seed - 0.5) * 3, slen);
+      ctx.fill();
+      ctx.fillStyle = pal.accent;
+      ctx.globalAlpha = 0.22 + 0.14 * Math.sin(ts * 0.0018 + i);
+      ctx.beginPath(); ctx.arc(sx + (seed - 0.5) * 3, slen, 2.5, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+  } else if(biomeKey === 'marsh'){
+    // Reflective water surface just below horizon
+    const wY = groundY + 3;
+    const wGrad = ctx.createLinearGradient(0, wY, 0, wY + H * 0.13);
+    wGrad.addColorStop(0, 'rgba(0,255,180,0.16)');
+    wGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = wGrad; ctx.globalAlpha = 1;
+    ctx.fillRect(0, wY, W, H * 0.13);
+    // Subtle wave lines
+    ctx.strokeStyle = pal.accent; ctx.lineWidth = 1; ctx.globalAlpha = 0.14;
+    for(let wi = 0; wi < 3; wi++){
+      ctx.beginPath();
+      for(let wx = 0; wx <= W; wx += 5){
+        const wy = wY + wi * 7 + 3 * Math.sin((wx - scrollX * 0.9 + wi * 45) * 0.038 + ts * 0.003);
+        wx === 0 ? ctx.moveTo(wx, wy) : ctx.lineTo(wx, wy);
+      }
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+  } else if(biomeKey === 'canals'){
+    // Stone canal-wall blocks running along the ground surface
+    const bW = 46, bH = Math.floor(H * 0.055);
+    const cols = Math.ceil(W / bW) + 3;
+    ctx.strokeStyle = 'rgba(0,180,255,0.10)'; ctx.lineWidth = 1;
+    for(let bi = 0; bi < cols; bi++){
+      const bx = ((bi * bW - lx * 0.55 + W * 4) % (W + bW * 2)) - bW;
+      const rowOff = (bi % 2) * (bH / 2);
+      ctx.fillStyle = '#101a26'; ctx.globalAlpha = 0.55;
+      ctx.fillRect(bx, groundY + rowOff, bW - 1, bH - 1);
+      ctx.globalAlpha = 0.55;
+      ctx.strokeRect(bx, groundY + rowOff, bW - 1, bH - 1);
+    }
+    // Biolum water channel in lower foreground
+    const chY = groundY + bH * 1.2;
+    const chGrad = ctx.createLinearGradient(0, chY, 0, chY + H * 0.045);
+    chGrad.addColorStop(0, 'rgba(0,180,255,0.20)');
+    chGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = chGrad; ctx.globalAlpha = 1;
+    ctx.fillRect(0, chY, W, H * 0.045);
+
+  } else if(biomeKey === 'shore'){
+    // Distant ocean band in the upper portion of sky
+    const oY = groundY * 0.50, oH = groundY * 0.24;
+    const oGrad = ctx.createLinearGradient(0, oY, 0, oY + oH);
+    oGrad.addColorStop(0, 'rgba(0,110,200,0.52)');
+    oGrad.addColorStop(1, 'rgba(0,50,100,0)');
+    ctx.fillStyle = oGrad; ctx.globalAlpha = 1;
+    ctx.fillRect(0, oY, W, oH);
+    // Wave silhouettes
+    ctx.strokeStyle = 'rgba(160,220,255,0.28)'; ctx.lineWidth = 1.5;
+    for(let wi = 0; wi < 4; wi++){
+      ctx.beginPath();
+      for(let wx = 0; wx <= W; wx += 5){
+        const wy = oY + oH * 0.55 + wi * 5 + 4 * Math.sin((wx - scrollX * 0.06 + wi * 58) * 0.022 + ts * 0.002);
+        wx === 0 ? ctx.moveTo(wx, wy) : ctx.lineTo(wx, wy);
+      }
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+// ─── ATMOSPHERIC PARTICLES ───────────────────────────
+// Purely ts/scrollX-driven — no state object needed.
+function drawAtmosphericParticles(ctx, W, H, groundY, biomeKey, pal, scrollX, ts){
+  ctx.save();
+  const N = 22;
+
+  if(biomeKey === 'canopy'){
+    // Drifting leaf/petal shapes
+    for(let i = 0; i < N; i++){
+      const seed  = ((i * 9371) & 0xffff) / 0xffff;
+      const speed = 0.28 + seed * 0.48;
+      const tx = ((seed * W * 1.4 - scrollX * speed * 0.35 - ts * speed * 0.020 + W * 3) % (W * 1.4)) - W * 0.2;
+      const ty = (seed * groundY * 0.85 + ts * speed * 0.015 + i * 34) % (groundY * 0.92);
+      const sz = 2.5 + seed * 3;
+      ctx.fillStyle = pal.accent; ctx.globalAlpha = 0.14 + seed * 0.22;
+      ctx.beginPath();
+      ctx.ellipse(tx, ty, sz, sz * 0.4, ts * 0.001 * speed + seed * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+  } else if(biomeKey === 'thermal'){
+    // Rising ember sparks
+    for(let i = 0; i < N; i++){
+      const seed  = ((i * 7919) & 0xffff) / 0xffff;
+      const speed = 0.55 + seed * 1.1;
+      const tx = ((seed * W + i * 24 + Math.sin(ts * 0.002 + i) * 7 - scrollX * 0.09) % W + W) % W;
+      const ty = groundY - ((ts * speed * 0.018 + seed * groundY) % (groundY * 1.05));
+      const alpha = Math.max(0, (ty / groundY) * 0.55);
+      ctx.fillStyle = seed > 0.5 ? '#ff8800' : pal.accent;
+      ctx.globalAlpha = alpha;
+      ctx.beginPath(); ctx.arc(tx, ty, 1.2 + seed * 1.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+  } else if(biomeKey === 'caverns'){
+    // Glowing drifting motes with halos
+    for(let i = 0; i < N; i++){
+      const seed = ((i * 6733) & 0xffff) / 0xffff;
+      const tx = ((seed * W + Math.sin(ts * 0.001 + i * 2.1) * 18 - scrollX * 0.05) % W + W) % W;
+      const ty = seed * H * 0.72 + Math.cos(ts * 0.0008 + i) * 13;
+      const alpha = 0.28 + 0.25 * Math.sin(ts * 0.002 + seed * 6);
+      ctx.fillStyle = i % 3 === 0 ? pal.accent : pal.flora;
+      ctx.globalAlpha = alpha;
+      ctx.beginPath(); ctx.arc(tx, ty, 1.4 + seed * 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = alpha * 0.18;
+      ctx.beginPath(); ctx.arc(tx, ty, 5 + seed * 4, 0, Math.PI * 2); ctx.fill();
+    }
+
+  } else if(biomeKey === 'marsh'){
+    // Rising bubbles from water surface
+    for(let i = 0; i < N; i++){
+      const seed  = ((i * 8221) & 0xffff) / 0xffff;
+      const speed = 0.28 + seed * 0.45;
+      const tx = ((seed * W + i * 18 - scrollX * 0.11) % W + W) % W;
+      const baseY = groundY + seed * H * 0.07;
+      const ty = baseY - ((ts * speed * 0.016 + i * 11) % (groundY + H * 0.07));
+      const alpha = Math.max(0, 0.38 - (baseY - ty) / groundY * 0.35);
+      ctx.strokeStyle = pal.accent; ctx.lineWidth = 1; ctx.globalAlpha = alpha;
+      ctx.beginPath(); ctx.arc(tx, ty, 1.8 + seed * 2.2, 0, Math.PI * 2); ctx.stroke();
+    }
+
+  } else if(biomeKey === 'canals'){
+    // Caustic light shimmer on the ground/water surface
+    for(let i = 0; i < 16; i++){
+      const seed = ((i * 5501) & 0xffff) / 0xffff;
+      const tx = ((seed * W + Math.sin(ts * 0.003 + i) * 11 - scrollX * 0.28) % W + W) % W;
+      const ty = groundY + 4 + seed * (H - groundY) * 0.5;
+      const alpha = 0.08 + 0.07 * Math.sin(ts * 0.004 + seed * 8);
+      ctx.fillStyle = pal.accent; ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.ellipse(tx, ty, 7 + seed * 9, 1.8, Math.sin(ts * 0.002 + seed) * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+  } else if(biomeKey === 'shore'){
+    // Horizontal wind-blown sand specks
+    for(let i = 0; i < N * 2; i++){
+      const seed  = ((i * 4933) & 0xffff) / 0xffff;
+      const speed = 1.4 + seed * 2.2;
+      const tx = ((seed * W - ts * speed * 0.028 - scrollX * 0.18 + W * 4) % (W * 1.2)) - W * 0.1;
+      const ty = groundY * 0.68 + seed * (H - groundY * 0.68) + Math.sin(ts * 0.003 + i) * 2.5;
+      ctx.fillStyle = pal.accent; ctx.globalAlpha = 0.08 + seed * 0.18;
+      ctx.beginPath(); ctx.arc(tx, ty, 0.8 + seed * 1.2, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  ctx.restore();
 }
 
 // ─── EVENT MARKERS ──────────────────────────────────
