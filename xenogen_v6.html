@@ -1,0 +1,2211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XenoGenus v6 — Alien Genetics Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#070912; --bg2:#0c1020; --bg3:#111828; --panel:#0c1528; --panel2:#131e30;
+  --border:#1e3458; --border2:#142848;
+  --accent:#00fff0; --accent2:#18caff; --accent3:#9040ff; --accent4:#ff4499;
+  --success:#44ffaa; --warn:#ffc820; --danger:#ff4477;
+  --text:#d8eeff; --text-dim:#5a7a96; --text-bright:#f0f8ff;
+}
+html { font-size: 20px; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,255,231,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,231,0.015) 1px,transparent 1px);
+  background-size:50px 50px;}
+.screen{display:none;position:relative;z-index:1;}
+.screen.active{display:flex;flex-direction:column;min-height:100vh;}
+.hidden{display:none!important;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ── SHARED COMPONENTS ── */
+.x-btn{font-family:'Share Tech Mono',monospace;letter-spacing:0.08em;cursor:pointer;text-transform:uppercase;transition:all 0.2s;border-radius:3px;}
+.x-btn-primary{background:linear-gradient(135deg,rgba(0,255,231,0.1),rgba(0,180,255,0.08));border:1px solid var(--accent);color:var(--accent);padding:0.65rem 1.4rem;font-size:0.8rem;}
+.x-btn-primary:hover:not(:disabled){box-shadow:0 0 25px rgba(0,255,231,0.2);transform:translateY(-1px);}
+.x-btn-primary:disabled{opacity:0.3;cursor:not-allowed;}
+.x-btn-sec{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:0.6rem 1rem;font-size:0.75rem;}
+.x-btn-sec:hover{border-color:var(--text-dim);color:var(--text);}
+.x-btn-accent3{background:linear-gradient(135deg,rgba(123,47,255,0.15),rgba(123,47,255,0.05));border:1px solid var(--accent3);color:var(--accent3);padding:0.65rem 1.4rem;font-size:0.8rem;}
+.x-btn-accent3:hover:not(:disabled){box-shadow:0 0 25px rgba(123,47,255,0.25);transform:translateY(-1px);}
+.x-btn-accent3:disabled{opacity:0.3;cursor:not-allowed;}
+.x-btn-success{background:linear-gradient(135deg,rgba(57,255,138,0.1),rgba(0,255,231,0.06));border:1px solid var(--success);color:var(--success);padding:0.65rem 1.4rem;font-size:0.8rem;}
+.x-btn-success:hover:not(:disabled){box-shadow:0 0 25px rgba(57,255,138,0.2);transform:translateY(-1px);}
+.x-btn-success:disabled{opacity:0.3;cursor:not-allowed;}
+.screen-title-bar{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.15em;color:var(--accent3);border-left:2px solid var(--accent3);padding-left:0.75rem;margin-bottom:1rem;}
+
+/* ══════════════════════
+   TITLE SCREEN
+══════════════════════ */
+#screen-title{align-items:center;justify-content:center;text-align:center;padding:2rem;
+  background:radial-gradient(ellipse at 50% 30%,rgba(0,255,231,0.06) 0%,transparent 65%);}
+.x-logo{font-family:'Orbitron',sans-serif;font-size:clamp(3.5rem,11vw,7.5rem);font-weight:900;letter-spacing:0.15em;
+  background:linear-gradient(135deg,#00ffe7,#00b4ff,#7b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:logopulse 3s ease-in-out infinite;}
+@keyframes logopulse{0%,100%{filter:drop-shadow(0 0 20px rgba(0,255,231,0.3));}50%{filter:drop-shadow(0 0 45px rgba(0,255,231,0.55));}}
+.logo-sub{font-family:'Share Tech Mono',monospace;font-size:clamp(0.45rem,1.8vw,0.7rem);letter-spacing:0.45em;color:var(--text-dim);margin-top:-0.3rem;}
+.tagline{font-size:0.85rem;color:var(--accent2);letter-spacing:0.1em;margin:1.5rem 0 2.5rem;opacity:0.7;}
+.setup-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:2rem;width:100%;max-width:460px;
+  box-shadow:0 0 50px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.03);}
+.setup-card h2{font-family:'Share Tech Mono',monospace;font-size:0.78rem;letter-spacing:0.15em;color:var(--accent);margin-bottom:1.5rem;text-align:left;}
+.cfg-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;gap:1rem;}
+.cfg-row label{font-size:0.82rem;color:var(--text-dim);letter-spacing:0.05em;flex-shrink:0;}
+.cfg-row select,.cfg-row input[type=number],.cfg-row input[type=text]{
+  background:var(--bg3);border:1px solid var(--border);border-radius:3px;color:var(--accent);
+  font-family:'Share Tech Mono',monospace;font-size:0.82rem;padding:0.5rem 0.7rem;outline:none;cursor:pointer;width:205px;transition:border-color 0.2s;}
+.cfg-row select:focus,.cfg-row input:focus{border-color:var(--accent);box-shadow:0 0 10px rgba(0,255,231,0.12);}
+
+/* ══════════════════════
+   BUILD SCREEN
+══════════════════════ */
+#screen-build{align-items:center;padding:1.5rem 1rem;background:radial-gradient(ellipse at 50% 0%,rgba(0,255,231,0.04) 0%,transparent 55%);}
+.build-header{text-align:center;margin-bottom:1.5rem;}
+.build-header h1{font-family:'Share Tech Mono',monospace;font-size:1.1rem;letter-spacing:0.15em;color:var(--accent);margin-bottom:0.35rem;}
+.build-header p{font-size:0.82rem;color:var(--text-dim);letter-spacing:0.03em;}
+.build-layout{display:flex;gap:1.5rem;width:100%;max-width:900px;align-items:flex-start;}
+.build-spinners{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:1rem;}
+.build-spinners h3{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:var(--accent3);margin-bottom:0.8rem;}
+.spinner-row{display:flex;align-items:center;gap:0.6rem;padding:0.45rem 0;border-bottom:1px solid var(--border2);}
+.spinner-row:last-child{border-bottom:none;}
+.sr-name{font-size:0.78rem;color:var(--text-dim);width:130px;flex-shrink:0;letter-spacing:0.02em;}
+.sr-alleles{display:flex;gap:0.3rem;flex:1;}
+.allele-slot{width:40px;height:40px;border-radius:3px;background:var(--bg3);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;font-size:0.88rem;font-weight:700;color:var(--accent2);
+  transition:all 0.3s;position:relative;overflow:hidden;flex-shrink:0;}
+.allele-slot.spinning{animation:slotSpin 0.08s linear infinite;}
+.allele-slot.landed{border-color:var(--accent);box-shadow:0 0 8px rgba(0,255,231,0.3);animation:slotLand 0.3s ease-out;}
+@keyframes slotSpin{0%{transform:translateY(0);}50%{transform:translateY(-4px);}100%{transform:translateY(0);}}
+@keyframes slotLand{0%{transform:scale(1.2);background:rgba(0,255,231,0.15);}100%{transform:scale(1);background:var(--bg3);}}
+.sr-pheno{font-size:0.74rem;color:var(--text);flex:1;text-align:right;opacity:0.9;}
+.sr-spin-btn{padding:0.3rem 0.6rem;background:var(--bg3);border:1px solid var(--border);border-radius:2px;
+  color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.04em;
+  cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
+.sr-spin-btn:hover{border-color:var(--accent3);color:var(--accent3);}
+.sr-spin-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.build-preview{width:180px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0.75rem;}
+.build-preview-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.85rem;width:100%;text-align:center;}
+.build-preview-card h3{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;color:var(--text-dim);margin-bottom:0.6rem;}
+.build-actions{display:flex;flex-direction:column;gap:0.5rem;width:100%;}
+.spin-all-btn{width:100%;padding:0.6rem;background:rgba(123,47,255,0.12);border:1px solid var(--accent3);
+  border-radius:3px;color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:0.75rem;
+  letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;}
+.spin-all-btn:hover{background:rgba(123,47,255,0.22);box-shadow:0 0 15px rgba(123,47,255,0.2);}
+.build-progress{font-size:0.75rem;color:var(--text-dim);text-align:center;}
+.build-progress span{color:var(--accent);}
+
+/* ══════════════════════
+   PARTNER SELECT SCREEN
+══════════════════════ */
+#screen-partner{align-items:center;padding:1.5rem 1rem;background:radial-gradient(ellipse at 50% 0%,rgba(123,47,255,0.05) 0%,transparent 55%);}
+.partner-header{text-align:center;margin-bottom:1.5rem;}
+.partner-header h1{font-family:'Share Tech Mono',monospace;font-size:1.1rem;letter-spacing:0.12em;color:var(--accent3);margin-bottom:0.35rem;}
+.partner-header p{font-size:0.82rem;color:var(--text-dim);letter-spacing:0.03em;}
+.partner-grid{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;max-width:1100px;width:100%;}
+.partner-candidate{background:var(--panel);border:2px solid var(--border);border-radius:6px;padding:1rem;
+  width:280px;cursor:pointer;transition:all 0.25s;position:relative;text-align:center;}
+.partner-candidate:hover{border-color:var(--accent3);box-shadow:0 0 25px rgba(123,47,255,0.2);transform:translateY(-3px);}
+.partner-candidate.selected{border-color:var(--accent3);box-shadow:0 0 30px rgba(123,47,255,0.3);}
+.partner-candidate::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent3),transparent);opacity:0;transition:opacity 0.2s;}
+.partner-candidate:hover::before,.partner-candidate.selected::before{opacity:1;}
+.pc-id{font-family:'Share Tech Mono',monospace;font-size:0.7rem;letter-spacing:0.1em;color:var(--accent3);margin-bottom:0.6rem;}
+.pc-svg-wrap{display:flex;justify-content:center;margin:0.4rem 0 0.75rem;}
+.pc-traits{display:flex;flex-direction:column;gap:0;text-align:left;margin-bottom:0.75rem;}
+.pc-trait-row{display:flex;justify-content:space-between;font-size:0.7rem;padding:0.15rem 0;border-bottom:1px solid var(--border2);}
+.pc-trait-row:last-child{border-bottom:none;}
+.pc-trait-name{color:var(--text-dim);flex-shrink:0;margin-right:0.4rem;}
+.pc-trait-pheno{color:var(--text);text-align:right;font-size:0.68rem;}
+.pc-select-btn{width:100%;padding:0.5rem;background:rgba(123,47,255,0.1);border:1px solid var(--accent3);
+  border-radius:3px;color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:0.72rem;
+  letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.pc-select-btn:hover,.partner-candidate.selected .pc-select-btn{background:rgba(123,47,255,0.25);box-shadow:0 0 15px rgba(123,47,255,0.2);}
+
+/* ══════════════════════
+   GAME SCREEN (Observe + Predict + Fertilize + Reveal)
+══════════════════════ */
+#screen-game{flex-direction:column;padding:0;}
+.game-header{display:flex;align-items:center;justify-content:space-between;padding:0.55rem 1.1rem;
+  border-bottom:1px solid var(--border2);background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);flex-shrink:0;}
+.gh-left{display:flex;align-items:center;gap:1rem;}
+.gh-title{font-family:'Share Tech Mono',monospace;font-size:0.85rem;font-weight:900;letter-spacing:0.1em;color:var(--accent);}
+.gh-round{font-size:0.78rem;color:var(--text-dim);letter-spacing:0.04em;}
+.gh-round em{color:var(--accent2);font-style:normal;}
+.gh-diff{font-size:0.7rem;padding:0.1rem 0.45rem;border-radius:2px;letter-spacing:0.05em;}
+.gh-diff.beginner{background:rgba(57,255,138,0.1);border:1px solid var(--success);color:var(--success);}
+.gh-diff.advanced{background:rgba(0,180,255,0.1);border:1px solid var(--accent2);color:var(--accent2);}
+.gh-diff.expert{background:rgba(255,58,110,0.1);border:1px solid var(--danger);color:var(--danger);}
+.streak-badge{background:rgba(255,184,0,0.12);border:1px solid var(--warn);border-radius:2px;
+  padding:0.1rem 0.45rem;font-size:0.72rem;color:var(--warn);letter-spacing:0.04em;}
+.gh-right{display:flex;align-items:center;gap:1.2rem;}
+.gh-score-block{text-align:right;}
+.gh-score-label{font-size:0.65rem;color:var(--text-dim);letter-spacing:0.08em;display:block;}
+.gh-score-val{font-family:'Share Tech Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--warn);}
+
+.game-body{display:grid;grid-template-columns:1fr 160px;flex:1;overflow:hidden;}
+.game-main{padding:0.85rem;overflow-y:auto;display:flex;flex-direction:column;gap:0.8rem;}
+.phase-bar{font-family:'Share Tech Mono',monospace;font-size:0.75rem;letter-spacing:0.1em;
+  border-left:2px solid var(--accent3);padding-left:0.65rem;color:var(--accent3);}
+
+/* Arena */
+.alien-arena{display:grid;grid-template-columns:1fr 72px 1fr;gap:0.7rem;align-items:start;}
+.alien-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.7rem;position:relative;overflow:hidden;}
+.alien-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent2),transparent);opacity:0.25;}
+.alien-card.player::after{background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.35;}
+.ac-label{font-size:0.68rem;letter-spacing:0.06em;color:var(--text-dim);text-transform:uppercase;margin-bottom:0.35rem;}
+.ac-label em{color:var(--accent);font-style:normal;}
+.ac-svg{display:flex;justify-content:center;margin:0.2rem 0;}
+.geno-table{width:100%;border-collapse:collapse;font-size:0.72rem;margin-top:0.3rem;}
+.geno-table tr{border-bottom:1px solid rgba(26,45,74,0.6);}
+.geno-table tr:last-child{border-bottom:none;}
+.geno-table td{padding:0.22rem 0.25rem;vertical-align:middle;}
+.td-name{color:var(--text-dim);width:40%;}
+.td-geno{color:var(--accent2);font-weight:bold;width:22%;text-align:center;}
+.td-pheno{color:var(--text);width:38%;text-align:right;font-size:0.68rem;}
+
+/* Egg column */
+.egg-col{display:flex;flex-direction:column;align-items:center;gap:0.35rem;padding-top:1rem;}
+.egg-wrap{position:relative;width:66px;height:82px;}
+.egg-svg{width:100%;height:100%;}
+.egg-allele-disp{position:absolute;top:14px;left:5px;right:5px;bottom:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;overflow:hidden;}
+.egg-chip{font-size:0.38rem;color:var(--accent);text-align:center;white-space:nowrap;
+  opacity:0;transform:translateY(-5px);transition:opacity 0.25s,transform 0.25s;}
+.egg-chip.vis{opacity:1;transform:translateY(0);}
+.btn-fert{padding:0.3rem;background:rgba(123,47,255,0.12);border:1px solid var(--accent3);
+  border-radius:2px;color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:0.45rem;
+  letter-spacing:0.06em;cursor:pointer;text-transform:uppercase;transition:all 0.2s;width:66px;text-align:center;}
+.btn-fert:hover:not(:disabled){background:rgba(123,47,255,0.28);box-shadow:0 0 12px rgba(123,47,255,0.3);}
+.btn-fert:disabled{opacity:0.3;cursor:not-allowed;}
+.egg-label{font-size:0.48rem;color:var(--text-dim);letter-spacing:0.1em;text-align:center;}
+.egg-geno-list{width:66px;background:rgba(0,0,0,0.4);border:1px solid rgba(0,255,231,0.2);border-radius:2px;padding:0.3rem 0.25rem;margin-top:0.2rem;}
+.egg-geno-row{display:flex;justify-content:space-between;font-size:0.45rem;padding:0.08rem 0;border-bottom:1px solid rgba(26,45,74,0.5);white-space:nowrap;}
+.egg-geno-row:last-child{border-bottom:none;}
+.egg-geno-tid{color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;max-width:32px;}
+.egg-geno-val{color:var(--accent);font-weight:700;}
+
+/* Prediction panel */
+.pred-panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.75rem;}
+.pred-panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem;}
+.pred-panel-hdr h3{font-family:'Share Tech Mono',monospace;font-size:0.78rem;letter-spacing:0.08em;color:var(--accent2);}
+.pred-phase-tag{font-size:0.66rem;padding:0.1rem 0.45rem;border-radius:10px;letter-spacing:0.04em;}
+.pred-phase-tag.pre{background:rgba(255,184,0,0.1);border:1px solid var(--warn);color:var(--warn);}
+.pred-phase-tag.post{background:rgba(57,255,138,0.08);border:1px solid var(--success);color:var(--success);}
+.pred-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:0.4rem;}
+.pred-item{background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:0.42rem 0.5rem;}
+.pred-item-lbl{font-size:0.7rem;color:var(--text-dim);letter-spacing:0.03em;margin-bottom:0.28rem;}
+.pred-item select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:2px;
+  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.72rem;padding:0.25rem 0.3rem;outline:none;cursor:pointer;}
+.pred-item select:focus{border-color:var(--accent2);}
+.prob-row{margin-top:0.28rem;display:flex;gap:0.2rem;}
+.prob-btn{padding:0.18rem 0.3rem;background:var(--bg2);border:1px solid var(--border);border-radius:2px;
+  color:var(--text-dim);font-size:0.7rem;cursor:pointer;transition:all 0.15s;flex:1;text-align:center;}
+.prob-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.prob-btn.sel{background:rgba(0,180,255,0.12);border-color:var(--accent2);color:var(--accent2);}
+.pred-item.cor{border-color:var(--success);background:rgba(57,255,138,0.04);}
+.pred-item.inc{border-color:var(--danger);background:rgba(255,58,110,0.04);}
+.fb-tag{display:none;font-size:0.68rem;margin-top:0.22rem;}
+.pred-item.cor .fb-tag{display:block;color:var(--success);}
+.pred-item.inc .fb-tag{display:block;color:var(--danger);}
+.corr-ans{display:none;font-size:0.7rem;color:var(--success);margin-top:0.15rem;}
+.pred-item.inc .corr-ans{display:block;}
+.pred-note{font-size:0.74rem;color:var(--text-dim);margin-bottom:0.5rem;padding:0.35rem 0.5rem;
+  background:rgba(255,184,0,0.05);border:1px solid rgba(255,184,0,0.15);border-radius:2px;}
+
+/* Offspring reveal */
+.off-reveal{background:var(--panel);border:1px solid var(--accent3);border-radius:4px;padding:0.75rem;}
+.off-reveal h3{font-family:'Share Tech Mono',monospace;font-size:0.78rem;letter-spacing:0.08em;color:var(--accent3);margin-bottom:0.6rem;}
+.off-grid{display:flex;gap:0.85rem;align-items:flex-start;}
+
+/* Round overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:200;display:none;align-items:center;justify-content:center;}
+.overlay.show{display:flex;}
+.score-box{background:var(--panel);border:1px solid var(--accent3);border-radius:5px;padding:2rem;
+  text-align:center;max-width:360px;width:90%;box-shadow:0 0 60px rgba(123,47,255,0.3);}
+.score-box h2{font-family:'Share Tech Mono',monospace;font-size:0.82rem;letter-spacing:0.12em;color:var(--accent3);margin-bottom:1rem;}
+.round-pts{font-family:'Share Tech Mono',monospace;font-size:2.5rem;font-weight:900;color:var(--warn);margin:0.25rem 0;}
+.round-pts-lbl{font-size:0.72rem;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:1.25rem;}
+.bk-table{text-align:left;font-size:0.72rem;margin-bottom:1.25rem;background:var(--bg3);border-radius:3px;padding:0.6rem;}
+.bk-row{display:flex;justify-content:space-between;padding:0.16rem 0;border-bottom:1px solid var(--border2);}
+.bk-row:last-child{border-bottom:none;}
+.bk-pts{color:var(--success);font-weight:bold;}
+.bk-streak{margin-bottom:1rem;font-size:0.78rem;color:var(--warn);}
+
+/* Lineage sidebar */
+.lineage-panel{border-left:1px solid var(--border2);background:rgba(0,0,0,0.35);
+  padding:0.55rem 0.45rem;overflow-y:auto;display:flex;flex-direction:column;gap:0.3rem;}
+.lin-title{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;
+  color:var(--text-dim);text-align:center;margin-bottom:0.3rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border2);}
+.lin-entry{background:var(--panel);border:1px solid var(--border2);border-radius:3px;
+  padding:0.3rem;text-align:center;transition:border-color 0.2s;}
+.lin-entry.cur{border-color:var(--accent);}
+.lin-gen{font-size:0.45rem;color:var(--text-dim);letter-spacing:0.06em;}
+.lin-gen em{color:var(--accent2);font-style:normal;}
+
+/* ══════════════════════
+   REFERENCE TABLE POPUP
+══════════════════════ */
+.ref-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
+.ref-overlay.show{display:flex;}
+.ref-box{background:var(--panel);border:1px solid var(--accent);border-radius:6px;padding:1.5rem;width:100%;max-width:780px;position:relative;}
+.ref-box-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+.ref-box-hdr h2{font-family:'Share Tech Mono',monospace;font-size:0.82rem;letter-spacing:0.12em;color:var(--accent);}
+.ref-close{background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:0.75rem;padding:0.3rem 0.7rem;cursor:pointer;letter-spacing:0.05em;transition:all 0.15s;}
+.ref-close:hover{border-color:var(--accent);color:var(--accent);}
+.ref-section{margin-bottom:1.2rem;}
+.ref-section-title{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:var(--accent3);margin-bottom:0.5rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border2);}
+.ref-table{width:100%;border-collapse:collapse;font-size:0.74rem;}
+.ref-table th{font-family:'Share Tech Mono',monospace;font-size:0.68rem;letter-spacing:0.07em;color:var(--text-dim);text-align:left;padding:0.3rem 0.4rem;border-bottom:1px solid var(--border);}
+.ref-table td{padding:0.3rem 0.4rem;border-bottom:1px solid var(--border2);vertical-align:middle;}
+.ref-table tr:last-child td{border-bottom:none;}
+.ref-table tr:hover td{background:rgba(255,255,255,0.02);}
+.ref-td-trait{color:var(--text-dim);width:18%;}
+.ref-td-allele{font-family:'Share Tech Mono',monospace;font-size:0.72rem;font-weight:700;color:var(--accent2);width:14%;text-align:center;}
+.ref-td-geno{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--accent);width:20%;text-align:center;}
+.ref-td-pheno{color:var(--text);width:22%;}
+.ref-td-type{font-size:0.68rem;color:var(--text-dim);width:10%;text-align:center;letter-spacing:0.02em;}
+.ref-badge-dom{background:rgba(0,255,240,0.1);border:1px solid var(--accent);border-radius:2px;padding:0.05rem 0.3rem;font-size:0.62rem;color:var(--accent);letter-spacing:0.04em;}
+.ref-badge-rec{background:rgba(90,122,150,0.12);border:1px solid var(--text-dim);border-radius:2px;padding:0.05rem 0.3rem;font-size:0.62rem;color:var(--text-dim);letter-spacing:0.04em;}
+.ref-badge-cod{background:rgba(144,64,255,0.12);border:1px solid var(--accent3);border-radius:2px;padding:0.05rem 0.3rem;font-size:0.62rem;color:var(--accent3);letter-spacing:0.04em;}
+.ref-note{font-size:0.72rem;color:var(--text-dim);padding:0.6rem 0.75rem;background:rgba(0,255,240,0.03);border:1px solid rgba(0,255,240,0.1);border-radius:3px;line-height:1.6;}
+.ref-btn{background:rgba(0,255,240,0.06);border:1px solid var(--accent);border-radius:3px;color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:0.7rem;padding:0.3rem 0.7rem;cursor:pointer;letter-spacing:0.05em;transition:all 0.2s;text-transform:uppercase;}
+.ref-btn:hover{background:rgba(0,255,240,0.14);box-shadow:0 0 12px rgba(0,255,240,0.15);}
+
+
+/* ══════════════════════
+   VIGNETTE SCREEN
+══════════════════════ */
+#screen-vignette{flex-direction:column;padding:0;background:var(--bg);}
+.vig-header{display:flex;align-items:center;justify-content:space-between;padding:0.55rem 1.1rem;
+  border-bottom:1px solid var(--border2);background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);flex-shrink:0;}
+.vig-title-bar{font-family:'Share Tech Mono',monospace;font-size:0.78rem;letter-spacing:0.1em;color:var(--accent);}
+.vig-title-bar em{color:var(--success);font-style:normal;}
+.vig-round-label{font-size:0.72rem;color:var(--text-dim);letter-spacing:0.06em;}
+.vig-round-label em{color:var(--accent2);font-style:normal;}
+.vig-score-badge{font-family:'Share Tech Mono',monospace;font-size:0.82rem;color:var(--warn);}
+.vig-canvas-wrap{position:relative;flex:1;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;background:#000;min-height:300px;}
+#vig-canvas{display:block;max-width:100%;image-rendering:pixelated;}
+.vig-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.72);z-index:10;}
+.vig-overlay.hidden{display:none;}
+.vig-event-card{background:var(--panel);border:2px solid var(--accent3);border-radius:6px;
+  padding:1.5rem 2rem;max-width:480px;width:90%;text-align:center;
+  box-shadow:0 0 60px rgba(123,47,255,0.3);animation:cardIn 0.3s ease-out;}
+@keyframes cardIn{from{transform:scale(0.85);opacity:0;}to{transform:scale(1);opacity:1;}}
+.vig-card-type{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.18em;
+  margin-bottom:0.5rem;padding:0.15rem 0.5rem;border-radius:2px;display:inline-block;}
+.vig-card-type.hazard{background:rgba(255,68,119,0.12);border:1px solid var(--danger);color:var(--danger);}
+.vig-card-type.windfall{background:rgba(57,255,138,0.1);border:1px solid var(--success);color:var(--success);}
+.vig-card-type.flavor{background:rgba(0,180,255,0.08);border:1px solid var(--accent2);color:var(--accent2);}
+.vig-card-title{font-family:'Share Tech Mono',monospace;font-size:0.9rem;letter-spacing:0.06em;
+  color:var(--text-bright);margin:0.5rem 0 0.75rem;}
+.vig-card-text{font-size:0.8rem;color:var(--text);line-height:1.65;margin-bottom:1rem;}
+.vig-card-delta{font-family:'Share Tech Mono',monospace;font-size:1.4rem;font-weight:700;margin-bottom:1rem;}
+.vig-card-delta.pos{color:var(--success);}
+.vig-card-delta.neg{color:var(--danger);}
+.vig-card-delta.neu{color:var(--text-dim);}
+.vig-progress-wrap{padding:0.35rem 1.1rem;background:rgba(0,0,0,0.5);border-bottom:1px solid var(--border2);}
+.vig-progress-bar{height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}
+#vig-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent3),var(--accent));
+  transition:width 0.4s ease;border-radius:2px;}
+.vig-footer{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1.1rem;
+  border-top:1px solid var(--border2);background:rgba(0,0,0,0.5);flex-shrink:0;}
+
+/* Biome intro overlay */
+.vig-intro-card{background:var(--panel);border:2px solid var(--accent);border-radius:6px;
+  padding:2rem;max-width:560px;width:90%;text-align:center;box-shadow:0 0 60px rgba(0,255,231,0.15);}
+.vig-intro-title{font-family:'Orbitron',sans-serif;font-size:1.2rem;letter-spacing:0.12em;
+  color:var(--accent);margin-bottom:0.4rem;}
+.vig-intro-sub{font-size:0.72rem;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:1.5rem;}
+.vig-biome-map{display:flex;gap:0.5rem;justify-content:center;margin-bottom:1.5rem;}
+.vig-biome-node{background:var(--bg3);border:1px solid var(--border);border-radius:4px;
+  padding:0.6rem 0.9rem;min-width:100px;position:relative;}
+.vig-biome-node.active{border-color:var(--accent);box-shadow:0 0 12px rgba(0,255,231,0.2);}
+.vig-biome-node-name{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.06em;
+  color:var(--text);margin-bottom:0.2rem;}
+.vig-biome-node-turns{font-size:0.62rem;color:var(--text-dim);}
+.vig-biome-arrow{color:var(--text-dim);font-size:1.2rem;display:flex;align-items:center;}
+
+#screen-end{align-items:center;justify-content:center;padding:2rem;text-align:center;
+  background:radial-gradient(ellipse at 50% 45%,rgba(123,47,255,0.07) 0%,transparent 60%);}
+.end-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.5rem,5vw,2.8rem);font-weight:900;
+  letter-spacing:0.12em;color:var(--accent);margin-bottom:0.4rem;}
+.end-score{font-family:'Share Tech Mono',monospace;font-size:clamp(2.5rem,8vw,4.5rem);font-weight:900;color:var(--warn);margin:0.75rem 0 0.2rem;}
+.end-score-lbl{font-size:0.78rem;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:1.75rem;}
+.end-stats{display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.75rem;flex-wrap:wrap;}
+.end-stat{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.9rem 1.4rem;}
+.end-stat-val{font-family:'Share Tech Mono',monospace;font-size:1.7rem;font-weight:700;color:var(--accent2);}
+.end-stat-lbl{font-size:0.7rem;color:var(--text-dim);letter-spacing:0.05em;}
+.end-lin-title{font-family:'Share Tech Mono',monospace;font-size:0.75rem;letter-spacing:0.1em;color:var(--accent3);margin-bottom:0.85rem;}
+.end-strip{display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem;}
+.end-alien{display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.48rem;color:var(--text-dim);}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+  SCREEN 1: TITLE / SETUP
+══════════════════════════════════════ -->
+<div id="screen-title" class="screen active">
+  <div class="x-logo">XenoGenus</div>
+  <div class="logo-sub">ALIEN GENETICS LABORATORY</div>
+  <div class="tagline">// breed · predict · inherit · evolve //</div>
+  <div class="setup-card">
+    <h2>// LAB CONFIGURATION</h2>
+    <div class="cfg-row">
+      <label>DIFFICULTY</label>
+      <select id="cfg-diff">
+        <option value="beginner">BEGINNER — 4 TRAITS</option>
+        <option value="advanced" selected>ADVANCED — 8 TRAITS</option>
+        <option value="expert">EXPERT — ALL 13</option>
+      </select>
+    </div>
+    <div class="cfg-row">
+      <label>GENERATIONS</label>
+      <input type="number" id="cfg-rounds" min="3" max="20" value="5">
+    </div>
+    <div class="cfg-row">
+      <label>SUBJECT ID</label>
+      <input type="text" id="cfg-name" placeholder="ENTER NAME" maxlength="18">
+    </div>
+    <button class="x-btn x-btn-primary" style="width:100%;margin-top:1.5rem;" onclick="goToBuild()">INITIALIZE EXPERIMENT</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  SCREEN 2: BUILD YOUR ALIEN
+══════════════════════════════════════ -->
+<div id="screen-build" class="screen">
+  <div class="build-header">
+    <h1>BUILD YOUR ALIEN</h1>
+    <p>SPIN EACH TRAIT TO DETERMINE YOUR SPECIMEN'S GENOTYPE</p>
+  </div>
+  <div class="build-layout">
+    <div class="build-spinners">
+      <h3>// TRAIT SPINNERS — ALLELE DETERMINATION</h3>
+      <div id="spinner-list"></div>
+    </div>
+    <div class="build-preview">
+      <div class="build-preview-card">
+        <h3>SPECIMEN PREVIEW</h3>
+        <div id="build-svg-wrap" style="display:flex;justify-content:center;"></div>
+        <div id="build-name" style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text-dim);margin-top:0.4rem;letter-spacing:0.05em;text-align:center;">—</div>
+      </div>
+      <div class="build-actions">
+        <button class="spin-all-btn" onclick="spinAll()">⟳ SPIN ALL</button>
+        <div class="build-progress">TRAITS SPUN: <span id="build-progress">0</span> / <span id="build-total">4</span></div>
+        <button class="x-btn x-btn-primary" id="build-proceed-btn" style="width:100%;" onclick="goToPartnerSelect()" disabled>CONFIRM SPECIMEN →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  SCREEN 3: VIGNETTE — TRAVERSE
+══════════════════════════════════════ -->
+<div id="screen-vignette" class="screen">
+  <div class="vig-header">
+    <div>
+      <div class="vig-title-bar">// TRAVERSE — BIOME: <em id="vig-biome-name">—</em></div>
+    </div>
+    <div class="vig-round-label">ROUND <em id="vig-round-lbl">1</em> / <em id="vig-total-lbl">5</em></div>
+    <div class="vig-score-badge">TRAVERSE: +<span id="vig-score-display">0</span></div>
+  </div>
+  <div class="vig-progress-wrap">
+    <div class="vig-progress-bar"><div id="vig-progress-fill"></div></div>
+  </div>
+  <div class="vig-canvas-wrap">
+    <canvas id="vig-canvas" width="900" height="400"></canvas>
+    <!-- Event card overlay -->
+    <div class="vig-overlay hidden" id="vig-overlay">
+      <div class="vig-event-card" id="vig-event-card">
+        <span class="vig-card-type" id="vig-card-type">HAZARD</span>
+        <div class="vig-card-title" id="vig-card-title">Event Title</div>
+        <div class="vig-card-text" id="vig-card-text">Event description text goes here.</div>
+        <div class="vig-card-delta" id="vig-card-delta"></div>
+        <button class="x-btn x-btn-primary" onclick="dismissVigEvent()">CONTINUE →</button>
+      </div>
+      <!-- Biome intro card (shown at start of each biome) -->
+      <div class="vig-intro-card hidden" id="vig-intro-card">
+        <div class="vig-intro-title">ENTERING BIOME</div>
+        <div class="vig-intro-sub" id="vig-intro-biome-name">—</div>
+        <div class="vig-biome-map" id="vig-biome-map-display"></div>
+        <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:1.25rem;">
+          Your alien will traverse this biome over <em id="vig-intro-turns" style="color:var(--accent);font-style:normal;">—</em> round(s).
+          Traits that match this environment earn bonus points.
+        </div>
+        <button class="x-btn x-btn-primary" onclick="startBiomeTraversal()">BEGIN TRAVERSE →</button>
+      </div>
+    </div>
+  </div>
+  <div class="vig-footer">
+    <div style="font-size:0.72rem;color:var(--text-dim);">
+      5 events per round · traits determine outcomes
+    </div>
+    <button class="x-btn x-btn-sec" onclick="completeVignette()">SKIP TO LAB →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  SCREEN 4: PARTNER SELECT
+══════════════════════════════════════ -->
+<div id="screen-partner" class="screen">
+  <div class="partner-header">
+    <h1>SELECT A PARTNER</h1>
+    <p>CHOOSE ONE ALIEN TO BREED WITH YOUR SPECIMEN</p>
+    <button class="ref-btn" onclick="toggleRef()" style="margin-top:0.75rem;font-size:0.5rem;">⊞ TRAIT REFERENCE</button>
+  </div>
+  <div class="partner-grid" id="partner-grid"></div>
+  <div style="margin-top:1.25rem;">
+    <button class="x-btn x-btn-accent3" id="partner-confirm-btn" onclick="confirmPartner()" disabled>PROCEED TO LAB →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  SCREEN 5: GAME (Observe + Predict + Fertilize + Reveal)
+══════════════════════════════════════ -->
+<div id="screen-game" class="screen">
+  <div class="game-header">
+    <div class="gh-left">
+      <span class="gh-title">XenoGenus</span>
+      <span class="gh-round">GEN <em id="gh-round">1</em> / <em id="gh-total">5</em></span>
+      <span class="gh-diff beginner" id="gh-diff">BEGINNER</span>
+      <span class="streak-badge hidden" id="streak-badge">🔥 ×<span id="streak-mult">1</span></span>
+    </div>
+    <div class="gh-right">
+      <button class="ref-btn" onclick="toggleRef()">⊞ TRAIT REF</button>
+      <div class="gh-score-block">
+        <span class="gh-score-label">SCORE</span>
+        <span class="gh-score-val" id="gh-score">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-body">
+    <div class="game-main" id="game-main">
+
+      <!-- Phase bar -->
+      <div class="phase-bar" id="phase-bar">PHASE 1 — OBSERVE PARENTS &amp; PREDICT OFFSPRING</div>
+
+      <!-- Arena: player | egg | partner -->
+      <div class="alien-arena">
+        <div class="alien-card player" id="player-card">
+          <div class="ac-label">YOUR ALIEN — <em id="player-gen-lbl">GEN 1</em></div>
+          <div class="ac-svg" id="player-svg-wrap"></div>
+          <table class="geno-table" id="player-geno-tbl"></table>
+        </div>
+
+        <div class="egg-col">
+          <div class="egg-label">ZORG EGG</div>
+          <div class="egg-wrap">
+            <svg class="egg-svg" viewBox="0 0 68 84">
+              <defs>
+                <radialGradient id="egG" cx="38%" cy="32%" r="68%">
+                  <stop offset="0%" stop-color="#0f2030"/>
+                  <stop offset="100%" stop-color="#04080f"/>
+                </radialGradient>
+                <radialGradient id="egGA" cx="38%" cy="32%" r="68%">
+                  <stop offset="0%" stop-color="#0f2a18"/>
+                  <stop offset="100%" stop-color="#040c08"/>
+                </radialGradient>
+              </defs>
+              <ellipse id="egg-body" cx="34" cy="45" rx="28" ry="34" fill="url(#egG)" stroke="#7b2fff" stroke-width="1.2" opacity="0.9"/>
+              <ellipse cx="34" cy="45" rx="28" ry="34" fill="none" stroke="rgba(123,47,255,0.18)" stroke-width="5"/>
+              <ellipse cx="26" cy="33" rx="7" ry="10" fill="none" stroke="rgba(123,47,255,0.08)" stroke-width="0.8"/>
+              <circle id="egg-nucleus" cx="34" cy="46" r="10" fill="none" stroke="rgba(0,255,231,0.08)" stroke-dasharray="2,2"/>
+            </svg>
+            <div class="egg-allele-disp" id="egg-disp"></div>
+          </div>
+          <button class="btn-fert" id="btn-fert" onclick="doFertilize()">FERTILIZE</button>
+          <div id="egg-geno-list" class="egg-geno-list hidden"></div>
+        </div>
+
+        <div class="alien-card" id="partner-card">
+          <div class="ac-label">PARTNER — <em id="partner-lbl">SPECIMEN</em></div>
+          <div class="ac-svg" id="partner-svg-wrap"></div>
+          <table class="geno-table" id="partner-geno-tbl"></table>
+        </div>
+      </div>
+
+      <!-- PRE-FERTILIZATION PREDICTION -->
+      <div id="pre-panel" class="pred-panel">
+        <div class="pred-panel-hdr">
+          <h3>PREDICT OFFSPRING PHENOTYPES</h3>
+          <span class="pred-phase-tag pre">PRE-FERTILIZATION</span>
+        </div>
+        <div class="pred-note">Study both parent genotypes above. Predict the offspring's phenotype and the probability for each trait. <strong>This prediction is not scored</strong> — confirm your thinking before fertilization.</div>
+        <div class="pred-grid" id="pre-grid"></div>
+        <div class="action-row" style="display:flex;gap:0.6rem;margin-top:0.65rem;">
+          <button class="x-btn x-btn-accent3" onclick="confirmPre()">FERTILIZE →</button>
+        </div>
+      </div>
+
+      <!-- POST-FERTILIZATION PREDICTION (hidden until fertilized) -->
+      <div id="post-panel" class="pred-panel hidden">
+        <div class="pred-panel-hdr">
+          <h3>CONFIRM OFFSPRING PREDICTION</h3>
+          <span class="pred-phase-tag post">POST-FERTILIZATION</span>
+        </div>
+        <div class="pred-note">The egg genotype is revealed. Confirm or revise your phenotype prediction and probability for each trait. <strong>This prediction IS scored.</strong></div>
+        <div class="pred-grid" id="post-grid"></div>
+        <div style="display:flex;gap:0.6rem;margin-top:0.65rem;align-items:center;">
+          <button class="x-btn x-btn-success" id="btn-submit" onclick="submitPredictions()" disabled>SUBMIT PREDICTIONS</button>
+        </div>
+      </div>
+
+      <!-- OFFSPRING REVEAL (hidden until scored) -->
+      <div id="off-reveal" class="off-reveal hidden">
+        <h3>// OFFSPRING — GEN <span id="off-gen">—</span></h3>
+        <div class="off-grid" id="off-grid"></div>
+        <div style="margin-top:0.75rem;display:flex;gap:0.6rem;">
+          <button class="x-btn x-btn-primary" onclick="nextRound()">NEXT GENERATION →</button>
+        </div>
+      </div>
+
+    </div><!-- /game-main -->
+
+    <!-- Lineage sidebar -->
+    <div class="lineage-panel" id="lineage-panel">
+      <div class="lin-title">LINEAGE</div>
+      <div id="lineage-list"></div>
+    </div>
+  </div><!-- /game-body -->
+</div><!-- /screen-game -->
+
+<!-- ══════════════════════════════════════
+  ROUND SCORE OVERLAY
+══════════════════════════════════════ -->
+<div class="overlay" id="score-overlay">
+  <div class="score-box">
+    <h2>// ROUND COMPLETE</h2>
+    <div class="round-pts" id="r-pts">0</div>
+    <div class="round-pts-lbl">POINTS EARNED</div>
+    <div class="bk-streak hidden" id="bk-streak"></div>
+    <div class="bk-table" id="r-breakdown"></div>
+    <button class="x-btn x-btn-accent3" onclick="closeOverlay()">VIEW OFFSPRING</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  SCREEN 6: END
+══════════════════════════════════════ -->
+<div id="screen-end" class="screen">
+  <div class="end-title">SEQUENCE COMPLETE</div>
+  <div style="font-size:0.72rem;color:var(--text-dim);letter-spacing:0.12em;margin-bottom:1.5rem;">
+    LINEAGE OF <em id="end-name" style="color:var(--accent);font-style:normal;">—</em>
+  </div>
+  <div class="end-score" id="end-score">0</div>
+  <div class="end-score-lbl">FINAL SCORE</div>
+  <div style="display:flex;gap:1rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap;">
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.6rem 1.1rem;text-align:center;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:1.2rem;font-weight:700;color:var(--accent2);" id="end-genetics-pts">0</div>
+      <div style="font-size:0.62rem;color:var(--text-dim);letter-spacing:0.06em;margin-top:0.1rem;">GENETICS PTS</div>
+    </div>
+    <div style="color:var(--text-dim);display:flex;align-items:center;font-size:1.2rem;">+</div>
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.6rem 1.1rem;text-align:center;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:1.2rem;font-weight:700;color:var(--success);" id="end-vignette-pts">0</div>
+      <div style="font-size:0.62rem;color:var(--text-dim);letter-spacing:0.06em;margin-top:0.1rem;">TRAVERSE PTS</div>
+    </div>
+  </div>
+  <div class="end-stats">
+    <div class="end-stat"><div class="end-stat-val" id="end-correct">0</div><div class="end-stat-lbl">CORRECT</div></div>
+    <div class="end-stat"><div class="end-stat-val" id="end-acc">0%</div><div class="end-stat-lbl">ACCURACY</div></div>
+    <div class="end-stat"><div class="end-stat-val" id="end-streak">0</div><div class="end-stat-lbl">BEST STREAK</div></div>
+  </div>
+  <div class="end-lin-title">YOUR LINEAGE</div>
+  <div class="end-strip" id="end-strip"></div>
+  <button class="x-btn x-btn-primary" onclick="location.reload()">NEW EXPERIMENT</button>
+</div>
+
+<!-- ══════════════════════════════════════
+  REFERENCE TABLE POPUP
+══════════════════════════════════════ -->
+<div class="ref-overlay" id="ref-overlay" onclick="refOverlayClick(event)">
+  <div class="ref-box" id="ref-box">
+    <div class="ref-box-hdr">
+      <h2>// XenoGenus TRAIT REFERENCE</h2>
+      <button class="ref-close" onclick="toggleRef()">✕ CLOSE</button>
+    </div>
+    <div id="ref-content"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// VIGNETTE CONFIG
+// ═══════════════════════════════════════════════════════
+const VIG_CFG = {
+  HAZARD_BONUS:    15,  // pts: player has matching trait on hazard
+  HAZARD_PENALTY: -10,  // pts: player lacks matching trait on hazard
+  WINDFALL_BONUS:  20,  // pts: player has matching trait on windfall
+  WINDFALL_MISS:    0,  // pts: player lacks matching trait on windfall
+  FLAVOR_PTS:       0,  // flavor events never score
+  EVENTS_PER_ROUND: 5,
+  TOTAL_EVENTS_DRAW:20, // drawn from each biome pool at game init
+  BIOMES: ['canopy','thermal','caverns','marsh','canals','shore'],
+};
+
+// Biome visual palettes used by canvas renderer (Phase 2)
+const BIOME_PALETTES = {
+  canopy:   {sky:'#0a1a0a',mid:'#0f2810',ground:'#071506',accent:'#22ff44',flora:'#1a5020'},
+  thermal:  {sky:'#1a0a00',mid:'#2d0f00',ground:'#1a0500',accent:'#ff6600',flora:'#5a1f00'},
+  caverns:  {sky:'#08080f',mid:'#0c0c1a',ground:'#060610',accent:'#7b2fff',flora:'#1a1040'},
+  marsh:    {sky:'#061212',mid:'#091f1f',ground:'#040d0d',accent:'#00ffcc',flora:'#0a2a20'},
+  canals:   {sky:'#06090f',mid:'#0a1020',ground:'#040810',accent:'#00b4ff',flora:'#0a1828'},
+  shore:    {sky:'#080d10',mid:'#0d1820',ground:'#050a0e',accent:'#ffc820',flora:'#0d1f18'},
+};
+
+const BIOME_NAMES = {
+  canopy: 'XENOCANOPY', thermal: 'THERMAL VENTS', caverns: 'CRYSTAL CAVERNS',
+  marsh:  'BIOLUM MARSH', canals: 'SPORE CANALS',  shore:  'ZORGITE SHORE',
+};
+
+// ─── EVENT LIBRARY STUB ─────────────────────────────────
+// Each event: {id, biome, cls:'hazard'|'windfall'|'flavor', trait?:traitId,
+//              title, textPresent?, textAbsent?, text?}
+// trait is omitted for flavor events and must be an active trait id.
+const EVENT_LIBRARY = [
+  // CANOPY
+  {id:'C01',biome:'canopy',cls:'hazard',trait:'wings',
+   title:'Canopy Updraft',
+   textPresent:'Your alien\'s wings catch the thermal updraft, riding it safely over the gap. +{pts} pts',
+   textAbsent:'Without wings, your alien tumbles through the updraft. {pts} pts'},
+  {id:'C02',biome:'canopy',cls:'windfall',trait:'legs',
+   title:'Six-Limb Brachiation',
+   textPresent:'Extra limbs let your alien swing swiftly through the vine tangle. +{pts} pts',
+   textAbsent:'Your alien carefully picks through the vines — slow but steady.'},
+  {id:'C03',biome:'canopy',cls:'hazard',trait:'tail',
+   title:'Balance Beam Bridge',
+   textPresent:'A long tail provides perfect counterbalance across the narrow branch. +{pts} pts',
+   textAbsent:'Short-tailed and wobbling, your alien nearly falls. {pts} pts'},
+  {id:'C04',biome:'canopy',cls:'flavor',
+   title:'Luminescent Bloom',
+   text:'A cluster of bioluminescent flowers pulses softly in the dark canopy — beautiful and eerie.'},
+  {id:'C05',biome:'canopy',cls:'windfall',trait:'biolum',
+   title:'Symbiotic Glow Fungus',
+   textPresent:'Your alien\'s bioluminescence attracts the glow fungus — it leaves behind nutrient spores. +{pts} pts',
+   textAbsent:'The fungus ignores your alien and floats past.'},
+
+  // THERMAL
+  {id:'T01',biome:'thermal',cls:'hazard',trait:'tex',
+   title:'Scalding Steam Vent',
+   textPresent:'Smooth skin seals tight against the steam jet — your alien passes unharmed. +{pts} pts',
+   textAbsent:'Rough scales catch the steam and trap heat against the skin. {pts} pts'},
+  {id:'T02',biome:'thermal',cls:'windfall',trait:'skin',
+   title:'Heat-Sync Crystal',
+   textPresent:'Your alien\'s glowing green pigment resonates with the crystal, releasing stored energy. +{pts} pts',
+   textAbsent:'The crystal remains inert — interesting, but not useful.'},
+  {id:'T03',biome:'thermal',cls:'hazard',trait:'nose',
+   title:'Sulfur Plume',
+   textPresent:'A well-shaped nose filters sulfur compounds efficiently. +{pts} pts',
+   textAbsent:'Without a functional nose filter, your alien inhales trace sulfur. {pts} pts'},
+  {id:'T04',biome:'thermal',cls:'flavor',
+   title:'Magma Pools',
+   text:'Bubbling magma pools cast orange light across the terrain — volcanic activity is increasing.'},
+  {id:'T05',biome:'thermal',cls:'windfall',trait:'horns',
+   title:'Pressure-Release Vents',
+   textPresent:'Your alien\'s horns vibrate at the right frequency to trigger the pressure release. +{pts} pts',
+   textAbsent:'The vent pressure builds and releases on its own — your alien waits it out.'},
+
+  // CAVERNS
+  {id:'V01',biome:'caverns',cls:'hazard',trait:'eyes',
+   title:'Darkness Maze',
+   textPresent:'Three eyes give your alien superior spatial awareness in near-total darkness. +{pts} pts',
+   textAbsent:'With only one eye, depth perception fails — your alien takes a wrong turn. {pts} pts'},
+  {id:'V02',biome:'caverns',cls:'windfall',trait:'ant',
+   title:'Crystal Resonance Field',
+   textPresent:'Curled antennae vibrate in sync with the crystal field, sensing a hidden cache. +{pts} pts',
+   textAbsent:'Straight antennae can\'t resolve the resonance frequencies.'},
+  {id:'V03',biome:'caverns',cls:'hazard',trait:'biolum',
+   title:'Lure Predator',
+   textPresent:'Your alien\'s glow attracts a cave predator. Fortunately, bioluminescence also warns the predator of toxicity. +{pts} pts',
+   textAbsent:'No glow — your alien moves unseen through predator territory. Neutral outcome. {pts} pts'},
+  {id:'V04',biome:'caverns',cls:'flavor',
+   title:'Crystal Spires',
+   text:'Towering crystal formations catch faint light from above, refracting it into prismatic curtains.'},
+  {id:'V05',biome:'caverns',cls:'windfall',trait:'fingers',
+   title:'Gem Cache',
+   textPresent:'Five dexterous fingers carefully extract crystalline nutrient gems from a tight crack. +{pts} pts',
+   textAbsent:'Three fingers aren\'t quite enough to grip the gems cleanly — most fall back in.'},
+
+  // MARSH
+  {id:'M01',biome:'marsh',cls:'hazard',trait:'tongue',
+   title:'Adhesive Spore Net',
+   textPresent:'A forked tongue rapidly breaks the spore net adhesive strands. +{pts} pts',
+   textAbsent:'Straight tongue gets briefly stuck in the adhesive net. {pts} pts'},
+  {id:'M02',biome:'marsh',cls:'windfall',trait:'ears',
+   title:'Ultrasonic Nectar Plant',
+   textPresent:'Pointed ears detect the plant\'s ultrasonic signal — your alien locates a nectar deposit. +{pts} pts',
+   textAbsent:'Round ears miss the frequency — your alien passes by unknowingly.'},
+  {id:'M03',biome:'marsh',cls:'hazard',trait:'skin',
+   title:'Bioluminescent Algae Bloom',
+   textPresent:'Your alien\'s own glowing pigment blends with the algae — predators are confused. +{pts} pts',
+   textAbsent:'Dull skin stands out against the glowing bloom — a predator takes notice. {pts} pts'},
+  {id:'M04',biome:'marsh',cls:'flavor',
+   title:'Spore Drift',
+   text:'Clouds of luminescent spores drift low across the water — the air itself seems alive.'},
+  {id:'M05',biome:'marsh',cls:'windfall',trait:'legs',
+   title:'Submerged Root Network',
+   textPresent:'Six limbs distribute weight perfectly across the root lattice. +{pts} pts',
+   textAbsent:'Four limbs make it — just barely.'},
+
+  // CANALS
+  {id:'A01',biome:'canals',cls:'hazard',trait:'wings',
+   title:'Spore Cloud Burst',
+   textPresent:'Wings fan the spores away before they settle on sensitive tissue. +{pts} pts',
+   textAbsent:'Spores coat your alien\'s skin — minor irritation follows. {pts} pts'},
+  {id:'A02',biome:'canals',cls:'windfall',trait:'ant',
+   title:'Chemical Signal Current',
+   textPresent:'Curled antennae analyze the chemical signal — your alien identifies a nutrient source. +{pts} pts',
+   textAbsent:'Straight antennae can\'t distinguish the signal from background noise.'},
+  {id:'A03',biome:'canals',cls:'hazard',trait:'fingers',
+   title:'Lock Gate Mechanism',
+   textPresent:'Five fingers manipulate the intricate valve mechanism with precision. +{pts} pts',
+   textAbsent:'Three fingers lack the fine motor range for the mechanism. {pts} pts'},
+  {id:'A04',biome:'canals',cls:'flavor',
+   title:'Bioluminescent Current',
+   text:'The canal water itself pulses with organic light — microorganisms in perfect synchrony.'},
+  {id:'A05',biome:'canals',cls:'windfall',trait:'tail',
+   title:'Current Riding',
+   textPresent:'A long tail acts as a rudder — your alien rides the canal current effortlessly. +{pts} pts',
+   textAbsent:'Without a long tail, your alien paddles against the current the whole way.'},
+
+  // SHORE
+  {id:'S01',biome:'shore',cls:'hazard',trait:'ears',
+   title:'Sonic Tide Warning',
+   textPresent:'Pointed ears detect the sub-bass resonance of an incoming surge. +{pts} pts',
+   textAbsent:'Round ears miss the warning — your alien is caught in the surge edge. {pts} pts'},
+  {id:'S02',biome:'shore',cls:'windfall',trait:'eyes',
+   title:'Three-Eyed Horizon Scan',
+   textPresent:'Three eyes resolve a distant resource cache on the horizon before it disappears at tide. +{pts} pts',
+   textAbsent:'One eye can\'t resolve the distant object clearly in the glare.'},
+  {id:'S03',biome:'shore',cls:'hazard',trait:'tex',
+   title:'Abrasive Sand Onslaught',
+   textPresent:'Smooth skin sheds abrasive particles without damage. +{pts} pts',
+   textAbsent:'Scaly skin catches sand grains between scales — minor abrasion. {pts} pts'},
+  {id:'S04',biome:'shore',cls:'flavor',
+   title:'Tidal Pools',
+   text:'Crystal-clear tidal pools teem with micro-organisms — a snapshot of early xenolife evolution.'},
+  {id:'S05',biome:'shore',cls:'windfall',trait:'tongue',
+   title:'Salt-Mineral Deposit',
+   textPresent:'A forked tongue efficiently extracts key minerals from the salt deposit. +{pts} pts',
+   textAbsent:'Single-tip tongue can\'t efficiently process the mineral density.'},
+];
+
+// ─── DIALOGUE LIBRARY STUB ──────────────────────────────
+// Each entry: {trait, zygosity:'homDom'|'het'|'homRec', text}
+// [PARENT] replaced at runtime with randName(); [TRAIT] with trait name.
+const DIALOGUE_LIBRARY = [
+  // skin
+  {trait:'skin',zygosity:'homDom',text:'Both of my parents had that same glowing green look. [PARENT] always said it ran strong in our line.'},
+  {trait:'skin',zygosity:'het',text:'It\'s interesting — one of my parents, [PARENT], had the same coloring as me. The other was quite different.'},
+  {trait:'skin',zygosity:'homRec',text:'My parent [PARENT] was the same dull gray. Neither of them showed any green at all.'},
+  // eyes
+  {trait:'eyes',zygosity:'homDom',text:'Three eyes — [PARENT] had the same. Said it runs on both sides of the family.'},
+  {trait:'eyes',zygosity:'het',text:'[PARENT] had three eyes like me, but the other parent had just one. Quite a contrast.'},
+  {trait:'eyes',zygosity:'homRec',text:'[PARENT] had one eye, same as me. Two eyes would be a lot to ask for in our family.'},
+  // ant
+  {trait:'ant',zygosity:'homDom',text:'Curled antennae are just what we do — [PARENT] had them, and so did their parent before that.'},
+  {trait:'ant',zygosity:'het',text:'[PARENT] had curled antennae like mine. The other parent had straight ones though — we never knew which I\'d inherit.'},
+  {trait:'ant',zygosity:'homRec',text:'Straight antennae — [PARENT] had them too. No curled ones anywhere in our recent lineage.'},
+  // legs
+  {trait:'legs',zygosity:'homDom',text:'Six limbs just runs in my family. [PARENT] had them, and all their siblings too.'},
+  {trait:'legs',zygosity:'het',text:'I have six limbs, but [PARENT] only had four. A bit surprising I ended up with this many.'},
+  {trait:'legs',zygosity:'homRec',text:'Four limbs — [PARENT] had the same. Six would be unusual for us.'},
+  // wings
+  {trait:'wings',zygosity:'homDom',text:'[PARENT] could fly, same as me. Wings are pretty dominant in my bloodline.'},
+  {trait:'wings',zygosity:'het',text:'I have wings, but [PARENT] didn\'t. I guess I was lucky to inherit this.'},
+  {trait:'wings',zygosity:'homRec',text:'Neither of my parents had wings. [PARENT] would joke that we were too grounded for flight.'},
+  // tail
+  {trait:'tail',zygosity:'homDom',text:'Long tail — [PARENT] had one, I have one. It\'s just our thing.'},
+  {trait:'tail',zygosity:'het',text:'[PARENT] had a long tail but the other parent had a short one. I ended up long.'},
+  {trait:'tail',zygosity:'homRec',text:'Short tail, just like [PARENT]. Long tails are rare in my line.'},
+  // tongue
+  {trait:'tongue',zygosity:'homDom',text:'My forked tongue — [PARENT] had the same. It\'s been in our family as long as anyone remembers.'},
+  {trait:'tongue',zygosity:'het',text:'[PARENT] had a forked tongue like mine, but the other parent had a straight one. Mixed signals.'},
+  {trait:'tongue',zygosity:'homRec',text:'Straight tongue, like [PARENT]. Forked is unusual for us.'},
+];
+
+// ═══════════════════════════════════════════════════════
+// TRAIT DATA
+// ═══════════════════════════════════════════════════════
+const TRAITS = [
+  {id:'skin',   name:'Skin Color',    alleles:['G','g'], dom:'Glowing Green',   rec:'Dull Gray',       type:'dr'},
+  {id:'eyes',   name:'Eye Number',    alleles:['E','e'], dom:'Three Eyes',       rec:'One Eye',         type:'dr'},
+  {id:'ant',    name:'Antenna Shape', alleles:['A','a'], dom:'Curled Antennae', rec:'Straight Antennae',type:'dr'},
+  {id:'legs',   name:'Limb Number',   alleles:['L','l'], dom:'Six Limbs',        rec:'Four Limbs',       type:'dr'},
+  {id:'tex',    name:'Body Texture',  alleles:['S','s'], dom:'Smooth Skin',      rec:'Scaly Skin',       type:'dr'},
+  {id:'tail',   name:'Tail Type',     alleles:['T','t'], dom:'Long Tail',        rec:'Short Tail',      type:'dr'},
+  {id:'ears',   name:'Ear Shape',     alleles:['P','p'], dom:'Pointed Ears',     rec:'Round Ears',       type:'dr'},
+  {id:'tongue', name:'Tongue Shape',  alleles:['B','b'], dom:'Forked Tongue',    rec:'Straight Tongue',  type:'dr'},
+  {id:'fingers',name:'Finger Number', alleles:['F','f'], dom:'Five Fingers',     rec:'Three Fingers',    type:'dr'},
+  {id:'wings',  name:'Wing Presence', alleles:['W','w'], dom:'Has Wings',        rec:'No Wings',         type:'dr'},
+  {id:'nose',   name:'Nose Shape',    alleles:['Nh','Nd','Nc','Nt'],
+    phenotypes:{Nh:'Square Nose',Nd:'No Nose',Nc:'Tubular Nose',Nt:'Triangular Nose'}, type:'ma'},
+  {id:'horns',  name:'Horns',         alleles:['Hh','Hd','Hc','Ht'],
+    phenotypes:{Hh:'Curved Horns',Hd:'Spiked Crest',Hc:'Glowing Antlers',Ht:'No Horns'}, type:'ma'},
+  {id:'biolum', name:'Bioluminescence',alleles:['Bh','Bd','Bc','Bt'],
+    phenotypes:{Bh:'Pulsating Glow',Bd:'Patterned Glow',Bc:'Multi-Color Glow',Bt:'No Glow'}, type:'ma'},
+];
+
+const DIFF_COUNTS = {beginner:4, advanced:8, expert:13};
+const DIFF_MULT   = {beginner:1, advanced:2, expert:3};
+const NAME_A = ['Xel','Vor','Zyg','Kreth','Nox','Aev','Thul','Drix','Phem','Ulk','Zov','Qeth'];
+const NAME_B = ['arak','ozin','ephon','ixis','ulor','adren','omex','ivast','ylon','ethra','orex','imul'];
+const randName = () => NAME_A[Math.random()*NAME_A.length|0]+NAME_B[Math.random()*NAME_B.length|0];
+const pick = arr => arr[Math.random()*arr.length|0];
+const genoStr = g => g[0]+g[1];
+
+// ═══════════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════════
+let G = {};
+
+function initG(){
+  const diff  = document.getElementById('cfg-diff').value;
+  const rounds= parseInt(document.getElementById('cfg-rounds').value)||5;
+  const name  = document.getElementById('cfg-name').value.trim()||'Researcher';
+  const traitCount = DIFF_COUNTS[diff];
+  G = {
+    diff, rounds, name,
+    traits: TRAITS.slice(0,traitCount),
+    round:1, score:0, streak:0, bestStreak:0,
+    totalQ:0, totalCorrect:0,
+    player:null, partner:null, offGeno:null, pendingOff:null,
+    lineage:[],
+    buildGeno:{}, buildSpun:0,
+    candidates:[], selectedCandidate:null,
+    roundSubmitted:false,
+    // Vignette state
+    vigScore:0,
+    biomeSeq:[],     // 3 biome keys selected at init
+    biomeDist:[],    // [n,n,n] rounds per biome
+    vigEvents:{},    // {biomeKey:[events]} drawn at init
+    vigRoundEvents:[],  // 5 events for current round
+    vigEventIdx:0,
+    vigAnimFrame:null,
+    vigSpriteX:0,    // alien x position in canvas (Phase 2)
+    vigScrollX:0,    // background scroll offset (Phase 2)
+    vigRunning:false,
+  };
+  initBiomes();
+}
+
+// ═══════════════════════════════════════════════════════
+// PHENOTYPE RESOLUTION
+// ═══════════════════════════════════════════════════════
+function getPhenotype(t, geno){
+  if(t.type==='dr'){
+    return (geno[0]===t.alleles[0]||geno[1]===t.alleles[0]) ? t.dom : t.rec;
+  }
+  // Multiple allele / codominant
+  const [a1,a2] = geno;
+  if(a1===a2) return t.phenotypes[a1];
+  const p1=t.phenotypes[a1], p2=t.phenotypes[a2];
+  const noTerms=['No Nose','No Horns','No Glow'];
+  if(noTerms.includes(p1)) return p2;
+  if(noTerms.includes(p2)) return p1;
+  return p1+' / '+p2;
+}
+
+function calcProbs(t, ga, gb){
+  // ga, gb = [allele1, allele2] for each parent
+  const combos=[[ga[0],gb[0]],[ga[0],gb[1]],[ga[1],gb[0]],[ga[1],gb[1]]];
+  const counts={};
+  for(const c of combos){const ph=getPhenotype(t,c);counts[ph]=(counts[ph]||0)+1;}
+  const result={};
+  for(const [ph,n] of Object.entries(counts)) result[ph]=n*25;
+  return result;
+}
+
+function randomGeno(t){
+  return [pick(t.alleles), pick(t.alleles)];
+}
+
+function makeAlien(existingGeno, gen){
+  const geno={};
+  for(const t of G.traits) geno[t.id]=existingGeno ? existingGeno[t.id] : randomGeno(t);
+  return {name:randName(), gen:gen||1, geno};
+}
+
+function crossAliens(a, b){
+  const geno={};
+  for(const t of G.traits){
+    const ga=a.geno[t.id], gb=b.geno[t.id];
+    geno[t.id]=[pick(ga), pick(gb)];
+  }
+  return geno;
+}
+
+// ═══════════════════════════════════════════════════════
+// REFERENCE TABLE POPUP
+// ═══════════════════════════════════════════════════════
+function toggleRef(){
+  const ov=document.getElementById('ref-overlay');
+  const showing=ov.classList.contains('show');
+  if(!showing) buildRefTable();
+  ov.classList.toggle('show');
+}
+function refOverlayClick(e){
+  if(e.target===document.getElementById('ref-overlay')) toggleRef();
+}
+
+function buildRefTable(){
+  const ALL_TRAITS = [
+    {id:'skin',   name:'Skin Color',    alleles:['G','g'], dom:'Glowing Green',    rec:'Dull Gray',          type:'dr'},
+    {id:'eyes',   name:'Eye Number',    alleles:['E','e'], dom:'Three Eyes',        rec:'One Eye',            type:'dr'},
+    {id:'ant',    name:'Antenna Shape', alleles:['A','a'], dom:'Curled Antennae',   rec:'Straight Antennae',  type:'dr'},
+    {id:'legs',   name:'Limb Number',   alleles:['L','l'], dom:'Six Limbs',         rec:'Four Limbs',         type:'dr'},
+    {id:'tex',    name:'Body Texture',  alleles:['S','s'], dom:'Smooth Skin',       rec:'Scaly Skin',         type:'dr'},
+    {id:'tail',   name:'Tail Type',     alleles:['T','t'], dom:'Long Tail',         rec:'Short Tail',        type:'dr'},
+    {id:'ears',   name:'Ear Shape',     alleles:['P','p'], dom:'Pointed Ears',      rec:'Round Ears',         type:'dr'},
+    {id:'tongue', name:'Tongue Shape',  alleles:['B','b'], dom:'Forked Tongue',     rec:'Straight Tongue',    type:'dr'},
+    {id:'fingers',name:'Finger Number', alleles:['F','f'], dom:'Five Fingers',      rec:'Three Fingers',      type:'dr'},
+    {id:'wings',  name:'Wing Presence', alleles:['W','w'], dom:'Has Wings',         rec:'No Wings',           type:'dr'},
+    {id:'nose',   name:'Nose Shape',    alleles:['Nh','Nd','Nc','Nt'],
+      phenotypes:{Nh:'Square Nose',Nd:'No Nose',Nc:'Tubular Nose',Nt:'Triangular Nose'}, type:'ma'},
+    {id:'horns',  name:'Horns',         alleles:['Hh','Hd','Hc','Ht'],
+      phenotypes:{Hh:'Curved Horns',Hd:'Spiked Crest',Hc:'Glowing Antlers',Ht:'No Horns'}, type:'ma'},
+    {id:'biolum', name:'Bioluminescence',alleles:['Bh','Bd','Bc','Bt'],
+      phenotypes:{Bh:'Pulsating Glow',Bd:'Patterned Glow',Bc:'Multi-Color Glow',Bt:'No Glow'}, type:'ma'},
+  ];
+
+  const drTraits = ALL_TRAITS.filter(t=>t.type==='dr');
+  const maTraits = ALL_TRAITS.filter(t=>t.type==='ma');
+
+  // Dominant/Recessive section
+  let drRows = drTraits.map(t=>`
+    <tr>
+      <td class="ref-td-trait">${t.name}</td>
+      <td class="ref-td-allele">${t.alleles[0]}</td>
+      <td class="ref-td-geno">${t.alleles[0]}${t.alleles[0]}, ${t.alleles[0]}${t.alleles[1]}</td>
+      <td class="ref-td-pheno">${t.dom}</td>
+      <td class="ref-td-type"><span class="ref-badge-dom">DOM</span></td>
+    </tr>
+    <tr>
+      <td class="ref-td-trait"></td>
+      <td class="ref-td-allele">${t.alleles[1]}</td>
+      <td class="ref-td-geno">${t.alleles[1]}${t.alleles[1]}</td>
+      <td class="ref-td-pheno">${t.rec}</td>
+      <td class="ref-td-type"><span class="ref-badge-rec">REC</span></td>
+    </tr>`).join('');
+
+  // Multiple allele section
+  let maRows = maTraits.map(t=>{
+    const alleles=t.alleles;
+    const rows=[];
+    // Homozygous rows
+    for(const a of alleles){
+      rows.push(`<tr>
+        <td class="ref-td-trait">${rows.length===0?t.name:''}</td>
+        <td class="ref-td-allele">${a}</td>
+        <td class="ref-td-geno">${a}${a}</td>
+        <td class="ref-td-pheno">${t.phenotypes[a]}</td>
+        <td class="ref-td-type"><span class="ref-badge-cod">HOМ</span></td>
+      </tr>`);
+    }
+    // Heterozygous pairs
+    for(let i=0;i<alleles.length;i++) for(let j=i+1;j<alleles.length;j++){
+      const p1=t.phenotypes[alleles[i]], p2=t.phenotypes[alleles[j]];
+      const noTerms=['No Nose','No Horns','No Glow'];
+      let pheno;
+      if(noTerms.includes(p1)) pheno=p2;
+      else if(noTerms.includes(p2)) pheno=p1;
+      else pheno=p1+' / '+p2;
+      rows.push(`<tr>
+        <td class="ref-td-trait"></td>
+        <td class="ref-td-allele">${alleles[i]}/${alleles[j]}</td>
+        <td class="ref-td-geno">${alleles[i]}${alleles[j]}</td>
+        <td class="ref-td-pheno">${pheno}</td>
+        <td class="ref-td-type"><span class="ref-badge-cod">COD</span></td>
+      </tr>`);
+    }
+    return rows.join('');
+  }).join('');
+
+  document.getElementById('ref-content').innerHTML=`
+    <div class="ref-section">
+      <div class="ref-section-title">DOMINANT / RECESSIVE TRAITS (10)</div>
+      <table class="ref-table">
+        <thead><tr>
+          <th>TRAIT</th><th>ALLELE</th><th>GENOTYPE(S)</th><th>PHENOTYPE</th><th>TYPE</th>
+        </tr></thead>
+        <tbody>${drRows}</tbody>
+      </table>
+    </div>
+    <div class="ref-section">
+      <div class="ref-section-title">MULTIPLE ALLELE / CODOMINANT TRAITS (3)</div>
+      <table class="ref-table">
+        <thead><tr>
+          <th>TRAIT</th><th>ALLELE</th><th>GENOTYPE(S)</th><th>PHENOTYPE</th><th>TYPE</th>
+        </tr></thead>
+        <tbody>${maRows}</tbody>
+      </table>
+    </div>
+    <div class="ref-note">
+      <strong style="color:var(--accent)">DOM</strong> = Dominant (expressed when at least one dominant allele present) &nbsp;|&nbsp;
+      <strong style="color:var(--text-dim)">REC</strong> = Recessive (only expressed when homozygous recessive) &nbsp;|&nbsp;
+      <strong style="color:var(--accent3)">COD</strong> = Codominant (both alleles expressed simultaneously) &nbsp;|&nbsp;
+      <strong style="color:var(--accent3)">HOM</strong> = Homozygous codominant (single phenotype expressed)
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// SVG ALIEN RENDERER — bold lines, clear shapes, bright colors
+// ═══════════════════════════════════════════════════════
+function alienSVG(alien, size){
+  const geno=alien.geno;
+  const gp = (id) => {
+    const t=G.traits.find(x=>x.id===id);
+    return t ? getPhenotype(t,geno[id]) : null;
+  };
+
+  const skinPh    = gp('skin');
+  const eyesPh    = gp('eyes');
+  const antPh     = gp('ant');
+  const legsPh    = gp('legs');
+  const texPh     = gp('tex');
+  const tailPh    = gp('tail');
+  const earsPh    = gp('ears');
+  const tonguePh  = gp('tongue');
+  const fingersPh = gp('fingers');
+  const wingsPh   = gp('wings');
+  const hornPh    = gp('horns');
+  const nosePh    = gp('nose');
+  const biolumPh  = gp('biolum');
+
+  const green  = skinPh === 'Glowing Green';
+  const BODY   = green ? '#1e7a30' : '#4a4560';
+  const BODY_H = green ? '#26a040' : '#5a5575';
+  const BODY_S = green ? '#0d4018' : '#2a2540';
+  const LINE   = green ? '#5dff80' : '#9090c0';
+  const TAIL_C = green ? '#c87800' : '#8855cc';
+  const TAIL_L = green ? '#ffaa22' : '#cc88ff';
+  const SW     = Math.max(2, size * 0.025);
+
+  const threeEyes = eyesPh === 'Three Eyes';
+  const wings   = wingsPh === 'Has Wings';
+  const longT   = tailPh === 'Long Tail';
+  const sixL    = legsPh === 'Six Limbs';
+  const curled  = antPh === 'Curled Antennae';
+  const scaly   = texPh === 'Scaly Skin';
+  const pEars   = earsPh === 'Pointed Ears';
+  const forked  = tonguePh === 'Forked Tongue';
+  const fiveF   = fingersPh === 'Five Fingers';
+  const nF      = fiveF ? 5 : 3;
+  const nLegs   = sixL ? 6 : 4;
+
+  const s  = size || 80;
+  const cx = s * 0.5;
+  const cy = s * 0.52;  // unified torso center for both limb counts
+
+  // Layout landmarks
+  const headCY  = cy - s*0.295;
+  const headRX  = s*0.195;
+  const headRY  = s*0.165;
+  const bodyRX  = s*0.19;
+  const bodyRY  = s*0.255;
+  const antBase = headCY - headRY;
+  const armY    = cy - s*0.04;
+
+  // Face zones - clear bands with good spacing
+  const faceTop    = headCY - headRY * 0.60;  // eye band center
+  const faceNoseY  = headCY + headRY * 0.08;  // nose center
+  const faceMouthY = headCY + headRY * 0.70;  // mouth center
+
+  const EYE_R = s * 0.044;
+  const PUPIL = s * 0.025;
+
+  let d = '';
+
+  // BIOLUMINESCENCE AURA
+  if(biolumPh && !biolumPh.includes('No Glow')){
+    const gc = biolumPh.includes('Pulsating') ? '#00ffaa'
+             : biolumPh.includes('Patterned') ? '#cc66ff'
+             : '#ffaa00';
+    d += `<ellipse cx="${cx}" cy="${cy}" rx="${s*0.42}" ry="${s*0.48}" fill="${gc}" opacity="0.13"/>`;
+  }
+
+  // WINGS — dragon-style: angular, pointed, small
+  if(wings){
+    // Left wing: membrane polygon with two pointed tips
+    const wlax = cx - bodyRX*0.28, wlay = cy - s*0.04;  // body attach top
+    const wlbx = cx - bodyRX*0.28, wlby = cy + s*0.04;  // body attach bottom
+    const wl1x = cx - s*0.44,      wl1y = cy - s*0.28;  // main upper tip
+    const wl2x = cx - s*0.30,      wl2y = cy - s*0.05;  // claw notch
+    const wl3x = cx - s*0.38,      wl3y = cy + s*0.06;  // lower tip
+    d += `<polygon points="${wlax},${wlay} ${wl1x},${wl1y} ${wl2x},${wl2y} ${wl3x},${wl3y} ${wlbx},${wlby}" fill="rgba(90,140,255,0.16)" stroke="#70aaff" stroke-width="${SW*0.9}" stroke-linejoin="round"/>`;
+    // Spine line from body to main tip
+    d += `<line x1="${wlax}" y1="${wlay}" x2="${wl1x}" y2="${wl1y}" stroke="#a0c8ff" stroke-width="${SW*0.7}" stroke-linecap="round"/>`;
+    // Right wing (mirrored)
+    const wrax = cx + bodyRX*0.28, wray = cy - s*0.04;
+    const wrbx = cx + bodyRX*0.28, wrby = cy + s*0.04;
+    const wr1x = cx + s*0.44,      wr1y = cy - s*0.28;
+    const wr2x = cx + s*0.30,      wr2y = cy - s*0.05;
+    const wr3x = cx + s*0.38,      wr3y = cy + s*0.06;
+    d += `<polygon points="${wrax},${wray} ${wr1x},${wr1y} ${wr2x},${wr2y} ${wr3x},${wr3y} ${wrbx},${wrby}" fill="rgba(90,140,255,0.16)" stroke="#70aaff" stroke-width="${SW*0.9}" stroke-linejoin="round"/>`;
+    d += `<line x1="${wrax}" y1="${wray}" x2="${wr1x}" y2="${wr1y}" stroke="#a0c8ff" stroke-width="${SW*0.7}" stroke-linecap="round"/>`;
+  }
+
+  // TAIL - distinct color
+  if(longT){
+    const tx1=cx+bodyRX*0.85, ty1=cy+bodyRY*0.6;
+    const tx2=cx+s*0.42,      ty2=cy+bodyRY+s*0.08;
+    const tx3=cx+s*0.30,      ty3=cy+bodyRY+s*0.18;
+    d += `<path d="M${tx1} ${ty1} Q${tx2} ${ty2} ${tx3} ${ty3}" stroke="${TAIL_L}" stroke-width="${SW*1.3}" fill="none" stroke-linecap="round"/>`;
+    d += `<ellipse cx="${tx3}" cy="${ty3+s*0.025}" rx="${s*0.055}" ry="${s*0.04}" fill="${TAIL_C}" stroke="${TAIL_L}" stroke-width="${SW*0.9}"/>`;
+  } else {
+    // Short dog-style tail: stubby upward curve at the rump
+    const stx = cx + bodyRX*0.82, sty = cy + bodyRY*0.42;
+    const stcx = stx + s*0.07,   stcy = sty - s*0.16;  // control point: up and out
+    const stex = stx + s*0.02,   stey = sty - s*0.20;  // tip
+    d += `<path d="M${stx} ${sty} Q${stcx} ${stcy} ${stex} ${stey}" stroke="${TAIL_L}" stroke-width="${SW*1.6}" fill="none" stroke-linecap="round"/>`;
+    d += `<circle cx="${stex}" cy="${stey}" r="${s*0.022}" fill="${TAIL_L}"/>`;
+  }
+
+  // LIMBS - unified upright body, same torso regardless of count
+  const legW    = SW * 1.45;
+  const legTopY = cy + bodyRY - s*0.05;
+  const knee    = legTopY + s*0.11;
+  const foot    = knee + s*0.095;
+
+  if(nLegs === 4){
+    // Two legs - narrow biped stance
+    const lx = cx - bodyRX*0.38, rx = cx + bodyRX*0.38;
+    d += `<line x1="${lx}" y1="${legTopY}" x2="${lx-s*0.018}" y2="${knee}" stroke="${LINE}" stroke-width="${legW*1.15}" stroke-linecap="round"/>`;
+    d += `<line x1="${lx-s*0.018}" y1="${knee}" x2="${lx-s*0.036}" y2="${foot}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
+    d += `<rect x="${lx-s*0.078}" y="${foot}" width="${s*0.082}" height="${s*0.032}" rx="${s*0.012}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.7}"/>`;
+    d += `<line x1="${rx}" y1="${legTopY}" x2="${rx+s*0.018}" y2="${knee}" stroke="${LINE}" stroke-width="${legW*1.15}" stroke-linecap="round"/>`;
+    d += `<line x1="${rx+s*0.018}" y1="${knee}" x2="${rx+s*0.036}" y2="${foot}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
+    d += `<rect x="${rx-s*0.004}" y="${foot}" width="${s*0.082}" height="${s*0.032}" rx="${s*0.012}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.7}"/>`;
+  } else {
+    // Two legs per side (4 total) — wider stance for six-limbed body
+    const leftXs  = [cx - bodyRX*0.58, cx - bodyRX*0.16];
+    const rightXs = [cx + bodyRX*0.58, cx + bodyRX*0.16];
+    const legYOffs = [0, s*0.032];
+    leftXs.forEach((lx, i)=>{
+      const ly = legYOffs[i];
+      d += `<line x1="${lx}" y1="${legTopY+ly}" x2="${lx-s*0.016}" y2="${knee+ly}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
+      d += `<line x1="${lx-s*0.016}" y1="${knee+ly}" x2="${lx-s*0.022}" y2="${foot+ly}" stroke="${LINE}" stroke-width="${legW*0.9}" stroke-linecap="round"/>`;
+      d += `<ellipse cx="${lx-s*0.022}" cy="${foot+ly+s*0.015}" rx="${s*0.032}" ry="${s*0.013}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.65}"/>`;
+    });
+    rightXs.forEach((rx, i)=>{
+      const ly = legYOffs[i];
+      d += `<line x1="${rx}" y1="${legTopY+ly}" x2="${rx+s*0.016}" y2="${knee+ly}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
+      d += `<line x1="${rx+s*0.016}" y1="${knee+ly}" x2="${rx+s*0.022}" y2="${foot+ly}" stroke="${LINE}" stroke-width="${legW*0.9}" stroke-linecap="round"/>`;
+      d += `<ellipse cx="${rx+s*0.022}" cy="${foot+ly+s*0.015}" rx="${s*0.032}" ry="${s*0.013}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.65}"/>`;
+    });
+  }
+
+  // BODY (torso)
+  d += `<ellipse cx="${cx}" cy="${cy}" rx="${bodyRX}" ry="${bodyRY}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+  d += `<ellipse cx="${cx-bodyRX*0.25}" cy="${cy-bodyRY*0.3}" rx="${bodyRX*0.44}" ry="${bodyRY*0.28}" fill="${BODY_H}" opacity="0.35"/>`;
+
+  if(scaly){
+    for(let r=0;r<3;r++) for(let c=0;c<3;c++){
+      const sx=cx+(c-1)*bodyRX*0.58;
+      const sy=cy-bodyRY*0.28+r*bodyRY*0.30+(c%2)*bodyRY*0.14;
+      d+=`<polygon points="${sx},${sy-s*0.038} ${sx+s*0.048},${sy} ${sx},${sy+s*0.038} ${sx-s*0.048},${sy}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.5}" opacity="0.7"/>`;
+    }
+  }
+
+  // ARMS + FINGERS
+  const armEndLx = cx - bodyRX - s*0.11;
+  const armEndRx = cx + bodyRX + s*0.11;
+  const armEndY  = armY + s*0.095;
+  d += `<line x1="${cx-bodyRX}" y1="${armY}" x2="${armEndLx}" y2="${armEndY}" stroke="${LINE}" stroke-width="${SW*1.2}" stroke-linecap="round"/>`;
+  d += `<line x1="${cx+bodyRX}" y1="${armY}" x2="${armEndRx}" y2="${armEndY}" stroke="${LINE}" stroke-width="${SW*1.2}" stroke-linecap="round"/>`;
+  const fW = SW * 0.85;
+  const fSpread = s * 0.036;
+  for(let f=0;f<nF;f++){
+    const fi = f-(nF-1)/2;
+    d+=`<line x1="${armEndLx}" y1="${armEndY}" x2="${armEndLx+fi*fSpread}" y2="${armEndY+s*0.075}" stroke="${LINE}" stroke-width="${fW}" stroke-linecap="round"/>`;
+    d+=`<line x1="${armEndRx}" y1="${armEndY}" x2="${armEndRx+fi*fSpread}" y2="${armEndY+s*0.075}" stroke="${LINE}" stroke-width="${fW}" stroke-linecap="round"/>`;
+  }
+
+  // HEAD
+  d += `<ellipse cx="${cx}" cy="${headCY}" rx="${headRX}" ry="${headRY}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+  d += `<ellipse cx="${cx-headRX*0.3}" cy="${headCY-headRY*0.35}" rx="${headRX*0.42}" ry="${headRY*0.28}" fill="${BODY_H}" opacity="0.4"/>`;
+
+  // EARS
+  if(pEars){
+    const earBaseY1 = headCY - headRY * 0.38;
+    const earBaseY2 = headCY + headRY * 0.22;
+    const earTipY   = headCY - headRY * 0.20;
+    d += `<polygon points="${cx-headRX*0.94},${earBaseY1} ${cx-headRX*1.82},${earTipY} ${cx-headRX*0.94},${earBaseY2}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+    d += `<polygon points="${cx+headRX*0.94},${earBaseY1} ${cx+headRX*1.82},${earTipY} ${cx+headRX*0.94},${earBaseY2}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+  } else {
+    // Round ears: eccentric (wide) ovals placed on the outer edge of the head
+    d += `<ellipse cx="${cx-headRX*1.26}" cy="${headCY+headRY*0.08}" rx="${headRX*0.52}" ry="${headRY*0.22}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+    d += `<ellipse cx="${cx+headRX*1.26}" cy="${headCY+headRY*0.08}" rx="${headRX*0.52}" ry="${headRY*0.22}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+  }
+
+  // ANTENNAE
+  const antL = cx - headRX*0.44;
+  const antR = cx + headRX*0.44;
+  const antTipY = headCY - headRY - s*0.17;   // straight antenna tip height
+  const curlTop = headCY - headRY - s*0.34;   // curly antenna goes twice as high
+  const curlR   = s * 0.10;                    // radius of the curl loop
+  if(curled){
+    // Left: curvy stem going up-left, then a full circular loop at the top
+    const lcx = antL - s*0.18, lcy = curlTop + curlR;  // loop center
+    d += `<path d="M${antL} ${antBase} C${antL-s*0.06} ${antBase-s*0.15},${antL-s*0.22} ${curlTop+s*0.26},${lcx+curlR} ${lcy}" stroke="${LINE}" stroke-width="${SW}" fill="none" stroke-linecap="round"/>`;
+    d += `<circle cx="${lcx}" cy="${lcy}" r="${curlR}" fill="none" stroke="${LINE}" stroke-width="${SW}"/>`;
+    d += `<circle cx="${lcx}" cy="${lcy}" r="${s*0.028}" fill="${LINE}"/>`;
+    // Right: mirrored
+    const rcx = antR + s*0.18, rcy = curlTop + curlR;
+    d += `<path d="M${antR} ${antBase} C${antR+s*0.06} ${antBase-s*0.15},${antR+s*0.22} ${curlTop+s*0.26},${rcx-curlR} ${rcy}" stroke="${LINE}" stroke-width="${SW}" fill="none" stroke-linecap="round"/>`;
+    d += `<circle cx="${rcx}" cy="${rcy}" r="${curlR}" fill="none" stroke="${LINE}" stroke-width="${SW}"/>`;
+    d += `<circle cx="${rcx}" cy="${rcy}" r="${s*0.028}" fill="${LINE}"/>`;
+  } else {
+    d += `<line x1="${antL}" y1="${antBase}" x2="${antL-s*0.055}" y2="${antTipY}" stroke="${LINE}" stroke-width="${SW}" stroke-linecap="round"/>`;
+    d += `<circle cx="${antL-s*0.055}" cy="${antTipY}" r="${s*0.035}" fill="${LINE}"/>`;
+    d += `<line x1="${antR}" y1="${antBase}" x2="${antR+s*0.055}" y2="${antTipY}" stroke="${LINE}" stroke-width="${SW}" stroke-linecap="round"/>`;
+    d += `<circle cx="${antR+s*0.055}" cy="${antTipY}" r="${s*0.035}" fill="${LINE}"/>`;
+  }
+
+  // HORNS
+  if(hornPh && !hornPh.includes('No Horns')){
+    const hBase = headCY - headRY + s*0.02;
+    if(hornPh.includes('Curved')){
+      d += `<path d="M${cx-headRX*0.58} ${hBase} Q${cx-headRX*1.05} ${hBase-s*0.13} ${cx-headRX*0.68} ${hBase-s*0.21}" stroke="#ffcc00" stroke-width="${SW*1.35}" fill="none" stroke-linecap="round"/>`;
+      d += `<path d="M${cx+headRX*0.58} ${hBase} Q${cx+headRX*1.05} ${hBase-s*0.13} ${cx+headRX*0.68} ${hBase-s*0.21}" stroke="#ffcc00" stroke-width="${SW*1.35}" fill="none" stroke-linecap="round"/>`;
+    } else if(hornPh.includes('Spiked')){
+      d += `<polygon points="${cx-headRX*0.52},${hBase} ${cx-headRX*0.86},${hBase-s*0.21} ${cx-headRX*0.18},${hBase-s*0.04}" fill="#ff6600" stroke="#ffaa44" stroke-width="${SW*0.8}"/>`;
+      d += `<polygon points="${cx+headRX*0.52},${hBase} ${cx+headRX*0.86},${hBase-s*0.21} ${cx+headRX*0.18},${hBase-s*0.04}" fill="#ff6600" stroke="#ffaa44" stroke-width="${SW*0.8}"/>`;
+    } else if(hornPh.includes('Glowing')){
+      d += `<line x1="${cx-headRX*0.48}" y1="${hBase}" x2="${cx-headRX*0.58}" y2="${hBase-s*0.23}" stroke="#00ffee" stroke-width="${SW*1.45}" stroke-linecap="round"/>`;
+      d += `<circle cx="${cx-headRX*0.58}" cy="${hBase-s*0.23}" r="${s*0.042}" fill="#00ffee"/>`;
+      d += `<line x1="${cx+headRX*0.48}" y1="${hBase}" x2="${cx+headRX*0.58}" y2="${hBase-s*0.23}" stroke="#00ffee" stroke-width="${SW*1.45}" stroke-linecap="round"/>`;
+      d += `<circle cx="${cx+headRX*0.58}" cy="${hBase-s*0.23}" r="${s*0.042}" fill="#00ffee"/>`;
+    }
+  }
+
+  // EYES - blue iris
+  // 1 eye: centered. 3 eyes: concave parabola — center eye highest, outer two lower
+  let eyePos;
+  if(threeEyes){
+    const eyeCenterY = faceTop;                    // top eye high in face
+    const eyeOuterY  = faceTop + headRY * 0.42;   // outer two eyes drop down
+    eyePos = [
+      [cx - headRX*0.44, eyeOuterY],
+      [cx + headRX*0.44, eyeOuterY],
+      [cx,               eyeCenterY],
+    ];
+  } else {
+    eyePos = [[cx, faceTop]];
+  }
+
+  for(const [ex,ey] of eyePos){
+    d += `<circle cx="${ex}" cy="${ey}" r="${EYE_R}" fill="#ddf4ff" stroke="${LINE}" stroke-width="${SW*0.65}"/>`;
+    d += `<circle cx="${ex}" cy="${ey}" r="${PUPIL*1.35}" fill="#1166ee"/>`;
+    d += `<circle cx="${ex}" cy="${ey}" r="${PUPIL*0.68}" fill="#00060f"/>`;
+    d += `<circle cx="${ex+EYE_R*0.27}" cy="${ey-EYE_R*0.27}" r="${PUPIL*0.32}" fill="white" opacity="0.9"/>`;
+  }
+
+  // NOSE - centered between eyes and mouth
+  if(nosePh && !nosePh.includes('No Nose')){
+    if(nosePh.includes('Square')){
+      d+=`<rect x="${cx-s*0.033}" y="${faceNoseY-s*0.024}" width="${s*0.066}" height="${s*0.046}" fill="${BODY_H}" stroke="${LINE}" stroke-width="${SW*0.75}" rx="${s*0.01}"/>`;
+      d+=`<circle cx="${cx-s*0.015}" cy="${faceNoseY+s*0.005}" r="${s*0.01}" fill="${BODY_S}"/>`;
+      d+=`<circle cx="${cx+s*0.015}" cy="${faceNoseY+s*0.005}" r="${s*0.01}" fill="${BODY_S}"/>`;
+    } else if(nosePh.includes('Tubular')){
+      d+=`<ellipse cx="${cx}" cy="${faceNoseY}" rx="${s*0.020}" ry="${s*0.036}" fill="${BODY_H}" stroke="${LINE}" stroke-width="${SW*0.75}"/>`;
+      d+=`<ellipse cx="${cx}" cy="${faceNoseY+s*0.017}" rx="${s*0.013}" ry="${s*0.013}" fill="${BODY_S}"/>`;
+    } else if(nosePh.includes('Triangular')){
+      d+=`<polygon points="${cx},${faceNoseY-s*0.030} ${cx-s*0.040},${faceNoseY+s*0.022} ${cx+s*0.040},${faceNoseY+s*0.022}" fill="${BODY_H}" stroke="${LINE}" stroke-width="${SW*0.75}"/>`;
+    }
+    if(nosePh.includes(' / ')){
+      d+=`<text x="${cx}" y="${faceNoseY+s*0.055}" text-anchor="middle" font-family="Share Tech Mono" font-size="${s*0.042}" fill="${LINE}" opacity="0.6">+</text>`;
+    }
+  }
+
+  // MOUTH + TONGUE
+  d += `<path d="M${cx-s*0.046} ${faceMouthY} Q${cx} ${faceMouthY+s*0.021} ${cx+s*0.046} ${faceMouthY}" stroke="${LINE}" stroke-width="${SW*0.75}" fill="none" stroke-linecap="round"/>`;
+  if(forked){
+    const tby = faceMouthY + s*0.012;
+    const forkL = s*0.082, forkW = s*0.044;
+    // Black outline (draw first, slightly wider)
+    d += `<path d="M${cx} ${tby} L${cx-forkW} ${tby+forkL}" stroke="#000" stroke-width="${SW*2.2}" fill="none" stroke-linecap="round"/>`;
+    d += `<path d="M${cx} ${tby} L${cx+forkW} ${tby+forkL}" stroke="#000" stroke-width="${SW*2.2}" fill="none" stroke-linecap="round"/>`;
+    // Red fill on top
+    d += `<path d="M${cx} ${tby} L${cx-forkW} ${tby+forkL}" stroke="#ff2244" stroke-width="${SW*1.4}" fill="none" stroke-linecap="round"/>`;
+    d += `<path d="M${cx} ${tby} L${cx+forkW} ${tby+forkL}" stroke="#ff2244" stroke-width="${SW*1.4}" fill="none" stroke-linecap="round"/>`;
+    // Base ellipse with outline
+    d += `<ellipse cx="${cx}" cy="${tby}" rx="${s*0.026}" ry="${s*0.016}" fill="#000" stroke="#000" stroke-width="${SW*0.5}"/>`;
+    d += `<ellipse cx="${cx}" cy="${tby}" rx="${s*0.020}" ry="${s*0.012}" fill="#ff2244"/>`;
+  } else {
+    const tw = s*0.050, th = s*0.068, trx = s*0.016;
+    // Black outline
+    d += `<rect x="${cx-tw/2-s*0.006}" y="${faceMouthY+s*0.006}" width="${tw+s*0.012}" height="${th+s*0.006}" rx="${trx+s*0.005}" fill="#000"/>`;
+    // Red tongue
+    d += `<rect x="${cx-tw/2}" y="${faceMouthY+s*0.009}" width="${tw}" height="${th}" rx="${trx}" fill="#ff2244"/>`;
+  }
+
+  return `<svg viewBox="0 0 ${s} ${s}" width="${s}" height="${s}" xmlns="http://www.w3.org/2000/svg">${d}</svg>`;
+}
+
+
+// ═══════════════════════════════════════════════════════
+// SCREEN MANAGEMENT
+// ═══════════════════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+// SCREEN 1 → 2: SETUP → BUILD
+// ═══════════════════════════════════════════════════════
+function goToBuild(){
+  initG();
+  buildSpinnerUI();
+  showScreen('screen-build');
+}
+
+// ═══════════════════════════════════════════════════════
+// SCREEN 2: BUILD — SPINNER UI
+// ═══════════════════════════════════════════════════════
+function buildSpinnerUI(){
+  document.getElementById('build-total').textContent = G.traits.length;
+  document.getElementById('build-progress').textContent = 0;
+  G.buildGeno = {};
+  G.buildSpun = 0;
+  document.getElementById('build-proceed-btn').disabled = true;
+  document.getElementById('build-name').textContent = '—';
+  document.getElementById('build-svg-wrap').innerHTML='<svg width="80" height="80" viewBox="0 0 80 80"><ellipse cx="40" cy="42" rx="18" ry="24" fill="#0a1a10" stroke="#1a4a28" stroke-width="1"/><ellipse cx="40" cy="22" rx="15" ry="14" fill="#0a1a10" stroke="#1a4a28" stroke-width="1"/></svg>';
+
+  const list = document.getElementById('spinner-list');
+  list.innerHTML='';
+  for(const t of G.traits){
+    const row=document.createElement('div');
+    row.className='spinner-row';
+    row.dataset.tid=t.id;
+
+    let slotHtml='';
+    for(let i=0;i<2;i++) slotHtml+=`<div class="allele-slot" id="slot-${t.id}-${i}">?</div>`;
+
+    row.innerHTML=`
+      <div class="sr-name">${t.name}</div>
+      <div class="sr-alleles">${slotHtml}</div>
+      <div class="sr-pheno" id="pheno-${t.id}">—</div>
+      <button class="sr-spin-btn" id="spinbtn-${t.id}" onclick="spinTrait('${t.id}')">⟳ SPIN</button>`;
+    list.appendChild(row);
+  }
+  // Build player name for later
+  G._buildName = randName();
+}
+
+async function spinTrait(tid, fast){
+  const t = G.traits.find(x=>x.id===tid);
+  const btn = document.getElementById(`spinbtn-${tid}`);
+  btn.disabled=true;
+
+  const FRAMES=fast?4:12;
+  const DELAY=fast?40:60;
+
+  for(let i=0;i<2;i++){
+    const slot=document.getElementById(`slot-${tid}-${i}`);
+    slot.classList.remove('landed');
+    for(let f=0;f<FRAMES;f++){
+      slot.classList.add('spinning');
+      slot.textContent=pick(t.alleles);
+      await new Promise(r=>setTimeout(r,DELAY));
+    }
+    slot.classList.remove('spinning');
+  }
+
+  // Final alleles
+  const a1=pick(t.alleles), a2=pick(t.alleles);
+  const s0=document.getElementById(`slot-${tid}-0`);
+  const s1=document.getElementById(`slot-${tid}-1`);
+  s0.textContent=a1; s0.classList.add('landed');
+  s1.textContent=a2; s1.classList.add('landed');
+
+  G.buildGeno[tid]=[a1,a2];
+
+  const pheno=getPhenotype(t,[a1,a2]);
+  document.getElementById(`pheno-${tid}`).textContent=pheno;
+
+  // Track spun count
+  G.buildSpun=Object.keys(G.buildGeno).length;
+  document.getElementById('build-progress').textContent=G.buildSpun;
+
+  updateBuildPreview();
+  if(G.buildSpun===G.traits.length){
+    document.getElementById('build-proceed-btn').disabled=false;
+  }
+}
+
+async function spinAll(){
+  for(const t of G.traits){
+    if(!G.buildGeno[t.id]){
+      spinTrait(t.id, false);
+      await new Promise(r=>setTimeout(r,80));
+    }
+  }
+}
+
+function updateBuildPreview(){
+  if(Object.keys(G.buildGeno).length===0) return;
+  // Build a partial alien — fill unspun traits randomly for preview
+  const fullGeno={};
+  for(const t of G.traits){
+    fullGeno[t.id]=G.buildGeno[t.id]||randomGeno(t);
+  }
+  const previewAlien={name:G._buildName,gen:0,geno:fullGeno};
+  document.getElementById('build-svg-wrap').innerHTML=alienSVG(previewAlien,80);
+  document.getElementById('build-name').textContent=G._buildName;
+}
+
+// ═══════════════════════════════════════════════════════
+// SCREEN 2 → 3: BUILD → VIGNETTE (intercept)
+// ═══════════════════════════════════════════════════════
+function goToPartnerSelect(){
+  // Finalize player alien
+  const finalGeno={};
+  for(const t of G.traits) finalGeno[t.id]=G.buildGeno[t.id]||randomGeno(t);
+  G.player={name:G._buildName,gen:0,geno:finalGeno};
+  G.lineage=[G.player];
+
+  // Route through vignette instead of directly to partner select
+  goToVignette();
+}
+
+// ═══════════════════════════════════════════════════════
+// SCREEN 3: VIGNETTE ENTRY
+// ═══════════════════════════════════════════════════════
+function goToVignette(){
+  // Draw round events for current biome
+  drawRoundVigEvents();
+
+  // Update header labels
+  document.getElementById('vig-round-lbl').textContent = G.round;
+  document.getElementById('vig-total-lbl').textContent = G.rounds;
+  document.getElementById('vig-score-display').textContent = G.vigScore;
+  document.getElementById('vig-progress-fill').style.width = '0%';
+
+  showScreen('screen-vignette');
+
+  // Show biome intro overlay first
+  showBiomeIntro();
+}
+
+function showBiomeIntro(){
+  // Determine current biome from round number
+  const biomeKey = currentBiomeKey();
+  document.getElementById('vig-biome-name').textContent = BIOME_NAMES[biomeKey];
+
+  // Build biome map display
+  const mapEl = document.getElementById('vig-biome-map-display');
+  mapEl.innerHTML = '';
+  G.biomeSeq.forEach((bk, i) => {
+    if(i > 0){
+      const arrow = document.createElement('div');
+      arrow.className = 'vig-biome-arrow';
+      arrow.textContent = '→';
+      mapEl.appendChild(arrow);
+    }
+    const node = document.createElement('div');
+    node.className = 'vig-biome-node' + (bk === biomeKey ? ' active' : '');
+    node.innerHTML = `<div class="vig-biome-node-name">${BIOME_NAMES[bk]}</div>
+      <div class="vig-biome-node-turns">${G.biomeDist[i]} round${G.biomeDist[i]!==1?'s':''}</div>`;
+    mapEl.appendChild(node);
+  });
+
+  document.getElementById('vig-intro-biome-name').textContent = BIOME_NAMES[biomeKey];
+  document.getElementById('vig-intro-turns').textContent = G.biomeDist[currentBiomeIndex()];
+
+  // Show intro card
+  document.getElementById('vig-overlay').classList.remove('hidden');
+  document.getElementById('vig-intro-card').classList.remove('hidden');
+  document.getElementById('vig-event-card').classList.add('hidden');
+}
+
+function startBiomeTraversal(){
+  document.getElementById('vig-intro-card').classList.add('hidden');
+  document.getElementById('vig-event-card').classList.add('hidden');
+  document.getElementById('vig-overlay').classList.add('hidden');
+  G.vigEventIdx = 0;
+  G.vigRunning = true;
+  // Phase 2 will start the canvas loop here; for now start the event sequence
+  startVigCanvas();
+}
+
+// ═══════════════════════════════════════════════════════
+// VIGNETTE → PARTNER SELECT
+// ═══════════════════════════════════════════════════════
+function completeVignette(){
+  stopVigLoop();
+
+  // Generate 3 candidates for this round
+  const gen = G.round;
+  G.candidates=[makeAlien(null,gen),makeAlien(null,gen),makeAlien(null,gen)];
+  G.selectedCandidate=null;
+
+  if(G.round === 1){
+    document.querySelector('.partner-header h1').textContent = 'SELECT A PARTNER';
+  } else {
+    document.querySelector('.partner-header h1').textContent = 'SELECT A PARTNER — GEN '+G.round;
+  }
+  renderPartnerGrid();
+  document.getElementById('partner-confirm-btn').disabled=true;
+  showScreen('screen-partner');
+  window.scrollTo(0,0);
+}
+
+function renderPartnerGrid(){
+  const grid=document.getElementById('partner-grid');
+  grid.innerHTML='';
+  G.candidates.forEach((c,i)=>{
+    const card=document.createElement('div');
+    card.className='partner-candidate';
+    card.dataset.idx=i;
+    card.onclick=()=>selectCandidate(i);
+
+    // Show all active traits on partner card (no genotype shown)
+    const traitRows=G.traits.map(t=>`
+      <div class="pc-trait-row">
+        <span class="pc-trait-name">${t.name}</span>
+        <span class="pc-trait-pheno">${getPhenotype(t,c.geno[t.id])}</span>
+      </div>`).join('');
+
+    card.innerHTML=`
+      <div class="pc-id">SPECIMEN #${String(i+1).padStart(2,'0')}</div>
+      <div class="pc-svg-wrap">${alienSVG(c,90)}</div>
+      <div class="pc-traits">${traitRows}</div>
+      <button class="pc-select-btn">SELECT PARTNER</button>`;
+    grid.appendChild(card);
+  });
+}
+
+function selectCandidate(idx){
+  document.querySelectorAll('.partner-candidate').forEach(c=>c.classList.remove('selected'));
+  document.querySelector(`.partner-candidate[data-idx="${idx}"]`).classList.add('selected');
+  G.selectedCandidate=idx;
+  document.getElementById('partner-confirm-btn').disabled=false;
+}
+
+// ═══════════════════════════════════════════════════════
+// SCREEN 3 → 4: PARTNER SELECT → GAME
+// ═══════════════════════════════════════════════════════
+function confirmPartner(){
+  if(G.selectedCandidate===null) return;
+  G.partner=G.candidates[G.selectedCandidate];
+  // Only set round to 1 on first selection (not mid-game returns)
+  if(G.round===undefined || G.round<1) G.round=1;
+  renderGameScreen();
+  showScreen('screen-game');
+}
+
+// ═══════════════════════════════════════════════════════
+// GAME SCREEN RENDER
+// ═══════════════════════════════════════════════════════
+function renderGameScreen(){
+  // Header
+  document.getElementById('gh-round').textContent=G.round;
+  document.getElementById('gh-total').textContent=G.rounds;
+  const db=document.getElementById('gh-diff');
+  db.className='gh-diff '+G.diff;
+  db.textContent=G.diff.toUpperCase();
+  document.getElementById('gh-score').textContent=G.score.toLocaleString();
+  updateStreak();
+
+  // Phase bar
+  document.getElementById('phase-bar').textContent='PHASE 1 — OBSERVE PARENTS & PREDICT OFFSPRING';
+
+  // Player card
+  document.getElementById('player-gen-lbl').textContent='GEN '+G.player.gen;
+  document.getElementById('player-svg-wrap').innerHTML=alienSVG(G.player,90);
+  renderGenoTable('player-geno-tbl', G.player);
+
+  // Partner card
+  document.getElementById('partner-lbl').textContent=G.partner.name;
+  document.getElementById('partner-svg-wrap').innerHTML=alienSVG(G.partner,90);
+  renderGenoTable('partner-geno-tbl', G.partner);
+
+  // Reset egg
+  document.getElementById('egg-disp').innerHTML='';
+  document.getElementById('egg-body').setAttribute('fill','url(#egG)');
+  document.getElementById('btn-fert').disabled=true;
+  const egl=document.getElementById('egg-geno-list');
+  egl.classList.add('hidden'); egl.innerHTML=''; // enabled after pre-predict confirmed
+
+  G.roundSubmitted = false;
+
+  // Panels
+  document.getElementById('pre-panel').classList.remove('hidden');
+  document.getElementById('post-panel').classList.add('hidden');
+  document.getElementById('off-reveal').classList.add('hidden');
+
+  // Build pre-predict grid
+  buildPredGrid('pre-grid', false);
+
+  // Lineage
+  renderLineage();
+}
+
+function renderGenoTable(tableId, alien){
+  const tbl=document.getElementById(tableId);
+  tbl.innerHTML=G.traits.map(t=>`
+    <tr>
+      <td class="td-name">${t.name}</td>
+      <td class="td-geno">${genoStr(alien.geno[t.id])}</td>
+      <td class="td-pheno">${getPhenotype(t,alien.geno[t.id])}</td>
+    </tr>`).join('');
+}
+
+function buildPredGrid(gridId, locked){
+  const grid=document.getElementById(gridId);
+  grid.innerHTML='';
+  for(const t of G.traits){
+    const div=document.createElement('div');
+    div.className='pred-item';
+    div.dataset.tid=t.id;
+
+    // Build phenotype options
+    let opts='<option value="">— select —</option>';
+    if(t.type==='dr'){
+      opts+=`<option value="${t.dom}">${t.dom}</option><option value="${t.rec}">${t.rec}</option>`;
+    } else {
+      const base=Object.values(t.phenotypes);
+      const noT=base.find(p=>p.startsWith('No '));
+      const expr=base.filter(p=>!p.startsWith('No '));
+      for(const p of base) opts+=`<option value="${p}">${p}</option>`;
+      for(let i=0;i<expr.length;i++)for(let j=i+1;j<expr.length;j++)
+        opts+=`<option value="${expr[i]+' / '+expr[j]}">${expr[i]+' / '+expr[j]}</option>`;
+    }
+
+    let probBtns='';
+    for(const pv of [25,50,75,100])
+      probBtns+=`<button class="prob-btn" data-p="${pv}" onclick="selProb(this)">${pv}%</button>`;
+
+    div.innerHTML=`
+      <div class="pred-item-lbl">${t.name.toUpperCase()}</div>
+      <select ${locked?'disabled':''}>${opts}</select>
+      <div class="prob-row">${probBtns}</div>
+      <div class="fb-tag"></div>
+      <div class="corr-ans"></div>`;
+    grid.appendChild(div);
+  }
+  if(!locked) checkPostReady();
+}
+
+function selProb(btn){
+  btn.closest('.prob-row').querySelectorAll('.prob-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  checkPostReady();
+}
+
+function checkPostReady(){
+  if(G.roundSubmitted) return;
+  if(document.getElementById('post-panel').classList.contains('hidden')) return;
+  const grid=document.getElementById('post-grid');
+  const allDone=[...grid.querySelectorAll('.pred-item')].every(item=>{
+    const sel=item.querySelector('select').value;
+    const prob=item.querySelector('.prob-btn.sel');
+    return sel && prob;
+  });
+  document.getElementById('btn-submit').disabled=!allDone;
+}
+
+// ═══════════════════════════════════════════════════════
+// PRE → FERTILIZE
+// ═══════════════════════════════════════════════════════
+function confirmPre(){
+  document.getElementById('pre-panel').classList.add('hidden');
+  document.getElementById('post-panel').classList.remove('hidden');
+  document.getElementById('phase-bar').textContent='PHASE 2 — FERTILIZE & CONFIRM PREDICTION';
+  document.getElementById('btn-fert').disabled=false;
+  buildPredGrid('post-grid', false);
+  // Copy pre selections into post
+  copyPreToPost();
+  checkPostReady();
+}
+
+function copyPreToPost(){
+  const preItems=document.querySelectorAll('#pre-grid .pred-item');
+  const postItems=document.querySelectorAll('#post-grid .pred-item');
+  preItems.forEach((pi,idx)=>{
+    const sel=pi.querySelector('select').value;
+    const probBtn=pi.querySelector('.prob-btn.sel');
+    if(sel) postItems[idx].querySelector('select').value=sel;
+    if(probBtn){
+      const pv=probBtn.dataset.p;
+      postItems[idx].querySelectorAll('.prob-btn').forEach(b=>{
+        if(b.dataset.p===pv) b.classList.add('sel');
+      });
+    }
+  });
+  checkPostReady();
+}
+
+// ═══════════════════════════════════════════════════════
+// FERTILIZE
+// ═══════════════════════════════════════════════════════
+async function doFertilize(){
+  document.getElementById('btn-fert').disabled=true;
+  G.offGeno=crossAliens(G.player, G.partner);
+  const disp=document.getElementById('egg-disp');
+  disp.innerHTML='';
+  document.getElementById('egg-body').setAttribute('fill','url(#egGA)');
+
+  for(let i=0;i<G.traits.length;i++){
+    const t=G.traits[i];
+    const chip=document.createElement('div');
+    chip.className='egg-chip';
+    chip.textContent=genoStr(G.offGeno[t.id]);
+    disp.appendChild(chip);
+    await new Promise(r=>setTimeout(r,90));
+    chip.classList.add('vis');
+  }
+
+  // Populate genotype list below button
+  const list=document.getElementById('egg-geno-list');
+  list.classList.remove('hidden');
+  list.innerHTML=G.traits.map(t=>`
+    <div class="egg-geno-row">
+      <span class="egg-geno-tid">${t.name.split(' ')[0]}</span>
+      <span class="egg-geno-val">${genoStr(G.offGeno[t.id])}</span>
+    </div>`).join('');
+
+  document.getElementById('phase-bar').textContent='PHASE 3 — CONFIRM YOUR PREDICTION';
+}
+
+// ═══════════════════════════════════════════════════════
+// SCORING
+// ═══════════════════════════════════════════════════════
+function diffMult(){return DIFF_MULT[G.diff]||1;}
+function streakMult(){if(G.streak>=8)return 3;if(G.streak>=5)return 2;if(G.streak>=3)return 1.5;return 1;}
+function updateStreak(){
+  const badge=document.getElementById('streak-badge');
+  if(G.streak>=3){
+    badge.classList.remove('hidden');
+    document.getElementById('streak-mult').textContent=streakMult().toFixed(1).replace('.0','');
+  } else badge.classList.add('hidden');
+}
+
+function submitPredictions(){
+  if(!G.offGeno || G.roundSubmitted){return;}
+  G.roundSubmitted = true;
+  const grid=document.getElementById('post-grid');
+  const items=grid.querySelectorAll('.pred-item');
+  let roundPts=0; const bk=[];
+  let allCorrect=true;
+
+  items.forEach(item=>{
+    const tid=item.dataset.tid;
+    const t=G.traits.find(x=>x.id===tid);
+    const correctPheno=getPhenotype(t,G.offGeno[tid]);
+    const probs=calcProbs(t,G.player.geno[tid],G.partner.geno[tid]);
+    const correctProb=probs[correctPheno]||0;
+    const playerPheno=item.querySelector('select').value;
+    const probBtn=item.querySelector('.prob-btn.sel');
+    const playerProb=probBtn?parseInt(probBtn.dataset.p):null;
+    const dm=diffMult(), sm=streakMult();
+    const pC=playerPheno===correctPheno;
+    const prC=playerProb===correctProb;
+    let pts=0;
+    if(pC){pts+=5*dm;G.totalCorrect++;}
+    if(prC){pts+=10*dm;G.totalCorrect++;}
+    G.totalQ+=2;
+    pts=Math.round(pts*sm);
+    roundPts+=pts;
+    if(!(pC&&prC)) allCorrect=false;
+    item.classList.add(pC&&prC?'cor':'inc');
+    item.querySelector('.fb-tag').textContent=pC&&prC?`✓ CORRECT +${pts}pts`:'✗ INCORRECT';
+    if(!pC||!prC) item.querySelector('.corr-ans').textContent=`→ ${correctPheno} (${correctProb}%)`;
+    bk.push({name:t.name,pts,pC,prC});
+  });
+
+  if(allCorrect){G.streak++;G.bestStreak=Math.max(G.bestStreak,G.streak);}
+  else G.streak=0;
+  G.score+=roundPts;
+  document.getElementById('gh-score').textContent=G.score.toLocaleString();
+  updateStreak();
+  document.getElementById('btn-submit').disabled=true;
+  // Lock all inputs so the round cannot be re-submitted
+  grid.querySelectorAll('select, .prob-btn').forEach(el=>{ el.disabled=true; });
+
+  showOffspring();
+  showRoundOverlay(roundPts, bk, allCorrect);
+}
+
+function showOffspring(){
+  const off=makeAlien(G.offGeno, G.player.gen+1);
+  G.pendingOff=off;
+  const panel=document.getElementById('off-reveal');
+  panel.classList.remove('hidden');
+  document.getElementById('off-gen').textContent=off.gen;
+  const og=document.getElementById('off-grid');
+  og.innerHTML=`
+    <div style="flex-shrink:0;">${alienSVG(off,76)}<div style="font-size:0.48rem;color:var(--text-dim);text-align:center;margin-top:0.2rem;font-family:'Share Tech Mono',monospace;letter-spacing:0.08em;">GEN ${off.gen}</div></div>
+    <table class="geno-table" style="flex:1;">${G.traits.map(t=>`
+      <tr>
+        <td class="td-name">${t.name}</td>
+        <td class="td-geno">${genoStr(off.geno[t.id])}</td>
+        <td class="td-pheno">${getPhenotype(t,off.geno[t.id])}</td>
+      </tr>`).join('')}</table>`;
+}
+
+function showRoundOverlay(pts, bk, allCorrect){
+  document.getElementById('r-pts').textContent=pts.toLocaleString();
+  document.getElementById('r-breakdown').innerHTML=bk.map(b=>
+    `<div class="bk-row"><span>${b.name}</span><span class="bk-pts">${b.pts>0?'+'+b.pts:'—'}</span></div>`
+  ).join('');
+  const streakEl=document.getElementById('bk-streak');
+  if(G.streak>=3){streakEl.classList.remove('hidden');streakEl.textContent=`🔥 STREAK ×${streakMult()} — ${G.streak} in a row!`;}
+  else streakEl.classList.add('hidden');
+  document.getElementById('score-overlay').classList.add('show');
+}
+
+function closeOverlay(){
+  document.getElementById('score-overlay').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════
+// NEXT ROUND
+// ═══════════════════════════════════════════════════════
+function nextRound(){
+  G.player=G.pendingOff;
+  G.lineage.push(G.player);
+  G.round++;
+
+  if(G.round>G.rounds){endGame();return;}
+
+  // Route through vignette for each new generation
+  goToVignette();
+}
+
+// ═══════════════════════════════════════════════════════
+// LINEAGE SIDEBAR
+// ═══════════════════════════════════════════════════════
+function renderLineage(){
+  const list=document.getElementById('lineage-list');
+  list.innerHTML='';
+  G.lineage.forEach((a,i)=>{
+    const div=document.createElement('div');
+    div.className='lin-entry'+(i===G.lineage.length-1?' cur':'');
+    div.innerHTML=`<div class="lin-gen">GEN <em>${a.gen}</em></div>${alienSVG(a,46)}`;
+    list.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// BIOME MANAGEMENT
+// ═══════════════════════════════════════════════════════
+function initBiomes(){
+  // Pick 3 random biomes without repeating
+  const pool = [...VIG_CFG.BIOMES];
+  const seq = [];
+  while(seq.length < 3){
+    const idx = Math.floor(Math.random() * pool.length);
+    seq.push(pool.splice(idx, 1)[0]);
+  }
+  G.biomeSeq = seq;
+
+  // Distribute rounds: divide evenly, remainder to middle
+  const total = G.rounds;
+  const base  = Math.floor(total / 3);
+  const rem   = total - base * 3;
+  G.biomeDist = [base, base + rem, base];
+
+  // Draw events for each biome
+  G.vigEvents = {};
+  for(const bk of G.biomeSeq){
+    G.vigEvents[bk] = drawBiomeEventPool(bk);
+  }
+}
+
+function drawBiomeEventPool(biomeKey){
+  // Get active trait ids for filtering trait-tagged events
+  const activeTids = new Set(G.traits.map(t => t.id));
+
+  // Gather eligible events for this biome
+  const eligible = EVENT_LIBRARY.filter(ev =>
+    ev.biome === biomeKey &&
+    (ev.cls === 'flavor' || !ev.trait || activeTids.has(ev.trait))
+  );
+
+  // Shuffle and take up to TOTAL_EVENTS_DRAW (or all if fewer exist)
+  const shuffled = [...eligible].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, VIG_CFG.TOTAL_EVENTS_DRAW);
+}
+
+function currentBiomeIndex(){
+  // Determine which biome block the current round belongs to
+  let cum = 0;
+  for(let i = 0; i < 3; i++){
+    cum += G.biomeDist[i];
+    if(G.round <= cum) return i;
+  }
+  return 2;
+}
+
+function currentBiomeKey(){
+  return G.biomeSeq[currentBiomeIndex()];
+}
+
+function drawRoundVigEvents(){
+  const bk = currentBiomeKey();
+  const pool = G.vigEvents[bk] || [];
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  G.vigRoundEvents = shuffled.slice(0, VIG_CFG.EVENTS_PER_ROUND);
+  G.vigEventIdx = 0;
+}
+
+// ═══════════════════════════════════════════════════════
+// VIGNETTE CANVAS ENGINE (Phase 2 — stub)
+// ═══════════════════════════════════════════════════════
+function startVigCanvas(){
+  const canvas = document.getElementById('vig-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Resize canvas to fill wrapper
+  resizeVigCanvas(canvas);
+
+  // Stub: draw static biome background then fire events
+  drawStaticBiomeBg(ctx, canvas, currentBiomeKey());
+  drawPlayerAlienOnCanvas(ctx, canvas);
+
+  // Start event sequence after short delay
+  G.vigRunning = true;
+  setTimeout(() => fireNextVigEvent(), 800);
+}
+
+function resizeVigCanvas(canvas){
+  const wrap = canvas.parentElement;
+  canvas.width  = wrap.clientWidth  || 900;
+  canvas.height = Math.min(wrap.clientHeight || 400, 420);
+}
+
+function stopVigLoop(){
+  if(G.vigAnimFrame){ cancelAnimationFrame(G.vigAnimFrame); G.vigAnimFrame = null; }
+  G.vigRunning = false;
+}
+
+function drawStaticBiomeBg(ctx, canvas, biomeKey){
+  const pal = BIOME_PALETTES[biomeKey] || BIOME_PALETTES.canopy;
+  const W = canvas.width, H = canvas.height;
+
+  // Sky gradient
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+  skyGrad.addColorStop(0, pal.sky);
+  skyGrad.addColorStop(1, pal.mid);
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Ground band
+  ctx.fillStyle = pal.ground;
+  ctx.fillRect(0, H * 0.72, W, H);
+
+  // Ground horizon line glow
+  ctx.strokeStyle = pal.accent;
+  ctx.globalAlpha = 0.25;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, H * 0.72);
+  ctx.lineTo(W, H * 0.72);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Flora silhouettes (simple shapes)
+  ctx.fillStyle = pal.flora;
+  for(let i = 0; i < 12; i++){
+    const x = (i / 12) * W + (W / 24);
+    const h = 30 + Math.sin(i * 2.7) * 18;
+    ctx.fillRect(x - 3, H * 0.72 - h, 6, h);
+    // Cap
+    ctx.beginPath();
+    ctx.arc(x, H * 0.72 - h, 9 + Math.sin(i) * 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Subtle grid/scan overlay
+  ctx.strokeStyle = pal.accent;
+  ctx.globalAlpha = 0.04;
+  ctx.lineWidth = 1;
+  for(let y = 0; y < H; y += 40){
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  for(let x = 0; x < W; x += 60){
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  // Biome name watermark
+  ctx.font = '700 0.7rem "Share Tech Mono", monospace';
+  ctx.fillStyle = pal.accent;
+  ctx.globalAlpha = 0.18;
+  ctx.textAlign = 'right';
+  ctx.fillText(BIOME_NAMES[biomeKey], W - 12, H - 12);
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left';
+}
+
+function drawPlayerAlienOnCanvas(ctx, canvas){
+  // Render alien SVG to an Image and draw onto canvas
+  const W = canvas.width, H = canvas.height;
+  const size = 80;
+  const svgStr = alienSVG(G.player, size);
+  const blob = new Blob([svgStr], {type:'image/svg+xml'});
+  const url  = URL.createObjectURL(blob);
+  const img  = new Image();
+  img.onload = () => {
+    // Draw on ground level, roughly 1/4 from left
+    const x = Math.floor(W * 0.22);
+    const y = Math.floor(H * 0.72) - size + 10;
+    ctx.drawImage(img, x, y, size, size);
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+// ═══════════════════════════════════════════════════════
+// VIGNETTE EVENT SYSTEM
+// ═══════════════════════════════════════════════════════
+function fireNextVigEvent(){
+  if(!G.vigRunning) return;
+
+  const events = G.vigRoundEvents;
+  if(G.vigEventIdx >= events.length){
+    // All events processed — complete this round's vignette
+    finishVigRound();
+    return;
+  }
+
+  // Update progress bar
+  const pct = Math.round((G.vigEventIdx / events.length) * 100);
+  document.getElementById('vig-progress-fill').style.width = pct + '%';
+
+  const ev = events[G.vigEventIdx];
+  showVigEventCard(ev);
+}
+
+function showVigEventCard(ev){
+  const overlay = document.getElementById('vig-overlay');
+  const card    = document.getElementById('vig-event-card');
+  const intro   = document.getElementById('vig-intro-card');
+
+  intro.classList.add('hidden');
+  card.classList.remove('hidden');
+  overlay.classList.remove('hidden');
+
+  // Determine outcome
+  let text = ev.text || '';
+  let delta = 0;
+  let deltaClass = 'neu';
+
+  if(ev.cls !== 'flavor' && ev.trait){
+    const t = G.traits.find(x => x.id === ev.trait);
+    if(t){
+      const pheno = getPhenotype(t, G.player.geno[t.id]);
+      // Determine if trait is "expressed" — for dr: dominant present; for ma: anything except No* phenotype
+      const expressed = t.type === 'dr'
+        ? G.player.geno[t.id].includes(t.alleles[0])
+        : !pheno.startsWith('No ');
+
+      if(ev.cls === 'hazard'){
+        if(expressed){
+          delta = VIG_CFG.HAZARD_BONUS;
+          text = (ev.textPresent||'').replace('{pts}', '+'+delta);
+          deltaClass = 'pos';
+        } else {
+          delta = VIG_CFG.HAZARD_PENALTY;
+          text = (ev.textAbsent||'').replace('{pts}', delta);
+          deltaClass = 'neg';
+        }
+      } else if(ev.cls === 'windfall'){
+        if(expressed){
+          delta = VIG_CFG.WINDFALL_BONUS;
+          text = (ev.textPresent||'').replace('{pts}', '+'+delta);
+          deltaClass = 'pos';
+        } else {
+          delta = VIG_CFG.WINDFALL_MISS;
+          text = ev.textAbsent || 'No matching trait — no effect.';
+          deltaClass = 'neu';
+        }
+      }
+    }
+  }
+
+  // Apply score
+  G.vigScore = Math.max(0, G.vigScore + delta);
+  document.getElementById('vig-score-display').textContent = G.vigScore;
+
+  // Populate card UI
+  const typeEl = document.getElementById('vig-card-type');
+  typeEl.textContent = ev.cls.toUpperCase();
+  typeEl.className = 'vig-card-type ' + ev.cls;
+
+  document.getElementById('vig-card-title').textContent = ev.title;
+  document.getElementById('vig-card-text').textContent  = text;
+
+  const deltaEl = document.getElementById('vig-card-delta');
+  if(delta !== 0){
+    deltaEl.textContent = (delta > 0 ? '+' : '') + delta + ' pts';
+    deltaEl.className = 'vig-card-delta ' + deltaClass;
+    deltaEl.style.display = '';
+  } else {
+    deltaEl.style.display = 'none';
+  }
+}
+
+function dismissVigEvent(){
+  G.vigEventIdx++;
+  document.getElementById('vig-overlay').classList.add('hidden');
+
+  // Update progress
+  const pct = Math.round((G.vigEventIdx / G.vigRoundEvents.length) * 100);
+  document.getElementById('vig-progress-fill').style.width = pct + '%';
+
+  // Redraw background to animate alien advancing (stub: just redraw static bg)
+  const canvas = document.getElementById('vig-canvas');
+  const ctx = canvas.getContext('2d');
+  drawStaticBiomeBg(ctx, canvas, currentBiomeKey());
+  drawPlayerAlienOnCanvas(ctx, canvas);
+
+  setTimeout(() => fireNextVigEvent(), 400);
+}
+
+function finishVigRound(){
+  // All 5 events done — update progress to 100%
+  document.getElementById('vig-progress-fill').style.width = '100%';
+  G.vigRunning = false;
+  // Proceed to partner select
+  setTimeout(() => completeVignette(), 500);
+}
+
+// ═══════════════════════════════════════════════════════
+// END GAME
+// ═══════════════════════════════════════════════════════
+function endGame(){
+  const totalScore = G.score + G.vigScore;
+  document.getElementById('end-name').textContent=G.name||'Researcher';
+  document.getElementById('end-score').textContent=totalScore.toLocaleString();
+  document.getElementById('end-genetics-pts').textContent=G.score.toLocaleString();
+  document.getElementById('end-vignette-pts').textContent=G.vigScore.toLocaleString();
+  document.getElementById('end-correct').textContent=G.totalCorrect;
+  document.getElementById('end-acc').textContent=(G.totalQ>0?Math.round(G.totalCorrect/G.totalQ*100):0)+'%';
+  document.getElementById('end-streak').textContent=G.bestStreak;
+  const strip=document.getElementById('end-strip');
+  strip.innerHTML='';
+  G.lineage.forEach(a=>{
+    const d=document.createElement('div');d.className='end-alien';
+    d.innerHTML=alienSVG(a,58)+`<span>GEN ${a.gen}</span>`;
+    strip.appendChild(d);
+  });
+  showScreen('screen-end');
+}
+</script>
+</body>
+</html>
