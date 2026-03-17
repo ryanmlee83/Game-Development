@@ -325,10 +325,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .vig-footer{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;padding:0.6rem 1.1rem;
   border-top:1px solid var(--border2);background:rgba(0,0,0,0.5);flex-shrink:0;}
 .vig-jump-btn{font-family:'Share Tech Mono',monospace;letter-spacing:0.12em;min-width:90px;}
-.vig-card-jump{font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:0.15em;
-  color:#00fff0;border:1px solid rgba(0,255,240,0.5);border-radius:2px;
-  padding:0.12rem 0.45rem;display:inline-block;margin-bottom:0.5rem;
-  background:rgba(0,255,240,0.07);}
 .vig-card-type.cleared{background:rgba(57,255,138,0.1);border:1px solid var(--success);color:var(--success);}
 .vig-card-type.reached{background:rgba(57,255,138,0.14);border:1px solid var(--success);color:var(--success);}
 .vig-card-type.missed{background:rgba(90,122,150,0.1);border:1px solid #5a7a96;color:#5a7a96;}
@@ -449,8 +445,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="vig-overlay hidden" id="vig-overlay">
       <div class="vig-event-card" id="vig-event-card">
         <span class="vig-card-type" id="vig-card-type">HAZARD</span>
-        <div class="vig-card-jump" id="vig-card-jump" style="display:none;">⬆ SKILL BONUS · +5 PTS</div>
-        <div class="vig-card-title" id="vig-card-title">Event Title</div>
+<div class="vig-card-title" id="vig-card-title">Event Title</div>
         <div class="vig-card-text" id="vig-card-text">Event description text goes here.</div>
         <div class="vig-card-delta" id="vig-card-delta"></div>
         <button class="x-btn x-btn-primary" onclick="dismissVigEvent()">CONTINUE →</button>
@@ -680,7 +675,7 @@ const VIG_CFG = {
   JUMP_FORCE:    14,    // initial upward velocity (px per 16ms frame)
   GRAVITY:        0.9,  // downward accel per frame
   JUMP_COOL:    600,    // ms cooldown between jumps
-  JUMP_BONUS:     5,    // skill pts for a correct jump
+
   JUMP_CLEAR_H:  30,    // vigAlienY threshold to "clear" ground obstacle
   JUMP_REACH_H:  80,    // vigAlienY threshold to "reach" air collectible
   AIR_MARKER_Y: 110,   // px above ground where air event orb is drawn
@@ -3063,9 +3058,6 @@ function showVigEventCard(ev, capturedY){
     }
   }
 
-  // Jump skill bonus
-  if(jumpSuccess) delta += VIG_CFG.JUMP_BONUS;
-
   // Apply score
   G.vigScore = Math.max(0, G.vigScore + delta);
   document.getElementById('vig-score-display').textContent = G.vigScore;
@@ -3088,10 +3080,6 @@ function showVigEventCard(ev, capturedY){
 
   document.getElementById('vig-card-title').textContent = ev.title;
   document.getElementById('vig-card-text').textContent  = text;
-
-  // Jump badge
-  const jumpEl = document.getElementById('vig-card-jump');
-  if(jumpEl) jumpEl.style.display = jumpSuccess ? '' : 'none';
 
   const deltaEl = document.getElementById('vig-card-delta');
   if(delta !== 0){
