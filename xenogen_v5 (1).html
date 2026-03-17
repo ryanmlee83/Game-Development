@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>XENOGEN — Alien Genetics Lab</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<title>XenoGenus — Alien Genetics Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg:#070912; --bg2:#0c1020; --bg3:#111828; --panel:#0c1528; --panel2:#131e30;
@@ -13,6 +13,7 @@
   --success:#44ffaa; --warn:#ffc820; --danger:#ff4477;
   --text:#d8eeff; --text-dim:#5a7a96; --text-bright:#f0f8ff;
 }
+html { font-size: 20px; }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
@@ -27,19 +28,19 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
 /* ── SHARED COMPONENTS ── */
-.x-btn{font-family:'Orbitron',sans-serif;letter-spacing:0.15em;cursor:pointer;text-transform:uppercase;transition:all 0.2s;border-radius:3px;}
-.x-btn-primary{background:linear-gradient(135deg,rgba(0,255,231,0.1),rgba(0,180,255,0.08));border:1px solid var(--accent);color:var(--accent);padding:0.65rem 1.4rem;font-size:0.7rem;}
+.x-btn{font-family:'Share Tech Mono',monospace;letter-spacing:0.08em;cursor:pointer;text-transform:uppercase;transition:all 0.2s;border-radius:3px;}
+.x-btn-primary{background:linear-gradient(135deg,rgba(0,255,231,0.1),rgba(0,180,255,0.08));border:1px solid var(--accent);color:var(--accent);padding:0.65rem 1.4rem;font-size:0.8rem;}
 .x-btn-primary:hover:not(:disabled){box-shadow:0 0 25px rgba(0,255,231,0.2);transform:translateY(-1px);}
 .x-btn-primary:disabled{opacity:0.3;cursor:not-allowed;}
-.x-btn-sec{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:0.6rem 1rem;font-size:0.65rem;}
+.x-btn-sec{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:0.6rem 1rem;font-size:0.75rem;}
 .x-btn-sec:hover{border-color:var(--text-dim);color:var(--text);}
-.x-btn-accent3{background:linear-gradient(135deg,rgba(123,47,255,0.15),rgba(123,47,255,0.05));border:1px solid var(--accent3);color:var(--accent3);padding:0.65rem 1.4rem;font-size:0.7rem;}
+.x-btn-accent3{background:linear-gradient(135deg,rgba(123,47,255,0.15),rgba(123,47,255,0.05));border:1px solid var(--accent3);color:var(--accent3);padding:0.65rem 1.4rem;font-size:0.8rem;}
 .x-btn-accent3:hover:not(:disabled){box-shadow:0 0 25px rgba(123,47,255,0.25);transform:translateY(-1px);}
 .x-btn-accent3:disabled{opacity:0.3;cursor:not-allowed;}
-.x-btn-success{background:linear-gradient(135deg,rgba(57,255,138,0.1),rgba(0,255,231,0.06));border:1px solid var(--success);color:var(--success);padding:0.65rem 1.4rem;font-size:0.7rem;}
+.x-btn-success{background:linear-gradient(135deg,rgba(57,255,138,0.1),rgba(0,255,231,0.06));border:1px solid var(--success);color:var(--success);padding:0.65rem 1.4rem;font-size:0.8rem;}
 .x-btn-success:hover:not(:disabled){box-shadow:0 0 25px rgba(57,255,138,0.2);transform:translateY(-1px);}
 .x-btn-success:disabled{opacity:0.3;cursor:not-allowed;}
-.screen-title-bar{font-family:'Orbitron',sans-serif;font-size:0.6rem;letter-spacing:0.3em;color:var(--accent3);border-left:2px solid var(--accent3);padding-left:0.75rem;margin-bottom:1rem;}
+.screen-title-bar{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.15em;color:var(--accent3);border-left:2px solid var(--accent3);padding-left:0.75rem;margin-bottom:1rem;}
 
 /* ══════════════════════
    TITLE SCREEN
@@ -50,16 +51,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:linear-gradient(135deg,#00ffe7,#00b4ff,#7b2fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
   background-clip:text;animation:logopulse 3s ease-in-out infinite;}
 @keyframes logopulse{0%,100%{filter:drop-shadow(0 0 20px rgba(0,255,231,0.3));}50%{filter:drop-shadow(0 0 45px rgba(0,255,231,0.55));}}
-.logo-sub{font-family:'Orbitron',sans-serif;font-size:clamp(0.45rem,1.8vw,0.7rem);letter-spacing:0.45em;color:var(--text-dim);margin-top:-0.3rem;}
+.logo-sub{font-family:'Share Tech Mono',monospace;font-size:clamp(0.45rem,1.8vw,0.7rem);letter-spacing:0.45em;color:var(--text-dim);margin-top:-0.3rem;}
 .tagline{font-size:0.85rem;color:var(--accent2);letter-spacing:0.1em;margin:1.5rem 0 2.5rem;opacity:0.7;}
 .setup-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:2rem;width:100%;max-width:460px;
   box-shadow:0 0 50px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.03);}
-.setup-card h2{font-family:'Orbitron',sans-serif;font-size:0.65rem;letter-spacing:0.3em;color:var(--accent);margin-bottom:1.5rem;text-align:left;}
+.setup-card h2{font-family:'Share Tech Mono',monospace;font-size:0.78rem;letter-spacing:0.15em;color:var(--accent);margin-bottom:1.5rem;text-align:left;}
 .cfg-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;gap:1rem;}
-.cfg-row label{font-size:0.72rem;color:var(--text-dim);letter-spacing:0.08em;flex-shrink:0;}
+.cfg-row label{font-size:0.82rem;color:var(--text-dim);letter-spacing:0.05em;flex-shrink:0;}
 .cfg-row select,.cfg-row input[type=number],.cfg-row input[type=text]{
   background:var(--bg3);border:1px solid var(--border);border-radius:3px;color:var(--accent);
-  font-family:'Orbitron',sans-serif;font-size:0.7rem;padding:0.5rem 0.7rem;outline:none;cursor:pointer;width:185px;transition:border-color 0.2s;}
+  font-family:'Share Tech Mono',monospace;font-size:0.82rem;padding:0.5rem 0.7rem;outline:none;cursor:pointer;width:205px;transition:border-color 0.2s;}
 .cfg-row select:focus,.cfg-row input:focus{border-color:var(--accent);box-shadow:0 0 10px rgba(0,255,231,0.12);}
 
 /* ══════════════════════
@@ -67,37 +68,37 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 ══════════════════════ */
 #screen-build{align-items:center;padding:1.5rem 1rem;background:radial-gradient(ellipse at 50% 0%,rgba(0,255,231,0.04) 0%,transparent 55%);}
 .build-header{text-align:center;margin-bottom:1.5rem;}
-.build-header h1{font-family:'Orbitron',sans-serif;font-size:1rem;letter-spacing:0.3em;color:var(--accent);margin-bottom:0.35rem;}
-.build-header p{font-size:0.72rem;color:var(--text-dim);letter-spacing:0.06em;}
+.build-header h1{font-family:'Share Tech Mono',monospace;font-size:1.1rem;letter-spacing:0.15em;color:var(--accent);margin-bottom:0.35rem;}
+.build-header p{font-size:0.82rem;color:var(--text-dim);letter-spacing:0.03em;}
 .build-layout{display:flex;gap:1.5rem;width:100%;max-width:900px;align-items:flex-start;}
 .build-spinners{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:1rem;}
-.build-spinners h3{font-family:'Orbitron',sans-serif;font-size:0.58rem;letter-spacing:0.2em;color:var(--accent3);margin-bottom:0.8rem;}
+.build-spinners h3{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:var(--accent3);margin-bottom:0.8rem;}
 .spinner-row{display:flex;align-items:center;gap:0.6rem;padding:0.45rem 0;border-bottom:1px solid var(--border2);}
 .spinner-row:last-child{border-bottom:none;}
-.sr-name{font-size:0.65rem;color:var(--text-dim);width:115px;flex-shrink:0;letter-spacing:0.04em;}
+.sr-name{font-size:0.78rem;color:var(--text-dim);width:130px;flex-shrink:0;letter-spacing:0.02em;}
 .sr-alleles{display:flex;gap:0.3rem;flex:1;}
-.allele-slot{width:36px;height:36px;border-radius:3px;background:var(--bg3);border:1px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--accent2);
+.allele-slot{width:40px;height:40px;border-radius:3px;background:var(--bg3);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;font-size:0.88rem;font-weight:700;color:var(--accent2);
   transition:all 0.3s;position:relative;overflow:hidden;flex-shrink:0;}
 .allele-slot.spinning{animation:slotSpin 0.08s linear infinite;}
 .allele-slot.landed{border-color:var(--accent);box-shadow:0 0 8px rgba(0,255,231,0.3);animation:slotLand 0.3s ease-out;}
 @keyframes slotSpin{0%{transform:translateY(0);}50%{transform:translateY(-4px);}100%{transform:translateY(0);}}
 @keyframes slotLand{0%{transform:scale(1.2);background:rgba(0,255,231,0.15);}100%{transform:scale(1);background:var(--bg3);}}
-.sr-pheno{font-size:0.62rem;color:var(--text);flex:1;text-align:right;opacity:0.8;}
+.sr-pheno{font-size:0.74rem;color:var(--text);flex:1;text-align:right;opacity:0.9;}
 .sr-spin-btn{padding:0.3rem 0.6rem;background:var(--bg3);border:1px solid var(--border);border-radius:2px;
-  color:var(--text-dim);font-family:'Orbitron',sans-serif;font-size:0.5rem;letter-spacing:0.08em;
+  color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.04em;
   cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
 .sr-spin-btn:hover{border-color:var(--accent3);color:var(--accent3);}
 .sr-spin-btn:disabled{opacity:0.35;cursor:not-allowed;}
 .build-preview{width:180px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0.75rem;}
 .build-preview-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.85rem;width:100%;text-align:center;}
-.build-preview-card h3{font-family:'Orbitron',sans-serif;font-size:0.55rem;letter-spacing:0.2em;color:var(--text-dim);margin-bottom:0.6rem;}
+.build-preview-card h3{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;color:var(--text-dim);margin-bottom:0.6rem;}
 .build-actions{display:flex;flex-direction:column;gap:0.5rem;width:100%;}
 .spin-all-btn{width:100%;padding:0.6rem;background:rgba(123,47,255,0.12);border:1px solid var(--accent3);
-  border-radius:3px;color:var(--accent3);font-family:'Orbitron',sans-serif;font-size:0.58rem;
-  letter-spacing:0.12em;cursor:pointer;transition:all 0.2s;}
+  border-radius:3px;color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:0.75rem;
+  letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;}
 .spin-all-btn:hover{background:rgba(123,47,255,0.22);box-shadow:0 0 15px rgba(123,47,255,0.2);}
-.build-progress{font-size:0.6rem;color:var(--text-dim);text-align:center;}
+.build-progress{font-size:0.75rem;color:var(--text-dim);text-align:center;}
 .build-progress span{color:var(--accent);}
 
 /* ══════════════════════
@@ -105,8 +106,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 ══════════════════════ */
 #screen-partner{align-items:center;padding:1.5rem 1rem;background:radial-gradient(ellipse at 50% 0%,rgba(123,47,255,0.05) 0%,transparent 55%);}
 .partner-header{text-align:center;margin-bottom:1.5rem;}
-.partner-header h1{font-family:'Orbitron',sans-serif;font-size:1rem;letter-spacing:0.3em;color:var(--accent3);margin-bottom:0.35rem;}
-.partner-header p{font-size:0.72rem;color:var(--text-dim);letter-spacing:0.06em;}
+.partner-header h1{font-family:'Share Tech Mono',monospace;font-size:1.1rem;letter-spacing:0.12em;color:var(--accent3);margin-bottom:0.35rem;}
+.partner-header p{font-size:0.82rem;color:var(--text-dim);letter-spacing:0.03em;}
 .partner-grid{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;max-width:1100px;width:100%;}
 .partner-candidate{background:var(--panel);border:2px solid var(--border);border-radius:6px;padding:1rem;
   width:280px;cursor:pointer;transition:all 0.25s;position:relative;text-align:center;}
@@ -115,16 +116,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .partner-candidate::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,transparent,var(--accent3),transparent);opacity:0;transition:opacity 0.2s;}
 .partner-candidate:hover::before,.partner-candidate.selected::before{opacity:1;}
-.pc-id{font-family:'Orbitron',sans-serif;font-size:0.55rem;letter-spacing:0.2em;color:var(--accent3);margin-bottom:0.6rem;}
+.pc-id{font-family:'Share Tech Mono',monospace;font-size:0.7rem;letter-spacing:0.1em;color:var(--accent3);margin-bottom:0.6rem;}
 .pc-svg-wrap{display:flex;justify-content:center;margin:0.4rem 0 0.75rem;}
 .pc-traits{display:flex;flex-direction:column;gap:0;text-align:left;margin-bottom:0.75rem;}
-.pc-trait-row{display:flex;justify-content:space-between;font-size:0.58rem;padding:0.12rem 0;border-bottom:1px solid var(--border2);}
+.pc-trait-row{display:flex;justify-content:space-between;font-size:0.7rem;padding:0.15rem 0;border-bottom:1px solid var(--border2);}
 .pc-trait-row:last-child{border-bottom:none;}
 .pc-trait-name{color:var(--text-dim);flex-shrink:0;margin-right:0.4rem;}
-.pc-trait-pheno{color:var(--text);text-align:right;font-size:0.56rem;}
+.pc-trait-pheno{color:var(--text);text-align:right;font-size:0.68rem;}
 .pc-select-btn{width:100%;padding:0.5rem;background:rgba(123,47,255,0.1);border:1px solid var(--accent3);
-  border-radius:3px;color:var(--accent3);font-family:'Orbitron',sans-serif;font-size:0.58rem;
-  letter-spacing:0.1em;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+  border-radius:3px;color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:0.72rem;
+  letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
 .pc-select-btn:hover,.partner-candidate.selected .pc-select-btn{background:rgba(123,47,255,0.25);box-shadow:0 0 15px rgba(123,47,255,0.2);}
 
 /* ══════════════════════
@@ -134,23 +135,23 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .game-header{display:flex;align-items:center;justify-content:space-between;padding:0.55rem 1.1rem;
   border-bottom:1px solid var(--border2);background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);flex-shrink:0;}
 .gh-left{display:flex;align-items:center;gap:1rem;}
-.gh-title{font-family:'Orbitron',sans-serif;font-size:0.75rem;font-weight:900;letter-spacing:0.2em;color:var(--accent);}
-.gh-round{font-size:0.65rem;color:var(--text-dim);letter-spacing:0.08em;}
+.gh-title{font-family:'Share Tech Mono',monospace;font-size:0.85rem;font-weight:900;letter-spacing:0.1em;color:var(--accent);}
+.gh-round{font-size:0.78rem;color:var(--text-dim);letter-spacing:0.04em;}
 .gh-round em{color:var(--accent2);font-style:normal;}
-.gh-diff{font-size:0.55rem;padding:0.1rem 0.45rem;border-radius:2px;letter-spacing:0.1em;}
+.gh-diff{font-size:0.7rem;padding:0.1rem 0.45rem;border-radius:2px;letter-spacing:0.05em;}
 .gh-diff.beginner{background:rgba(57,255,138,0.1);border:1px solid var(--success);color:var(--success);}
 .gh-diff.advanced{background:rgba(0,180,255,0.1);border:1px solid var(--accent2);color:var(--accent2);}
 .gh-diff.expert{background:rgba(255,58,110,0.1);border:1px solid var(--danger);color:var(--danger);}
 .streak-badge{background:rgba(255,184,0,0.12);border:1px solid var(--warn);border-radius:2px;
-  padding:0.1rem 0.45rem;font-size:0.58rem;color:var(--warn);letter-spacing:0.08em;}
+  padding:0.1rem 0.45rem;font-size:0.72rem;color:var(--warn);letter-spacing:0.04em;}
 .gh-right{display:flex;align-items:center;gap:1.2rem;}
 .gh-score-block{text-align:right;}
-.gh-score-label{font-size:0.5rem;color:var(--text-dim);letter-spacing:0.15em;display:block;}
-.gh-score-val{font-family:'Orbitron',sans-serif;font-size:1.05rem;font-weight:700;color:var(--warn);}
+.gh-score-label{font-size:0.65rem;color:var(--text-dim);letter-spacing:0.08em;display:block;}
+.gh-score-val{font-family:'Share Tech Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--warn);}
 
 .game-body{display:grid;grid-template-columns:1fr 160px;flex:1;overflow:hidden;}
 .game-main{padding:0.85rem;overflow-y:auto;display:flex;flex-direction:column;gap:0.8rem;}
-.phase-bar{font-family:'Orbitron',sans-serif;font-size:0.58rem;letter-spacing:0.25em;
+.phase-bar{font-family:'Share Tech Mono',monospace;font-size:0.75rem;letter-spacing:0.1em;
   border-left:2px solid var(--accent3);padding-left:0.65rem;color:var(--accent3);}
 
 /* Arena */
@@ -159,16 +160,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .alien-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent,var(--accent2),transparent);opacity:0.25;}
 .alien-card.player::after{background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.35;}
-.ac-label{font-size:0.52rem;letter-spacing:0.12em;color:var(--text-dim);text-transform:uppercase;margin-bottom:0.35rem;}
+.ac-label{font-size:0.68rem;letter-spacing:0.06em;color:var(--text-dim);text-transform:uppercase;margin-bottom:0.35rem;}
 .ac-label em{color:var(--accent);font-style:normal;}
 .ac-svg{display:flex;justify-content:center;margin:0.2rem 0;}
-.geno-table{width:100%;border-collapse:collapse;font-size:0.6rem;margin-top:0.3rem;}
+.geno-table{width:100%;border-collapse:collapse;font-size:0.72rem;margin-top:0.3rem;}
 .geno-table tr{border-bottom:1px solid rgba(26,45,74,0.6);}
 .geno-table tr:last-child{border-bottom:none;}
-.geno-table td{padding:0.2rem 0.25rem;vertical-align:middle;}
+.geno-table td{padding:0.22rem 0.25rem;vertical-align:middle;}
 .td-name{color:var(--text-dim);width:40%;}
 .td-geno{color:var(--accent2);font-weight:bold;width:22%;text-align:center;}
-.td-pheno{color:var(--text);width:38%;text-align:right;font-size:0.56rem;}
+.td-pheno{color:var(--text);width:38%;text-align:right;font-size:0.68rem;}
 
 /* Egg column */
 .egg-col{display:flex;flex-direction:column;align-items:center;gap:0.35rem;padding-top:1rem;}
@@ -180,7 +181,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   opacity:0;transform:translateY(-5px);transition:opacity 0.25s,transform 0.25s;}
 .egg-chip.vis{opacity:1;transform:translateY(0);}
 .btn-fert{padding:0.3rem;background:rgba(123,47,255,0.12);border:1px solid var(--accent3);
-  border-radius:2px;color:var(--accent3);font-family:'Orbitron',sans-serif;font-size:0.45rem;
+  border-radius:2px;color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:0.45rem;
   letter-spacing:0.06em;cursor:pointer;text-transform:uppercase;transition:all 0.2s;width:66px;text-align:center;}
 .btn-fert:hover:not(:disabled){background:rgba(123,47,255,0.28);box-shadow:0 0 12px rgba(123,47,255,0.3);}
 .btn-fert:disabled{opacity:0.3;cursor:not-allowed;}
@@ -194,34 +195,34 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 /* Prediction panel */
 .pred-panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.75rem;}
 .pred-panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem;}
-.pred-panel-hdr h3{font-family:'Orbitron',sans-serif;font-size:0.58rem;letter-spacing:0.18em;color:var(--accent2);}
-.pred-phase-tag{font-size:0.52rem;padding:0.1rem 0.45rem;border-radius:10px;letter-spacing:0.08em;}
+.pred-panel-hdr h3{font-family:'Share Tech Mono',monospace;font-size:0.78rem;letter-spacing:0.08em;color:var(--accent2);}
+.pred-phase-tag{font-size:0.66rem;padding:0.1rem 0.45rem;border-radius:10px;letter-spacing:0.04em;}
 .pred-phase-tag.pre{background:rgba(255,184,0,0.1);border:1px solid var(--warn);color:var(--warn);}
 .pred-phase-tag.post{background:rgba(57,255,138,0.08);border:1px solid var(--success);color:var(--success);}
 .pred-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:0.4rem;}
 .pred-item{background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:0.42rem 0.5rem;}
-.pred-item-lbl{font-size:0.55rem;color:var(--text-dim);letter-spacing:0.06em;margin-bottom:0.28rem;}
+.pred-item-lbl{font-size:0.7rem;color:var(--text-dim);letter-spacing:0.03em;margin-bottom:0.28rem;}
 .pred-item select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:2px;
-  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.58rem;padding:0.25rem 0.3rem;outline:none;cursor:pointer;}
+  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.72rem;padding:0.25rem 0.3rem;outline:none;cursor:pointer;}
 .pred-item select:focus{border-color:var(--accent2);}
 .prob-row{margin-top:0.28rem;display:flex;gap:0.2rem;}
-.prob-btn{padding:0.15rem 0.3rem;background:var(--bg2);border:1px solid var(--border);border-radius:2px;
-  color:var(--text-dim);font-size:0.55rem;cursor:pointer;transition:all 0.15s;flex:1;text-align:center;}
+.prob-btn{padding:0.18rem 0.3rem;background:var(--bg2);border:1px solid var(--border);border-radius:2px;
+  color:var(--text-dim);font-size:0.7rem;cursor:pointer;transition:all 0.15s;flex:1;text-align:center;}
 .prob-btn:hover{border-color:var(--accent2);color:var(--accent2);}
 .prob-btn.sel{background:rgba(0,180,255,0.12);border-color:var(--accent2);color:var(--accent2);}
 .pred-item.cor{border-color:var(--success);background:rgba(57,255,138,0.04);}
 .pred-item.inc{border-color:var(--danger);background:rgba(255,58,110,0.04);}
-.fb-tag{display:none;font-size:0.5rem;margin-top:0.22rem;}
+.fb-tag{display:none;font-size:0.68rem;margin-top:0.22rem;}
 .pred-item.cor .fb-tag{display:block;color:var(--success);}
 .pred-item.inc .fb-tag{display:block;color:var(--danger);}
-.corr-ans{display:none;font-size:0.55rem;color:var(--success);margin-top:0.15rem;}
+.corr-ans{display:none;font-size:0.7rem;color:var(--success);margin-top:0.15rem;}
 .pred-item.inc .corr-ans{display:block;}
-.pred-note{font-size:0.6rem;color:var(--text-dim);margin-bottom:0.5rem;padding:0.35rem 0.5rem;
+.pred-note{font-size:0.74rem;color:var(--text-dim);margin-bottom:0.5rem;padding:0.35rem 0.5rem;
   background:rgba(255,184,0,0.05);border:1px solid rgba(255,184,0,0.15);border-radius:2px;}
 
 /* Offspring reveal */
 .off-reveal{background:var(--panel);border:1px solid var(--accent3);border-radius:4px;padding:0.75rem;}
-.off-reveal h3{font-family:'Orbitron',sans-serif;font-size:0.58rem;letter-spacing:0.18em;color:var(--accent3);margin-bottom:0.6rem;}
+.off-reveal h3{font-family:'Share Tech Mono',monospace;font-size:0.78rem;letter-spacing:0.08em;color:var(--accent3);margin-bottom:0.6rem;}
 .off-grid{display:flex;gap:0.85rem;align-items:flex-start;}
 
 /* Round overlay */
@@ -229,19 +230,19 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .overlay.show{display:flex;}
 .score-box{background:var(--panel);border:1px solid var(--accent3);border-radius:5px;padding:2rem;
   text-align:center;max-width:360px;width:90%;box-shadow:0 0 60px rgba(123,47,255,0.3);}
-.score-box h2{font-family:'Orbitron',sans-serif;font-size:0.68rem;letter-spacing:0.3em;color:var(--accent3);margin-bottom:1rem;}
-.round-pts{font-family:'Orbitron',sans-serif;font-size:2.5rem;font-weight:900;color:var(--warn);margin:0.25rem 0;}
-.round-pts-lbl{font-size:0.6rem;color:var(--text-dim);letter-spacing:0.15em;margin-bottom:1.25rem;}
-.bk-table{text-align:left;font-size:0.6rem;margin-bottom:1.25rem;background:var(--bg3);border-radius:3px;padding:0.6rem;}
+.score-box h2{font-family:'Share Tech Mono',monospace;font-size:0.82rem;letter-spacing:0.12em;color:var(--accent3);margin-bottom:1rem;}
+.round-pts{font-family:'Share Tech Mono',monospace;font-size:2.5rem;font-weight:900;color:var(--warn);margin:0.25rem 0;}
+.round-pts-lbl{font-size:0.72rem;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:1.25rem;}
+.bk-table{text-align:left;font-size:0.72rem;margin-bottom:1.25rem;background:var(--bg3);border-radius:3px;padding:0.6rem;}
 .bk-row{display:flex;justify-content:space-between;padding:0.16rem 0;border-bottom:1px solid var(--border2);}
 .bk-row:last-child{border-bottom:none;}
 .bk-pts{color:var(--success);font-weight:bold;}
-.bk-streak{margin-bottom:1rem;font-size:0.65rem;color:var(--warn);}
+.bk-streak{margin-bottom:1rem;font-size:0.78rem;color:var(--warn);}
 
 /* Lineage sidebar */
 .lineage-panel{border-left:1px solid var(--border2);background:rgba(0,0,0,0.35);
   padding:0.55rem 0.45rem;overflow-y:auto;display:flex;flex-direction:column;gap:0.3rem;}
-.lin-title{font-family:'Orbitron',sans-serif;font-size:0.46rem;letter-spacing:0.2em;
+.lin-title{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;
   color:var(--text-dim);text-align:center;margin-bottom:0.3rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border2);}
 .lin-entry{background:var(--panel);border:1px solid var(--border2);border-radius:3px;
   padding:0.3rem;text-align:center;transition:border-color 0.2s;}
@@ -256,26 +257,26 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .ref-overlay.show{display:flex;}
 .ref-box{background:var(--panel);border:1px solid var(--accent);border-radius:6px;padding:1.5rem;width:100%;max-width:780px;position:relative;}
 .ref-box-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
-.ref-box-hdr h2{font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:0.3em;color:var(--accent);}
-.ref-close{background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--text-dim);font-family:'Orbitron',sans-serif;font-size:0.6rem;padding:0.3rem 0.7rem;cursor:pointer;letter-spacing:0.1em;transition:all 0.15s;}
+.ref-box-hdr h2{font-family:'Share Tech Mono',monospace;font-size:0.82rem;letter-spacing:0.12em;color:var(--accent);}
+.ref-close{background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:0.75rem;padding:0.3rem 0.7rem;cursor:pointer;letter-spacing:0.05em;transition:all 0.15s;}
 .ref-close:hover{border-color:var(--accent);color:var(--accent);}
 .ref-section{margin-bottom:1.2rem;}
-.ref-section-title{font-family:'Orbitron',sans-serif;font-size:0.55rem;letter-spacing:0.25em;color:var(--accent3);margin-bottom:0.5rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border2);}
-.ref-table{width:100%;border-collapse:collapse;font-size:0.62rem;}
-.ref-table th{font-family:'Orbitron',sans-serif;font-size:0.5rem;letter-spacing:0.15em;color:var(--text-dim);text-align:left;padding:0.3rem 0.4rem;border-bottom:1px solid var(--border);}
-.ref-table td{padding:0.28rem 0.4rem;border-bottom:1px solid var(--border2);vertical-align:middle;}
+.ref-section-title{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:var(--accent3);margin-bottom:0.5rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border2);}
+.ref-table{width:100%;border-collapse:collapse;font-size:0.74rem;}
+.ref-table th{font-family:'Share Tech Mono',monospace;font-size:0.68rem;letter-spacing:0.07em;color:var(--text-dim);text-align:left;padding:0.3rem 0.4rem;border-bottom:1px solid var(--border);}
+.ref-table td{padding:0.3rem 0.4rem;border-bottom:1px solid var(--border2);vertical-align:middle;}
 .ref-table tr:last-child td{border-bottom:none;}
 .ref-table tr:hover td{background:rgba(255,255,255,0.02);}
 .ref-td-trait{color:var(--text-dim);width:18%;}
-.ref-td-allele{font-family:'Orbitron',sans-serif;font-size:0.58rem;font-weight:700;color:var(--accent2);width:14%;text-align:center;}
-.ref-td-geno{font-family:'Orbitron',sans-serif;font-size:0.55rem;color:var(--accent);width:20%;text-align:center;}
+.ref-td-allele{font-family:'Share Tech Mono',monospace;font-size:0.72rem;font-weight:700;color:var(--accent2);width:14%;text-align:center;}
+.ref-td-geno{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--accent);width:20%;text-align:center;}
 .ref-td-pheno{color:var(--text);width:22%;}
-.ref-td-type{font-size:0.5rem;color:var(--text-dim);width:10%;text-align:center;letter-spacing:0.05em;}
-.ref-badge-dom{background:rgba(0,255,240,0.1);border:1px solid var(--accent);border-radius:2px;padding:0.05rem 0.3rem;font-size:0.48rem;color:var(--accent);letter-spacing:0.08em;}
-.ref-badge-rec{background:rgba(90,122,150,0.12);border:1px solid var(--text-dim);border-radius:2px;padding:0.05rem 0.3rem;font-size:0.48rem;color:var(--text-dim);letter-spacing:0.08em;}
-.ref-badge-cod{background:rgba(144,64,255,0.12);border:1px solid var(--accent3);border-radius:2px;padding:0.05rem 0.3rem;font-size:0.48rem;color:var(--accent3);letter-spacing:0.08em;}
-.ref-note{font-size:0.6rem;color:var(--text-dim);padding:0.6rem 0.75rem;background:rgba(0,255,240,0.03);border:1px solid rgba(0,255,240,0.1);border-radius:3px;line-height:1.6;}
-.ref-btn{background:rgba(0,255,240,0.06);border:1px solid var(--accent);border-radius:3px;color:var(--accent);font-family:'Orbitron',sans-serif;font-size:0.52rem;padding:0.3rem 0.7rem;cursor:pointer;letter-spacing:0.12em;transition:all 0.2s;text-transform:uppercase;}
+.ref-td-type{font-size:0.68rem;color:var(--text-dim);width:10%;text-align:center;letter-spacing:0.02em;}
+.ref-badge-dom{background:rgba(0,255,240,0.1);border:1px solid var(--accent);border-radius:2px;padding:0.05rem 0.3rem;font-size:0.62rem;color:var(--accent);letter-spacing:0.04em;}
+.ref-badge-rec{background:rgba(90,122,150,0.12);border:1px solid var(--text-dim);border-radius:2px;padding:0.05rem 0.3rem;font-size:0.62rem;color:var(--text-dim);letter-spacing:0.04em;}
+.ref-badge-cod{background:rgba(144,64,255,0.12);border:1px solid var(--accent3);border-radius:2px;padding:0.05rem 0.3rem;font-size:0.62rem;color:var(--accent3);letter-spacing:0.04em;}
+.ref-note{font-size:0.72rem;color:var(--text-dim);padding:0.6rem 0.75rem;background:rgba(0,255,240,0.03);border:1px solid rgba(0,255,240,0.1);border-radius:3px;line-height:1.6;}
+.ref-btn{background:rgba(0,255,240,0.06);border:1px solid var(--accent);border-radius:3px;color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:0.7rem;padding:0.3rem 0.7rem;cursor:pointer;letter-spacing:0.05em;transition:all 0.2s;text-transform:uppercase;}
 .ref-btn:hover{background:rgba(0,255,240,0.14);box-shadow:0 0 12px rgba(0,255,240,0.15);}
 
 
@@ -283,13 +284,13 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:radial-gradient(ellipse at 50% 45%,rgba(123,47,255,0.07) 0%,transparent 60%);}
 .end-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.5rem,5vw,2.8rem);font-weight:900;
   letter-spacing:0.12em;color:var(--accent);margin-bottom:0.4rem;}
-.end-score{font-family:'Orbitron',sans-serif;font-size:clamp(2.5rem,8vw,4.5rem);font-weight:900;color:var(--warn);margin:0.75rem 0 0.2rem;}
-.end-score-lbl{font-size:0.68rem;color:var(--text-dim);letter-spacing:0.2em;margin-bottom:1.75rem;}
+.end-score{font-family:'Share Tech Mono',monospace;font-size:clamp(2.5rem,8vw,4.5rem);font-weight:900;color:var(--warn);margin:0.75rem 0 0.2rem;}
+.end-score-lbl{font-size:0.78rem;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:1.75rem;}
 .end-stats{display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.75rem;flex-wrap:wrap;}
 .end-stat{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.9rem 1.4rem;}
-.end-stat-val{font-family:'Orbitron',sans-serif;font-size:1.7rem;font-weight:700;color:var(--accent2);}
-.end-stat-lbl{font-size:0.55rem;color:var(--text-dim);letter-spacing:0.1em;}
-.end-lin-title{font-family:'Orbitron',sans-serif;font-size:0.58rem;letter-spacing:0.2em;color:var(--accent3);margin-bottom:0.85rem;}
+.end-stat-val{font-family:'Share Tech Mono',monospace;font-size:1.7rem;font-weight:700;color:var(--accent2);}
+.end-stat-lbl{font-size:0.7rem;color:var(--text-dim);letter-spacing:0.05em;}
+.end-lin-title{font-family:'Share Tech Mono',monospace;font-size:0.75rem;letter-spacing:0.1em;color:var(--accent3);margin-bottom:0.85rem;}
 .end-strip{display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem;}
 .end-alien{display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.48rem;color:var(--text-dim);}
 </style>
@@ -300,7 +301,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   SCREEN 1: TITLE / SETUP
 ══════════════════════════════════════ -->
 <div id="screen-title" class="screen active">
-  <div class="x-logo">XENOGEN</div>
+  <div class="x-logo">XenoGenus</div>
   <div class="logo-sub">ALIEN GENETICS LABORATORY</div>
   <div class="tagline">// breed · predict · inherit · evolve //</div>
   <div class="setup-card">
@@ -342,7 +343,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
       <div class="build-preview-card">
         <h3>SPECIMEN PREVIEW</h3>
         <div id="build-svg-wrap" style="display:flex;justify-content:center;"></div>
-        <div id="build-name" style="font-family:'Orbitron',sans-serif;font-size:0.55rem;color:var(--text-dim);margin-top:0.4rem;letter-spacing:0.1em;text-align:center;">—</div>
+        <div id="build-name" style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text-dim);margin-top:0.4rem;letter-spacing:0.05em;text-align:center;">—</div>
       </div>
       <div class="build-actions">
         <button class="spin-all-btn" onclick="spinAll()">⟳ SPIN ALL</button>
@@ -374,7 +375,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 <div id="screen-game" class="screen">
   <div class="game-header">
     <div class="gh-left">
-      <span class="gh-title">XENOGEN</span>
+      <span class="gh-title">XenoGenus</span>
       <span class="gh-round">GEN <em id="gh-round">1</em> / <em id="gh-total">5</em></span>
       <span class="gh-diff beginner" id="gh-diff">BEGINNER</span>
       <span class="streak-badge hidden" id="streak-badge">🔥 ×<span id="streak-mult">1</span></span>
@@ -519,7 +520,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 <div class="ref-overlay" id="ref-overlay" onclick="refOverlayClick(event)">
   <div class="ref-box" id="ref-box">
     <div class="ref-box-hdr">
-      <h2>// XENOGEN TRAIT REFERENCE</h2>
+      <h2>// XenoGenus TRAIT REFERENCE</h2>
       <button class="ref-close" onclick="toggleRef()">✕ CLOSE</button>
     </div>
     <div id="ref-content"></div>
@@ -536,7 +537,7 @@ const TRAITS = [
   {id:'ant',    name:'Antenna Shape', alleles:['A','a'], dom:'Curled Antennae', rec:'Straight Antennae',type:'dr'},
   {id:'legs',   name:'Limb Number',   alleles:['L','l'], dom:'Six Limbs',        rec:'Four Limbs',       type:'dr'},
   {id:'tex',    name:'Body Texture',  alleles:['S','s'], dom:'Smooth Skin',      rec:'Scaly Skin',       type:'dr'},
-  {id:'tail',   name:'Tail Type',     alleles:['T','t'], dom:'Long Tail',        rec:'Stubby Tail',      type:'dr'},
+  {id:'tail',   name:'Tail Type',     alleles:['T','t'], dom:'Long Tail',        rec:'Short Tail',      type:'dr'},
   {id:'ears',   name:'Ear Shape',     alleles:['P','p'], dom:'Pointed Ears',     rec:'Round Ears',       type:'dr'},
   {id:'tongue', name:'Tongue Shape',  alleles:['B','b'], dom:'Forked Tongue',    rec:'Straight Tongue',  type:'dr'},
   {id:'fingers',name:'Finger Number', alleles:['F','f'], dom:'Five Fingers',     rec:'Three Fingers',    type:'dr'},
@@ -576,6 +577,7 @@ function initG(){
     lineage:[],
     buildGeno:{}, buildSpun:0,
     candidates:[], selectedCandidate:null,
+    roundSubmitted:false,
   };
 }
 
@@ -645,7 +647,7 @@ function buildRefTable(){
     {id:'ant',    name:'Antenna Shape', alleles:['A','a'], dom:'Curled Antennae',   rec:'Straight Antennae',  type:'dr'},
     {id:'legs',   name:'Limb Number',   alleles:['L','l'], dom:'Six Limbs',         rec:'Four Limbs',         type:'dr'},
     {id:'tex',    name:'Body Texture',  alleles:['S','s'], dom:'Smooth Skin',       rec:'Scaly Skin',         type:'dr'},
-    {id:'tail',   name:'Tail Type',     alleles:['T','t'], dom:'Long Tail',         rec:'Stubby Tail',        type:'dr'},
+    {id:'tail',   name:'Tail Type',     alleles:['T','t'], dom:'Long Tail',         rec:'Short Tail',        type:'dr'},
     {id:'ears',   name:'Ear Shape',     alleles:['P','p'], dom:'Pointed Ears',      rec:'Round Ears',         type:'dr'},
     {id:'tongue', name:'Tongue Shape',  alleles:['B','b'], dom:'Forked Tongue',     rec:'Straight Tongue',    type:'dr'},
     {id:'fingers',name:'Finger Number', alleles:['F','f'], dom:'Five Fingers',      rec:'Three Fingers',      type:'dr'},
@@ -814,11 +816,25 @@ function alienSVG(alien, size){
     d += `<ellipse cx="${cx}" cy="${cy}" rx="${s*0.42}" ry="${s*0.48}" fill="${gc}" opacity="0.13"/>`;
   }
 
-  // WINGS
+  // WINGS — dragon-style: angular, pointed, small
   if(wings){
-    const wy = cy - s*0.08;
-    d += `<ellipse cx="${cx-s*0.36}" cy="${wy}" rx="${s*0.18}" ry="${s*0.25}" fill="rgba(120,180,255,0.18)" stroke="#80c0ff" stroke-width="${SW*0.8}" transform="rotate(-22 ${cx-s*0.36} ${wy})"/>`;
-    d += `<ellipse cx="${cx+s*0.36}" cy="${wy}" rx="${s*0.18}" ry="${s*0.25}" fill="rgba(120,180,255,0.18)" stroke="#80c0ff" stroke-width="${SW*0.8}" transform="rotate(22 ${cx+s*0.36} ${wy})"/>`;
+    // Left wing: membrane polygon with two pointed tips
+    const wlax = cx - bodyRX*0.28, wlay = cy - s*0.04;  // body attach top
+    const wlbx = cx - bodyRX*0.28, wlby = cy + s*0.04;  // body attach bottom
+    const wl1x = cx - s*0.44,      wl1y = cy - s*0.28;  // main upper tip
+    const wl2x = cx - s*0.30,      wl2y = cy - s*0.05;  // claw notch
+    const wl3x = cx - s*0.38,      wl3y = cy + s*0.06;  // lower tip
+    d += `<polygon points="${wlax},${wlay} ${wl1x},${wl1y} ${wl2x},${wl2y} ${wl3x},${wl3y} ${wlbx},${wlby}" fill="rgba(90,140,255,0.16)" stroke="#70aaff" stroke-width="${SW*0.9}" stroke-linejoin="round"/>`;
+    // Spine line from body to main tip
+    d += `<line x1="${wlax}" y1="${wlay}" x2="${wl1x}" y2="${wl1y}" stroke="#a0c8ff" stroke-width="${SW*0.7}" stroke-linecap="round"/>`;
+    // Right wing (mirrored)
+    const wrax = cx + bodyRX*0.28, wray = cy - s*0.04;
+    const wrbx = cx + bodyRX*0.28, wrby = cy + s*0.04;
+    const wr1x = cx + s*0.44,      wr1y = cy - s*0.28;
+    const wr2x = cx + s*0.30,      wr2y = cy - s*0.05;
+    const wr3x = cx + s*0.38,      wr3y = cy + s*0.06;
+    d += `<polygon points="${wrax},${wray} ${wr1x},${wr1y} ${wr2x},${wr2y} ${wr3x},${wr3y} ${wrbx},${wrby}" fill="rgba(90,140,255,0.16)" stroke="#70aaff" stroke-width="${SW*0.9}" stroke-linejoin="round"/>`;
+    d += `<line x1="${wrax}" y1="${wray}" x2="${wr1x}" y2="${wr1y}" stroke="#a0c8ff" stroke-width="${SW*0.7}" stroke-linecap="round"/>`;
   }
 
   // TAIL - distinct color
@@ -829,7 +845,12 @@ function alienSVG(alien, size){
     d += `<path d="M${tx1} ${ty1} Q${tx2} ${ty2} ${tx3} ${ty3}" stroke="${TAIL_L}" stroke-width="${SW*1.3}" fill="none" stroke-linecap="round"/>`;
     d += `<ellipse cx="${tx3}" cy="${ty3+s*0.025}" rx="${s*0.055}" ry="${s*0.04}" fill="${TAIL_C}" stroke="${TAIL_L}" stroke-width="${SW*0.9}"/>`;
   } else {
-    d += `<ellipse cx="${cx+bodyRX*0.9}" cy="${cy+bodyRY*0.5}" rx="${s*0.055}" ry="${s*0.042}" fill="${TAIL_C}" stroke="${TAIL_L}" stroke-width="${SW*0.85}"/>`;
+    // Short dog-style tail: stubby upward curve at the rump
+    const stx = cx + bodyRX*0.82, sty = cy + bodyRY*0.42;
+    const stcx = stx + s*0.07,   stcy = sty - s*0.16;  // control point: up and out
+    const stex = stx + s*0.02,   stey = sty - s*0.20;  // tip
+    d += `<path d="M${stx} ${sty} Q${stcx} ${stcy} ${stex} ${stey}" stroke="${TAIL_L}" stroke-width="${SW*1.6}" fill="none" stroke-linecap="round"/>`;
+    d += `<circle cx="${stex}" cy="${stey}" r="${s*0.022}" fill="${TAIL_L}"/>`;
   }
 
   // LIMBS - unified upright body, same torso regardless of count
@@ -848,21 +869,21 @@ function alienSVG(alien, size){
     d += `<line x1="${rx+s*0.018}" y1="${knee}" x2="${rx+s*0.036}" y2="${foot}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
     d += `<rect x="${rx-s*0.004}" y="${foot}" width="${s*0.082}" height="${s*0.032}" rx="${s*0.012}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.7}"/>`;
   } else {
-    // Three legs per side - wider spread, same upright body
-    const leftXs  = [cx - bodyRX*0.62, cx - bodyRX*0.26, cx - bodyRX*0.02];
-    const rightXs = [cx + bodyRX*0.62, cx + bodyRX*0.26, cx + bodyRX*0.02];
-    const legYOffs = [0, s*0.028, s*0.048];
+    // Two legs per side (4 total) — wider stance for six-limbed body
+    const leftXs  = [cx - bodyRX*0.58, cx - bodyRX*0.16];
+    const rightXs = [cx + bodyRX*0.58, cx + bodyRX*0.16];
+    const legYOffs = [0, s*0.032];
     leftXs.forEach((lx, i)=>{
       const ly = legYOffs[i];
-      d += `<line x1="${lx}" y1="${legTopY+ly}" x2="${lx-s*0.014}" y2="${knee+ly}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
-      d += `<line x1="${lx-s*0.014}" y1="${knee+ly}" x2="${lx-s*0.018}" y2="${foot+ly}" stroke="${LINE}" stroke-width="${legW*0.9}" stroke-linecap="round"/>`;
-      d += `<ellipse cx="${lx-s*0.018}" cy="${foot+ly+s*0.015}" rx="${s*0.032}" ry="${s*0.013}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.65}"/>`;
+      d += `<line x1="${lx}" y1="${legTopY+ly}" x2="${lx-s*0.016}" y2="${knee+ly}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
+      d += `<line x1="${lx-s*0.016}" y1="${knee+ly}" x2="${lx-s*0.022}" y2="${foot+ly}" stroke="${LINE}" stroke-width="${legW*0.9}" stroke-linecap="round"/>`;
+      d += `<ellipse cx="${lx-s*0.022}" cy="${foot+ly+s*0.015}" rx="${s*0.032}" ry="${s*0.013}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.65}"/>`;
     });
     rightXs.forEach((rx, i)=>{
       const ly = legYOffs[i];
-      d += `<line x1="${rx}" y1="${legTopY+ly}" x2="${rx+s*0.014}" y2="${knee+ly}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
-      d += `<line x1="${rx+s*0.014}" y1="${knee+ly}" x2="${rx+s*0.018}" y2="${foot+ly}" stroke="${LINE}" stroke-width="${legW*0.9}" stroke-linecap="round"/>`;
-      d += `<ellipse cx="${rx+s*0.018}" cy="${foot+ly+s*0.015}" rx="${s*0.032}" ry="${s*0.013}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.65}"/>`;
+      d += `<line x1="${rx}" y1="${legTopY+ly}" x2="${rx+s*0.016}" y2="${knee+ly}" stroke="${LINE}" stroke-width="${legW}" stroke-linecap="round"/>`;
+      d += `<line x1="${rx+s*0.016}" y1="${knee+ly}" x2="${rx+s*0.022}" y2="${foot+ly}" stroke="${LINE}" stroke-width="${legW*0.9}" stroke-linecap="round"/>`;
+      d += `<ellipse cx="${rx+s*0.022}" cy="${foot+ly+s*0.015}" rx="${s*0.032}" ry="${s*0.013}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.65}"/>`;
     });
   }
 
@@ -904,19 +925,28 @@ function alienSVG(alien, size){
     d += `<polygon points="${cx-headRX*0.94},${earBaseY1} ${cx-headRX*1.82},${earTipY} ${cx-headRX*0.94},${earBaseY2}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
     d += `<polygon points="${cx+headRX*0.94},${earBaseY1} ${cx+headRX*1.82},${earTipY} ${cx+headRX*0.94},${earBaseY2}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
   } else {
-    d += `<ellipse cx="${cx-headRX*1.06}" cy="${headCY-headRY*0.06}" rx="${headRX*0.33}" ry="${headRY*0.38}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
-    d += `<ellipse cx="${cx+headRX*1.06}" cy="${headCY-headRY*0.06}" rx="${headRX*0.33}" ry="${headRY*0.38}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+    // Round ears: eccentric (wide) ovals placed on the outer edge of the head
+    d += `<ellipse cx="${cx-headRX*1.26}" cy="${headCY+headRY*0.08}" rx="${headRX*0.52}" ry="${headRY*0.22}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+    d += `<ellipse cx="${cx+headRX*1.26}" cy="${headCY+headRY*0.08}" rx="${headRX*0.52}" ry="${headRY*0.22}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
   }
 
   // ANTENNAE
   const antL = cx - headRX*0.44;
   const antR = cx + headRX*0.44;
-  const antTipY = headCY - headRY - s*0.17;
+  const antTipY = headCY - headRY - s*0.17;   // straight antenna tip height
+  const curlTop = headCY - headRY - s*0.34;   // curly antenna goes twice as high
+  const curlR   = s * 0.10;                    // radius of the curl loop
   if(curled){
-    d += `<path d="M${antL} ${antBase} Q${antL-s*0.11} ${antBase-s*0.13} ${antL-s*0.04} ${antTipY}" stroke="${LINE}" stroke-width="${SW}" fill="none" stroke-linecap="round"/>`;
-    d += `<circle cx="${antL-s*0.04}" cy="${antTipY}" r="${s*0.038}" fill="${LINE}"/>`;
-    d += `<path d="M${antR} ${antBase} Q${antR+s*0.11} ${antBase-s*0.13} ${antR+s*0.04} ${antTipY}" stroke="${LINE}" stroke-width="${SW}" fill="none" stroke-linecap="round"/>`;
-    d += `<circle cx="${antR+s*0.04}" cy="${antTipY}" r="${s*0.038}" fill="${LINE}"/>`;
+    // Left: curvy stem going up-left, then a full circular loop at the top
+    const lcx = antL - s*0.18, lcy = curlTop + curlR;  // loop center
+    d += `<path d="M${antL} ${antBase} C${antL-s*0.06} ${antBase-s*0.15},${antL-s*0.22} ${curlTop+s*0.26},${lcx+curlR} ${lcy}" stroke="${LINE}" stroke-width="${SW}" fill="none" stroke-linecap="round"/>`;
+    d += `<circle cx="${lcx}" cy="${lcy}" r="${curlR}" fill="none" stroke="${LINE}" stroke-width="${SW}"/>`;
+    d += `<circle cx="${lcx}" cy="${lcy}" r="${s*0.028}" fill="${LINE}"/>`;
+    // Right: mirrored
+    const rcx = antR + s*0.18, rcy = curlTop + curlR;
+    d += `<path d="M${antR} ${antBase} C${antR+s*0.06} ${antBase-s*0.15},${antR+s*0.22} ${curlTop+s*0.26},${rcx-curlR} ${rcy}" stroke="${LINE}" stroke-width="${SW}" fill="none" stroke-linecap="round"/>`;
+    d += `<circle cx="${rcx}" cy="${rcy}" r="${curlR}" fill="none" stroke="${LINE}" stroke-width="${SW}"/>`;
+    d += `<circle cx="${rcx}" cy="${rcy}" r="${s*0.028}" fill="${LINE}"/>`;
   } else {
     d += `<line x1="${antL}" y1="${antBase}" x2="${antL-s*0.055}" y2="${antTipY}" stroke="${LINE}" stroke-width="${SW}" stroke-linecap="round"/>`;
     d += `<circle cx="${antL-s*0.055}" cy="${antTipY}" r="${s*0.035}" fill="${LINE}"/>`;
@@ -983,12 +1013,23 @@ function alienSVG(alien, size){
   // MOUTH + TONGUE
   d += `<path d="M${cx-s*0.046} ${faceMouthY} Q${cx} ${faceMouthY+s*0.021} ${cx+s*0.046} ${faceMouthY}" stroke="${LINE}" stroke-width="${SW*0.75}" fill="none" stroke-linecap="round"/>`;
   if(forked){
-    const tby = faceMouthY + s*0.011;
-    d += `<path d="M${cx} ${tby} L${cx-s*0.025} ${tby+s*0.046}" stroke="#ff2244" stroke-width="${SW*1.05}" fill="none" stroke-linecap="round"/>`;
-    d += `<path d="M${cx} ${tby} L${cx+s*0.025} ${tby+s*0.046}" stroke="#ff2244" stroke-width="${SW*1.05}" fill="none" stroke-linecap="round"/>`;
-    d += `<ellipse cx="${cx}" cy="${tby}" rx="${s*0.019}" ry="${s*0.011}" fill="#ff2244"/>`;
+    const tby = faceMouthY + s*0.012;
+    const forkL = s*0.082, forkW = s*0.044;
+    // Black outline (draw first, slightly wider)
+    d += `<path d="M${cx} ${tby} L${cx-forkW} ${tby+forkL}" stroke="#000" stroke-width="${SW*2.2}" fill="none" stroke-linecap="round"/>`;
+    d += `<path d="M${cx} ${tby} L${cx+forkW} ${tby+forkL}" stroke="#000" stroke-width="${SW*2.2}" fill="none" stroke-linecap="round"/>`;
+    // Red fill on top
+    d += `<path d="M${cx} ${tby} L${cx-forkW} ${tby+forkL}" stroke="#ff2244" stroke-width="${SW*1.4}" fill="none" stroke-linecap="round"/>`;
+    d += `<path d="M${cx} ${tby} L${cx+forkW} ${tby+forkL}" stroke="#ff2244" stroke-width="${SW*1.4}" fill="none" stroke-linecap="round"/>`;
+    // Base ellipse with outline
+    d += `<ellipse cx="${cx}" cy="${tby}" rx="${s*0.026}" ry="${s*0.016}" fill="#000" stroke="#000" stroke-width="${SW*0.5}"/>`;
+    d += `<ellipse cx="${cx}" cy="${tby}" rx="${s*0.020}" ry="${s*0.012}" fill="#ff2244"/>`;
   } else {
-    d += `<rect x="${cx-s*0.015}" y="${faceMouthY+s*0.007}" width="${s*0.030}" height="${s*0.042}" rx="${s*0.011}" fill="#ff2244"/>`;
+    const tw = s*0.050, th = s*0.068, trx = s*0.016;
+    // Black outline
+    d += `<rect x="${cx-tw/2-s*0.006}" y="${faceMouthY+s*0.006}" width="${tw+s*0.012}" height="${th+s*0.006}" rx="${trx+s*0.005}" fill="#000"/>`;
+    // Red tongue
+    d += `<rect x="${cx-tw/2}" y="${faceMouthY+s*0.009}" width="${tw}" height="${th}" rx="${trx}" fill="#ff2244"/>`;
   }
 
   return `<svg viewBox="0 0 ${s} ${s}" width="${s}" height="${s}" xmlns="http://www.w3.org/2000/svg">${d}</svg>`;
@@ -1203,6 +1244,8 @@ function renderGameScreen(){
   const egl=document.getElementById('egg-geno-list');
   egl.classList.add('hidden'); egl.innerHTML=''; // enabled after pre-predict confirmed
 
+  G.roundSubmitted = false;
+
   // Panels
   document.getElementById('pre-panel').classList.remove('hidden');
   document.getElementById('post-panel').classList.add('hidden');
@@ -1268,6 +1311,7 @@ function selProb(btn){
 }
 
 function checkPostReady(){
+  if(G.roundSubmitted) return;
   if(document.getElementById('post-panel').classList.contains('hidden')) return;
   const grid=document.getElementById('post-grid');
   const allDone=[...grid.querySelectorAll('.pred-item')].every(item=>{
@@ -1355,7 +1399,8 @@ function updateStreak(){
 }
 
 function submitPredictions(){
-  if(!G.offGeno){return;}
+  if(!G.offGeno || G.roundSubmitted){return;}
+  G.roundSubmitted = true;
   const grid=document.getElementById('post-grid');
   const items=grid.querySelectorAll('.pred-item');
   let roundPts=0; const bk=[];
@@ -1392,6 +1437,8 @@ function submitPredictions(){
   document.getElementById('gh-score').textContent=G.score.toLocaleString();
   updateStreak();
   document.getElementById('btn-submit').disabled=true;
+  // Lock all inputs so the round cannot be re-submitted
+  grid.querySelectorAll('select, .prob-btn').forEach(el=>{ el.disabled=true; });
 
   showOffspring();
   showRoundOverlay(roundPts, bk, allCorrect);
@@ -1405,7 +1452,7 @@ function showOffspring(){
   document.getElementById('off-gen').textContent=off.gen;
   const og=document.getElementById('off-grid');
   og.innerHTML=`
-    <div style="flex-shrink:0;">${alienSVG(off,76)}<div style="font-size:0.48rem;color:var(--text-dim);text-align:center;margin-top:0.2rem;font-family:'Orbitron',sans-serif;letter-spacing:0.08em;">GEN ${off.gen}</div></div>
+    <div style="flex-shrink:0;">${alienSVG(off,76)}<div style="font-size:0.48rem;color:var(--text-dim);text-align:center;margin-top:0.2rem;font-family:'Share Tech Mono',monospace;letter-spacing:0.08em;">GEN ${off.gen}</div></div>
     <table class="geno-table" style="flex:1;">${G.traits.map(t=>`
       <tr>
         <td class="td-name">${t.name}</td>
