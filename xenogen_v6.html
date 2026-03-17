@@ -322,8 +322,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .vig-progress-bar{height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}
 #vig-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent3),var(--accent));
   transition:width 0.4s ease;border-radius:2px;}
-.vig-footer{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1.1rem;
+.vig-footer{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;padding:0.6rem 1.1rem;
   border-top:1px solid var(--border2);background:rgba(0,0,0,0.5);flex-shrink:0;}
+.vig-jump-btn{font-family:'Share Tech Mono',monospace;letter-spacing:0.12em;min-width:90px;}
+.vig-card-jump{font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:0.15em;
+  color:#00fff0;border:1px solid rgba(0,255,240,0.5);border-radius:2px;
+  padding:0.12rem 0.45rem;display:inline-block;margin-bottom:0.5rem;
+  background:rgba(0,255,240,0.07);}
+.vig-card-type.cleared{background:rgba(57,255,138,0.1);border:1px solid var(--success);color:var(--success);}
+.vig-card-type.reached{background:rgba(57,255,138,0.14);border:1px solid var(--success);color:var(--success);}
+.vig-card-type.missed{background:rgba(90,122,150,0.1);border:1px solid #5a7a96;color:#5a7a96;}
 
 /* Biome intro overlay */
 .vig-intro-card{background:var(--panel);border:2px solid var(--accent);border-radius:6px;
@@ -441,6 +449,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="vig-overlay hidden" id="vig-overlay">
       <div class="vig-event-card" id="vig-event-card">
         <span class="vig-card-type" id="vig-card-type">HAZARD</span>
+        <div class="vig-card-jump" id="vig-card-jump" style="display:none;">⬆ SKILL BONUS · +5 PTS</div>
         <div class="vig-card-title" id="vig-card-title">Event Title</div>
         <div class="vig-card-text" id="vig-card-text">Event description text goes here.</div>
         <div class="vig-card-delta" id="vig-card-delta"></div>
@@ -461,8 +470,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   </div>
   <div class="vig-footer">
     <div style="font-size:0.72rem;color:var(--text-dim);">
-      5 events per round · traits determine outcomes
+      [SPACE] or tap canvas to jump · traits determine outcomes
     </div>
+    <button id="vig-jump-btn" class="x-btn x-btn-primary vig-jump-btn" onclick="doJump()">[ JUMP ]</button>
     <button class="x-btn x-btn-sec" onclick="completeVignette()">SKIP TO LAB →</button>
   </div>
 </div>
@@ -666,6 +676,14 @@ const VIG_CFG = {
   EVENTS_PER_ROUND: 5,
   TOTAL_EVENTS_DRAW:20, // drawn from each biome pool at game init
   BIOMES: ['canopy','thermal','caverns','marsh','canals','shore'],
+  // Jump mechanics
+  JUMP_FORCE:    14,    // initial upward velocity (px per 16ms frame)
+  GRAVITY:        0.9,  // downward accel per frame
+  JUMP_COOL:    600,    // ms cooldown between jumps
+  JUMP_BONUS:     5,    // skill pts for a correct jump
+  JUMP_CLEAR_H:  30,    // vigAlienY threshold to "clear" ground obstacle
+  JUMP_REACH_H:  80,    // vigAlienY threshold to "reach" air collectible
+  AIR_MARKER_Y: 110,   // px above ground where air event orb is drawn
 };
 
 // Biome visual palettes used by canvas renderer (Phase 2)
@@ -1067,6 +1085,11 @@ function initG(){
     vigSpriteX:0,    // alien x position in canvas (Phase 2)
     vigScrollX:0,    // background scroll offset (Phase 2)
     vigRunning:false,
+    // Jump state
+    vigAlienY:0,     // px above ground (0 = on ground)
+    vigVelY:0,       // upward velocity
+    vigJumping:false,
+    vigJumpLast:0,   // timestamp for cooldown
   };
   initBiomes();
 }
@@ -2340,6 +2363,10 @@ function drawRoundVigEvents(){
   const pool = G.vigEvents[bk] || [];
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
   G.vigRoundEvents = shuffled.slice(0, VIG_CFG.EVENTS_PER_ROUND);
+  // Assign trigger height: windfalls float high, hazards/flavor stay low
+  G.vigRoundEvents.forEach(ev => {
+    ev._height = (ev.cls === 'windfall') ? 'air' : 'ground';
+  });
   G.vigEventIdx = 0;
 }
 
@@ -2365,6 +2392,14 @@ function startVigCanvas(){
   G.vigScrollX    = 0;
   G.vigPaused     = false;
   G.vigAlienImg   = null;
+  G.vigAlienY     = 0;
+  G.vigVelY       = 0;
+  G.vigJumping    = false;
+  G.vigJumpLast   = 0;
+
+  // Jump input listeners
+  document.addEventListener('keydown', _vigKeyJump);
+  canvas.addEventListener('click', doJump);
 
   // Pre-render alien SVG → Image for canvas draw
   const svgStr = alienSVG(G.player, 80);
@@ -2396,6 +2431,19 @@ function stopVigLoop(){
   G.vigRunning = false;
 }
 
+function doJump(){
+  if(!G.vigRunning || G.vigPaused) return;
+  if(G.vigAlienY > 2) return;                                    // already airborne
+  if(performance.now() - (G.vigJumpLast||0) < VIG_CFG.JUMP_COOL) return;
+  G.vigVelY     = VIG_CFG.JUMP_FORCE;
+  G.vigJumping  = true;
+  G.vigJumpLast = performance.now();
+}
+
+function _vigKeyJump(e){
+  if(e.code === 'Space' || e.key === ' '){ e.preventDefault(); doJump(); }
+}
+
 // ─── MAIN rAF LOOP ────────────────────────────────────
 function vigLoop(ts, lastTs){
   if(!G.vigRunning) return;
@@ -2413,10 +2461,11 @@ function vigLoop(ts, lastTs){
     // Reached target?
     if(G.vigAlienX >= G.vigAlienTarget){
       if(G.vigEventIdx < G.vigRoundEvents.length){
-        // At an event trigger
+        // At an event trigger — capture jump height NOW for outcome
         G.vigPaused = true;
-        const evIdx = G.vigEventIdx;
-        setTimeout(() => showVigEventCard(G.vigRoundEvents[evIdx]), 220);
+        const evIdx   = G.vigEventIdx;
+        const jumpedY = G.vigAlienY;
+        setTimeout(() => showVigEventCard(G.vigRoundEvents[evIdx], jumpedY), 220);
       } else {
         // Reached end of canvas — round complete
         G.vigPaused = true;
@@ -2425,10 +2474,17 @@ function vigLoop(ts, lastTs){
     }
   }
 
+  // ── JUMP PHYSICS ────────────────────────────────────
+  if(!G.vigPaused){
+    G.vigVelY   -= VIG_CFG.GRAVITY * (dt / 16);
+    G.vigAlienY += G.vigVelY * (dt / 16);
+    if(G.vigAlienY <= 0){ G.vigAlienY = 0; G.vigVelY = 0; G.vigJumping = false; }
+  }
+
   // ── RENDER ──────────────────────────────────────────
   drawParallaxBg(ctx, canvas, currentBiomeKey(), G.vigScrollX, ts);
-  drawEventMarkers(ctx, canvas, G.vigEventTriggers, G.vigEventIdx);
-  drawAlienSprite(ctx, canvas, G.vigAlienX, ts, G.vigPaused);
+  drawEventMarkers(ctx, canvas, G.vigEventTriggers, G.vigRoundEvents, G.vigEventIdx, ts);
+  drawAlienSprite(ctx, canvas, G.vigAlienX, G.vigAlienY, ts, G.vigPaused);
   drawHUD(ctx, canvas, currentBiomeKey());
 
   G.vigAnimFrame = requestAnimationFrame(nextTs => vigLoop(nextTs, ts));
@@ -2791,74 +2847,121 @@ function drawAtmosphericParticles(ctx, W, H, groundY, biomeKey, pal, scrollX, ts
 }
 
 // ─── EVENT MARKERS ──────────────────────────────────
-function drawEventMarkers(ctx, canvas, triggers, currentIdx){
+function drawEventMarkers(ctx, canvas, triggers, events, currentIdx, ts){
   const H = canvas.height;
   const groundY = Math.floor(H * 0.72);
+  const pulse = 0.7 + 0.3 * Math.sin((ts || 0) * 0.008); // 0.4–1.0 alpha oscillation
 
   triggers.forEach((tx, i) => {
-    if(i < currentIdx){
-      // Already done — faint tick
-      ctx.strokeStyle = '#44ffaa';
-      ctx.globalAlpha = 0.3;
-    } else if(i === currentIdx){
-      // Current — bright pulse
-      ctx.strokeStyle = '#00fff0';
-      ctx.globalAlpha = 0.9;
+    const ev = events[i];
+    const isAir    = ev && ev._height === 'air';
+    const isDone   = i < currentIdx;
+    const isCur    = i === currentIdx;
+
+    if(isAir){
+      // ── AIR COLLECTIBLE (windfall) ──────────────────
+      const oy = groundY - VIG_CFG.AIR_MARKER_Y; // orb center Y
+
+      // Faint beam from ground up to orb
+      const beamAlpha = isDone ? 0.08 : (isCur ? 0.25 * pulse : 0.12);
+      ctx.strokeStyle = isDone ? '#44ffaa' : '#39ff8a';
+      ctx.globalAlpha = beamAlpha;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 5]);
+      ctx.beginPath();
+      ctx.moveTo(tx, groundY);
+      ctx.lineTo(tx, oy + 10);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      // Orb glow
+      const orbAlpha = isDone ? 0.25 : (isCur ? pulse : 0.55);
+      const orbColor = isDone ? '#44ffaa' : '#39ff8a';
+      ctx.globalAlpha = orbAlpha * 0.35;
+      ctx.fillStyle = orbColor;
+      ctx.beginPath();
+      ctx.arc(tx, oy, 14, 0, Math.PI * 2);
+      ctx.fill();
+      // Orb core
+      ctx.globalAlpha = orbAlpha;
+      ctx.beginPath();
+      ctx.arc(tx, oy, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Orb number
+      ctx.fillStyle = isDone ? 'rgba(68,255,170,0.5)' : (isCur ? '#00fff0' : '#39ff8a');
+      ctx.font = '700 8px "Share Tech Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(i + 1, tx, oy + 3);
+      ctx.textAlign = 'left';
+
     } else {
-      // Upcoming — dim
-      ctx.strokeStyle = '#7b2fff';
-      ctx.globalAlpha = 0.5;
+      // ── GROUND OBSTACLE (hazard / flavor) ───────────
+      const barH  = 28;
+      const barW  = 14;
+      const barTop = groundY - barH;
+
+      const barColor  = isDone ? '#44ffaa'
+                      : (ev && ev.cls === 'hazard')
+                        ? (isCur ? '#ff4477' : '#882244')
+                        : (isCur ? '#00b4ff' : '#335566');
+      const barAlpha  = isDone ? 0.2 : (isCur ? pulse : 0.55);
+
+      // Body of obstacle
+      ctx.globalAlpha = barAlpha;
+      ctx.fillStyle = barColor;
+      ctx.fillRect(tx - barW/2, barTop, barW, barH);
+
+      // Top edge highlight
+      ctx.globalAlpha = barAlpha * 0.7;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(tx - barW/2, barTop, barW, 2);
+      ctx.globalAlpha = 1;
+
+      // Event number on the obstacle face
+      ctx.fillStyle = isDone ? 'rgba(68,255,170,0.5)' : (isCur ? '#fff' : 'rgba(200,220,255,0.6)');
+      ctx.font = '700 8px "Share Tech Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(i + 1, tx, barTop + barH / 2 + 3);
+      ctx.textAlign = 'left';
     }
-    ctx.lineWidth = i === currentIdx ? 2 : 1;
-    ctx.setLineDash(i === currentIdx ? [] : [4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(tx, groundY - 50);
-    ctx.lineTo(tx, groundY);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.globalAlpha = 1;
-
-    // Diamond marker
-    const my = groundY - 54;
-    ctx.fillStyle = i < currentIdx ? '#44ffaa' : (i === currentIdx ? '#00fff0' : '#7b2fff');
-    ctx.globalAlpha = i < currentIdx ? 0.4 : 0.9;
-    ctx.beginPath();
-    ctx.moveTo(tx, my - 6); ctx.lineTo(tx + 5, my);
-    ctx.lineTo(tx, my + 6); ctx.lineTo(tx - 5, my);
-    ctx.closePath();
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    // Event number
-    ctx.fillStyle = i === currentIdx ? '#00fff0' : '#5a7a96';
-    ctx.font = '600 9px "Share Tech Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(i + 1, tx, my + 3);
-    ctx.textAlign = 'left';
   });
 }
 
 // ─── ALIEN SPRITE ───────────────────────────────────
-function drawAlienSprite(ctx, canvas, alienX, ts, paused){
+function drawAlienSprite(ctx, canvas, alienX, alienY, ts, paused){
   const H = canvas.height;
   const groundY = Math.floor(H * 0.72);
   const size = 80;
-  const bobY = paused ? 0 : Math.sin(ts * 0.005) * 3;
+  const airborne = alienY > 2;
+  const bobY = (paused || airborne) ? 0 : Math.sin(ts * 0.005) * 3;
+  const spriteTop = groundY - size + bobY - alienY;
 
   if(G.vigAlienImg){
-    ctx.drawImage(G.vigAlienImg, alienX - size/2, groundY - size + bobY, size, size);
+    ctx.drawImage(G.vigAlienImg, alienX - size/2, spriteTop, size, size);
   } else {
     // Fallback: simple circle placeholder
     ctx.fillStyle = '#00fff0';
     ctx.globalAlpha = 0.7;
     ctx.beginPath();
-    ctx.arc(alienX, groundY - 20 + bobY, 18, 0, Math.PI * 2);
+    ctx.arc(alienX, groundY - 20 + bobY - alienY, 18, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
   }
 
-  // Walk dust particles when moving
-  if(!paused && G.vigAlienX < G.vigAlienTarget){
+  // Shadow under alien when airborne
+  if(airborne){
+    const shadowScale = Math.max(0.3, 1 - alienY / 180);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(alienX, groundY + 2, 22 * shadowScale, 5 * shadowScale, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Walk dust particles when moving on ground
+  if(!paused && !airborne && G.vigAlienX < G.vigAlienTarget){
     ctx.fillStyle = '#7b2fff';
     for(let p = 0; p < 3; p++){
       const px = alienX - size/2 + Math.random() * size * 0.5;
@@ -2907,7 +3010,7 @@ function fireNextVigEvent(){
   showVigEventCard(ev);
 }
 
-function showVigEventCard(ev){
+function showVigEventCard(ev, capturedY){
   const overlay = document.getElementById('vig-overlay');
   const card    = document.getElementById('vig-event-card');
   const intro   = document.getElementById('vig-intro-card');
@@ -2915,6 +3018,12 @@ function showVigEventCard(ev){
   intro.classList.add('hidden');
   card.classList.remove('hidden');
   overlay.classList.remove('hidden');
+
+  // Jump skill check
+  const jumpY       = capturedY || 0;
+  const jumpSuccess = ev._height === 'air'
+    ? jumpY >= VIG_CFG.JUMP_REACH_H
+    : jumpY >= VIG_CFG.JUMP_CLEAR_H;
 
   // Determine outcome
   let text = ev.text || '';
@@ -2954,17 +3063,35 @@ function showVigEventCard(ev){
     }
   }
 
+  // Jump skill bonus
+  if(jumpSuccess) delta += VIG_CFG.JUMP_BONUS;
+
   // Apply score
   G.vigScore = Math.max(0, G.vigScore + delta);
   document.getElementById('vig-score-display').textContent = G.vigScore;
 
-  // Populate card UI
+  // Card type label — override based on jump + height
   const typeEl = document.getElementById('vig-card-type');
-  typeEl.textContent = ev.cls.toUpperCase();
-  typeEl.className = 'vig-card-type ' + ev.cls;
+  if(jumpSuccess && ev._height === 'ground'){
+    typeEl.textContent = 'CLEARED';
+    typeEl.className   = 'vig-card-type cleared';
+  } else if(jumpSuccess && ev._height === 'air'){
+    typeEl.textContent = 'REACHED';
+    typeEl.className   = 'vig-card-type reached';
+  } else if(!jumpSuccess && ev._height === 'air' && ev.cls === 'windfall'){
+    typeEl.textContent = 'MISSED';
+    typeEl.className   = 'vig-card-type missed';
+  } else {
+    typeEl.textContent = ev.cls.toUpperCase();
+    typeEl.className   = 'vig-card-type ' + ev.cls;
+  }
 
   document.getElementById('vig-card-title').textContent = ev.title;
   document.getElementById('vig-card-text').textContent  = text;
+
+  // Jump badge
+  const jumpEl = document.getElementById('vig-card-jump');
+  if(jumpEl) jumpEl.style.display = jumpSuccess ? '' : 'none';
 
   const deltaEl = document.getElementById('vig-card-delta');
   if(delta !== 0){
@@ -2993,6 +3120,11 @@ function dismissVigEvent(){
     G.vigAlienTarget = canvas.width - 70;
   }
 
+  // Land the alien on dismissal so they always resume from the ground
+  G.vigAlienY  = 0;
+  G.vigVelY    = 0;
+  G.vigJumping = false;
+
   // Resume alien movement
   G.vigPaused = false;
 }
@@ -3000,6 +3132,11 @@ function dismissVigEvent(){
 function finishVigRound(){
   document.getElementById('vig-progress-fill').style.width = '100%';
   G.vigRunning = false;
+
+  // Remove jump listeners
+  document.removeEventListener('keydown', _vigKeyJump);
+  const canvas = document.getElementById('vig-canvas');
+  if(canvas) canvas.removeEventListener('click', doJump);
 
   // Pre-generate candidates now so encounter can show their portraits + dialogue
   const gen = G.round;
