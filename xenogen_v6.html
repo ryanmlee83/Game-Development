@@ -66,39 +66,39 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 /* ══════════════════════
    BUILD SCREEN
 ══════════════════════ */
-#screen-build{align-items:center;padding:1.5rem 1rem;background:radial-gradient(ellipse at 50% 0%,rgba(0,255,231,0.04) 0%,transparent 55%);}
-.build-header{text-align:center;margin-bottom:1.5rem;}
-.build-header h1{font-family:'Share Tech Mono',monospace;font-size:1.1rem;letter-spacing:0.15em;color:var(--accent);margin-bottom:0.35rem;}
-.build-header p{font-size:0.82rem;color:var(--text-dim);letter-spacing:0.03em;}
-.build-layout{display:flex;gap:1.5rem;width:100%;max-width:900px;align-items:flex-start;}
-.build-spinners{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:1rem;}
-.build-spinners h3{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:var(--accent3);margin-bottom:0.8rem;}
-.spinner-row{display:flex;align-items:center;gap:0.6rem;padding:0.45rem 0;border-bottom:1px solid var(--border2);}
+#screen-build{align-items:center;padding:0.6rem 0.5rem;background:radial-gradient(ellipse at 50% 0%,rgba(0,255,231,0.04) 0%,transparent 55%);}
+.build-header{text-align:center;margin-bottom:0.85rem;}
+.build-header h1{font-family:'Share Tech Mono',monospace;font-size:1.2rem;letter-spacing:0.15em;color:var(--accent);margin-bottom:0.25rem;}
+.build-header p{font-size:0.9rem;color:var(--text-dim);letter-spacing:0.03em;}
+.build-layout{display:flex;gap:1rem;width:100%;max-width:100%;align-items:flex-start;padding:0 0.25rem;}
+.build-spinners{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.85rem;}
+.build-spinners h3{font-family:'Share Tech Mono',monospace;font-size:0.8rem;letter-spacing:0.1em;color:var(--accent3);margin-bottom:0.6rem;}
+.spinner-row{display:flex;align-items:center;gap:0.6rem;padding:0.5rem 0;border-bottom:1px solid var(--border2);}
 .spinner-row:last-child{border-bottom:none;}
-.sr-name{font-size:0.78rem;color:var(--text-dim);width:130px;flex-shrink:0;letter-spacing:0.02em;}
-.sr-alleles{display:flex;gap:0.3rem;flex:1;}
-.allele-slot{width:40px;height:40px;border-radius:3px;background:var(--bg3);border:1px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;font-size:0.88rem;font-weight:700;color:var(--accent2);
+.sr-name{font-size:0.9rem;color:var(--text-dim);width:145px;flex-shrink:0;letter-spacing:0.02em;}
+.sr-alleles{display:flex;gap:0.35rem;flex:1;}
+.allele-slot{width:52px;height:52px;border-radius:3px;background:var(--bg3);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:var(--accent2);
   transition:all 0.3s;position:relative;overflow:hidden;flex-shrink:0;}
 .allele-slot.spinning{animation:slotSpin 0.08s linear infinite;}
 .allele-slot.landed{border-color:var(--accent);box-shadow:0 0 8px rgba(0,255,231,0.3);animation:slotLand 0.3s ease-out;}
 @keyframes slotSpin{0%{transform:translateY(0);}50%{transform:translateY(-4px);}100%{transform:translateY(0);}}
 @keyframes slotLand{0%{transform:scale(1.2);background:rgba(0,255,231,0.15);}100%{transform:scale(1);background:var(--bg3);}}
-.sr-pheno{font-size:0.74rem;color:var(--text);flex:1;text-align:right;opacity:0.9;}
-.sr-spin-btn{padding:0.3rem 0.6rem;background:var(--bg3);border:1px solid var(--border);border-radius:2px;
-  color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.04em;
+.sr-pheno{font-size:0.85rem;color:var(--text);flex:1;text-align:right;opacity:0.9;}
+.sr-spin-btn{padding:0.35rem 0.7rem;background:var(--bg3);border:1px solid var(--border);border-radius:2px;
+  color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:0.75rem;letter-spacing:0.04em;
   cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
 .sr-spin-btn:hover{border-color:var(--accent3);color:var(--accent3);}
-.sr-spin-btn:disabled{opacity:0.35;cursor:not-allowed;}
-.build-preview{width:180px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0.75rem;}
-.build-preview-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.85rem;width:100%;text-align:center;}
-.build-preview-card h3{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;color:var(--text-dim);margin-bottom:0.6rem;}
+.sr-spin-btn.respun{border-color:var(--accent3);color:var(--accent3);}
+.build-preview{width:260px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0.75rem;}
+.build-preview-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:1rem;width:100%;text-align:center;}
+.build-preview-card h3{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;color:var(--text-dim);margin-bottom:0.6rem;}
 .build-actions{display:flex;flex-direction:column;gap:0.5rem;width:100%;}
-.spin-all-btn{width:100%;padding:0.6rem;background:rgba(123,47,255,0.12);border:1px solid var(--accent3);
-  border-radius:3px;color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:0.75rem;
+.spin-all-btn{width:100%;padding:0.65rem;background:rgba(123,47,255,0.12);border:1px solid var(--accent3);
+  border-radius:3px;color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:0.8rem;
   letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;}
 .spin-all-btn:hover{background:rgba(123,47,255,0.22);box-shadow:0 0 15px rgba(123,47,255,0.2);}
-.build-progress{font-size:0.75rem;color:var(--text-dim);text-align:center;}
+.build-progress{font-size:0.82rem;color:var(--text-dim);text-align:center;}
 .build-progress span{color:var(--accent);}
 
 /* ══════════════════════
@@ -127,6 +127,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   border-radius:3px;color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:0.72rem;
   letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
 .pc-select-btn:hover,.partner-candidate.selected .pc-select-btn{background:rgba(123,47,255,0.25);box-shadow:0 0 15px rgba(123,47,255,0.2);}
+/* Player panel strip on partner screen */
+.player-panel-strip{background:var(--panel);border:1px solid var(--border);border-radius:4px;
+  padding:0.65rem 1rem;margin-bottom:1rem;max-width:1100px;width:100%;display:flex;align-items:flex-start;gap:1rem;}
+.player-panel-strip .screen-title-bar{margin-bottom:0;white-space:nowrap;padding-top:0.15rem;}
+.player-panel-strip .geno-table{font-size:0.72rem;}
 
 /* ══════════════════════
    GAME SCREEN (Observe + Predict + Fertilize + Reveal)
@@ -367,16 +372,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 <div id="screen-title" class="screen active">
   <div class="x-logo">XenoGenus</div>
   <div class="logo-sub">ALIEN GENETICS LABORATORY</div>
-  <div class="tagline">// breed · predict · inherit · evolve //</div>
   <div class="setup-card">
     <h2>// LAB CONFIGURATION</h2>
     <div class="cfg-row">
-      <label>DIFFICULTY</label>
-      <select id="cfg-diff">
-        <option value="beginner">BEGINNER — 4 TRAITS</option>
-        <option value="advanced" selected>ADVANCED — 8 TRAITS</option>
-        <option value="expert">EXPERT — ALL 13</option>
-      </select>
+      <label>TRAIT COUNT</label>
+      <input type="number" id="cfg-traits" min="4" max="10" value="6">
     </div>
     <div class="cfg-row">
       <label>GENERATIONS</label>
@@ -384,7 +384,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     </div>
     <div class="cfg-row">
       <label>SUBJECT ID</label>
-      <input type="text" id="cfg-name" placeholder="ENTER NAME" maxlength="18">
+      <div style="display:flex;gap:0.4rem;width:205px;">
+        <input type="text" id="cfg-name" placeholder="ENTER NAME" maxlength="18" style="flex:1;width:auto;">
+        <button class="x-btn x-btn-sec" onclick="generateName()" style="white-space:nowrap;padding:0.5rem 0.6rem;font-size:0.68rem;">GEN</button>
+      </div>
     </div>
     <button class="x-btn x-btn-primary" style="width:100%;margin-top:1.5rem;" onclick="goToBuild()">INITIALIZE EXPERIMENT</button>
   </div>
@@ -407,7 +410,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
       <div class="build-preview-card">
         <h3>SPECIMEN PREVIEW</h3>
         <div id="build-svg-wrap" style="display:flex;justify-content:center;"></div>
-        <div id="build-name" style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text-dim);margin-top:0.4rem;letter-spacing:0.05em;text-align:center;">—</div>
+        <div id="build-name" style="font-family:'Share Tech Mono',monospace;font-size:0.82rem;color:var(--text-dim);margin-top:0.5rem;letter-spacing:0.05em;text-align:center;">—</div>
       </div>
       <div class="build-actions">
         <button class="spin-all-btn" onclick="spinAll()">⟳ SPIN ALL</button>
@@ -473,6 +476,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <p>CHOOSE ONE ALIEN TO BREED WITH YOUR SPECIMEN</p>
     <button class="ref-btn" onclick="toggleRef()" style="margin-top:0.75rem;font-size:0.5rem;">⊞ TRAIT REFERENCE</button>
   </div>
+  <!-- Player alien info strip -->
+  <div id="player-panel" class="player-panel-strip"></div>
   <div class="partner-grid" id="partner-grid"></div>
   <div style="margin-top:1.25rem;">
     <button class="x-btn x-btn-accent3" id="partner-confirm-btn" onclick="confirmPartner()" disabled>PROCEED TO LAB →</button>
@@ -487,7 +492,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="gh-left">
       <span class="gh-title">XenoGenus</span>
       <span class="gh-round">GEN <em id="gh-round">1</em> / <em id="gh-total">5</em></span>
-      <span class="gh-diff beginner" id="gh-diff">BEGINNER</span>
+      <span class="gh-diff" id="gh-diff">4 TRAITS</span>
       <span class="streak-badge hidden" id="streak-badge">🔥 ×<span id="streak-mult">1</span></span>
     </div>
     <div class="gh-right">
@@ -947,7 +952,7 @@ const DIALOGUE_LIBRARY = [
   // eyes
   {trait:'eyes',zygosity:'homDom',text:'Three eyes — [PARENT] had the same. Said it runs on both sides of the family.'},
   {trait:'eyes',zygosity:'het',text:'[PARENT] had three eyes like me, but the other parent had just one. Quite a contrast.'},
-  {trait:'eyes',zygosity:'homRec',text:'[PARENT] had one eye, same as me. Two eyes would be a lot to ask for in our family.'},
+  {trait:'eyes',zygosity:'homRec',text:'[PARENT] had one eye, same as me. Three eyes would be quite the surprise in our family.'},
   // ant
   {trait:'ant',zygosity:'homDom',text:'Curled antennae are just what we do — [PARENT] had them, and so did their parent before that.'},
   {trait:'ant',zygosity:'het',text:'[PARENT] had curled antennae like mine. The other parent had straight ones though — we never knew which I\'d inherit.'},
@@ -996,8 +1001,11 @@ const DIALOGUE_LIBRARY = [
 
 // ═══════════════════════════════════════════════════════
 // TRAIT DATA
+// TRAITS_ALL preserves all 13 traits (including codominant).
+// TRAITS_DR is the active set (10 dominant/recessive only).
+// To re-enable codominant traits, swap TRAITS_DR usage in initG().
 // ═══════════════════════════════════════════════════════
-const TRAITS = [
+const TRAITS_ALL = [
   {id:'skin',   name:'Skin Color',    alleles:['G','g'], dom:'Glowing Green',   rec:'Dull Gray',       type:'dr'},
   {id:'eyes',   name:'Eye Number',    alleles:['E','e'], dom:'Three Eyes',       rec:'One Eye',         type:'dr'},
   {id:'ant',    name:'Antenna Shape', alleles:['A','a'], dom:'Curled Antennae', rec:'Straight Antennae',type:'dr'},
@@ -1008,6 +1016,7 @@ const TRAITS = [
   {id:'tongue', name:'Tongue Shape',  alleles:['B','b'], dom:'Forked Tongue',    rec:'Straight Tongue',  type:'dr'},
   {id:'fingers',name:'Finger Number', alleles:['F','f'], dom:'Five Fingers',     rec:'Three Fingers',    type:'dr'},
   {id:'wings',  name:'Wing Presence', alleles:['W','w'], dom:'Has Wings',        rec:'No Wings',         type:'dr'},
+  // ── Codominant traits (preserved, currently inactive) ──
   {id:'nose',   name:'Nose Shape',    alleles:['Nh','Nd','Nc','Nt'],
     phenotypes:{Nh:'Square Nose',Nd:'No Nose',Nc:'Tubular Nose',Nt:'Triangular Nose'}, type:'ma'},
   {id:'horns',  name:'Horns',         alleles:['Hh','Hd','Hc','Ht'],
@@ -1015,9 +1024,13 @@ const TRAITS = [
   {id:'biolum', name:'Bioluminescence',alleles:['Bh','Bd','Bc','Bt'],
     phenotypes:{Bh:'Pulsating Glow',Bd:'Patterned Glow',Bc:'Multi-Color Glow',Bt:'No Glow'}, type:'ma'},
 ];
+// Active trait pool — DR only (swap to TRAITS_ALL to re-enable codominant traits)
+const TRAITS_DR = TRAITS_ALL.filter(t => t.type === 'dr');
 
-const DIFF_COUNTS = {beginner:4, advanced:8, expert:13};
-const DIFF_MULT   = {beginner:1, advanced:2, expert:3};
+// Legacy alias used by reference table and SVG renderer (uses full set for display)
+const TRAITS = TRAITS_ALL;
+
+// Removed: DIFF_COUNTS and DIFF_MULT replaced by per-trait-count diffMult()
 const NAME_A = ['Xel','Vor','Zyg','Kreth','Nox','Aev','Thul','Drix','Phem','Ulk','Zov','Qeth'];
 const NAME_B = ['arak','ozin','ephon','ixis','ulor','adren','omex','ivast','ylon','ethra','orex','imul'];
 const randName = () => NAME_A[Math.random()*NAME_A.length|0]+NAME_B[Math.random()*NAME_B.length|0];
@@ -1030,13 +1043,12 @@ const genoStr = g => g[0]+g[1];
 let G = {};
 
 function initG(){
-  const diff  = document.getElementById('cfg-diff').value;
-  const rounds= parseInt(document.getElementById('cfg-rounds').value)||5;
-  const name  = document.getElementById('cfg-name').value.trim()||'Researcher';
-  const traitCount = DIFF_COUNTS[diff];
+  const rounds     = parseInt(document.getElementById('cfg-rounds').value)||5;
+  const name       = document.getElementById('cfg-name').value.trim()||'Researcher';
+  const traitCount = Math.min(10, Math.max(4, parseInt(document.getElementById('cfg-traits').value)||6));
   G = {
-    diff, rounds, name,
-    traits: TRAITS.slice(0,traitCount),
+    rounds, name,
+    traits: TRAITS_DR.slice(0, traitCount),
     round:1, score:0, streak:0, bestStreak:0,
     totalQ:0, totalCorrect:0,
     player:null, partner:null, offGeno:null, pendingOff:null,
@@ -1094,6 +1106,34 @@ function makeAlien(existingGeno, gen){
   const geno={};
   for(const t of G.traits) geno[t.id]=existingGeno ? existingGeno[t.id] : randomGeno(t);
   return {name:randName(), gen:gen||1, geno};
+}
+
+// ── Biome-weighted candidate generation ─────────────────
+// Dominant allele probability is boosted for traits that appear
+// in events for the current biome (and adjacent biome in sequence).
+function weightedGeno(t, primaryBiome, secondaryBiome){
+  if(t.type !== 'dr') return randomGeno(t);  // codominant stays uniform
+  const score =
+    EVENT_LIBRARY.filter(e => e.trait === t.id && e.biome === primaryBiome).length * 2 +
+    (secondaryBiome ? EVENT_LIBRARY.filter(e => e.trait === t.id && e.biome === secondaryBiome).length : 0);
+  if(score === 0) return randomGeno(t);
+  // Base 50% + up to 25% boost toward dominant, capped at 75%
+  const domProb = Math.min(0.5 + score * 0.06, 0.75);
+  const pickW = () => Math.random() < domProb ? t.alleles[0] : t.alleles[1];
+  return [pickW(), pickW()];
+}
+
+function makeWeightedAlien(gen, primaryBiome, secondaryBiome){
+  const geno = {};
+  for(const t of G.traits) geno[t.id] = weightedGeno(t, primaryBiome, secondaryBiome);
+  return {name: randName(), gen: gen||1, geno};
+}
+
+function adjacentBiomeKey(){
+  const idx = currentBiomeIndex();
+  if(idx + 1 < G.biomeSeq.length) return G.biomeSeq[idx + 1];
+  if(idx - 1 >= 0) return G.biomeSeq[idx - 1];
+  return null;
 }
 
 function crossAliens(a, b){
@@ -1522,6 +1562,10 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
 }
 
+function generateName(){
+  document.getElementById('cfg-name').value = randName();
+}
+
 // ═══════════════════════════════════════════════════════
 // SCREEN 1 → 2: SETUP → BUILD
 // ═══════════════════════════════════════════════════════
@@ -1541,7 +1585,7 @@ function buildSpinnerUI(){
   G.buildSpun = 0;
   document.getElementById('build-proceed-btn').disabled = true;
   document.getElementById('build-name').textContent = '—';
-  document.getElementById('build-svg-wrap').innerHTML='<svg width="80" height="80" viewBox="0 0 80 80"><ellipse cx="40" cy="42" rx="18" ry="24" fill="#0a1a10" stroke="#1a4a28" stroke-width="1"/><ellipse cx="40" cy="22" rx="15" ry="14" fill="#0a1a10" stroke="#1a4a28" stroke-width="1"/></svg>';
+  document.getElementById('build-svg-wrap').innerHTML='<svg width="140" height="140" viewBox="0 0 140 140"><ellipse cx="70" cy="80" rx="30" ry="42" fill="#0a1a10" stroke="#1a4a28" stroke-width="1.5"/><ellipse cx="70" cy="38" rx="26" ry="24" fill="#0a1a10" stroke="#1a4a28" stroke-width="1.5"/></svg>';
 
   const list = document.getElementById('spinner-list');
   list.innerHTML='';
@@ -1567,7 +1611,7 @@ function buildSpinnerUI(){
 async function spinTrait(tid, fast){
   const t = G.traits.find(x=>x.id===tid);
   const btn = document.getElementById(`spinbtn-${tid}`);
-  btn.disabled=true;
+  btn.disabled=true;  // disable during animation only
 
   const FRAMES=fast?4:12;
   const DELAY=fast?40:60;
@@ -1595,7 +1639,12 @@ async function spinTrait(tid, fast){
   const pheno=getPhenotype(t,[a1,a2]);
   document.getElementById(`pheno-${tid}`).textContent=pheno;
 
-  // Track spun count
+  // Re-enable button as RESPIN after first spin
+  btn.disabled=false;
+  btn.textContent='⟳ RESPIN';
+  btn.classList.add('respun');
+
+  // Track spun count and enable proceed once all traits spun at least once
   G.buildSpun=Object.keys(G.buildGeno).length;
   document.getElementById('build-progress').textContent=G.buildSpun;
 
@@ -1607,10 +1656,9 @@ async function spinTrait(tid, fast){
 
 async function spinAll(){
   for(const t of G.traits){
-    if(!G.buildGeno[t.id]){
-      spinTrait(t.id, false);
-      await new Promise(r=>setTimeout(r,80));
-    }
+    // Always respin (allows full respin of all traits)
+    spinTrait(t.id, false);
+    await new Promise(r=>setTimeout(r,80));
   }
 }
 
@@ -1622,7 +1670,7 @@ function updateBuildPreview(){
     fullGeno[t.id]=G.buildGeno[t.id]||randomGeno(t);
   }
   const previewAlien={name:G._buildName,gen:0,geno:fullGeno};
-  document.getElementById('build-svg-wrap').innerHTML=alienSVG(previewAlien,80);
+  document.getElementById('build-svg-wrap').innerHTML=alienSVG(previewAlien,140);
   document.getElementById('build-name').textContent=G._buildName;
 }
 
@@ -1644,6 +1692,10 @@ function goToPartnerSelect(){
 // SCREEN 3: VIGNETTE ENTRY
 // ═══════════════════════════════════════════════════════
 function goToVignette(){
+  // Clean up encounter overlay from previous round
+  const enc = document.getElementById('vig-encounter-temp');
+  if(enc) enc.classList.add('hidden');
+
   // Draw round events for current biome
   drawRoundVigEvents();
 
@@ -1660,6 +1712,10 @@ function goToVignette(){
 }
 
 function showBiomeIntro(){
+  // Safety guard: hide any lingering encounter overlay from previous round
+  const enc = document.getElementById('vig-encounter-temp');
+  if(enc) enc.classList.add('hidden');
+
   // Determine current biome from round number
   const biomeKey = currentBiomeKey();
   document.getElementById('vig-biome-name').textContent = BIOME_NAMES[biomeKey];
@@ -1708,7 +1764,7 @@ function completeVignette(preSelectedIdx){
   // Candidates may already be set by finishVigRound; generate only if needed (skip path)
   if(!G.candidates || G.candidates.length === 0){
     const gen = G.round;
-    G.candidates = [makeAlien(null,gen), makeAlien(null,gen), makeAlien(null,gen)];
+    G.candidates = [makeWeightedAlien(gen, currentBiomeKey(), adjacentBiomeKey()), makeWeightedAlien(gen, currentBiomeKey(), adjacentBiomeKey()), makeWeightedAlien(gen, currentBiomeKey(), adjacentBiomeKey())];
   }
   if(preSelectedIdx !== undefined && preSelectedIdx !== null){
     G.selectedCandidate = preSelectedIdx;
@@ -1728,7 +1784,28 @@ function completeVignette(preSelectedIdx){
   window.scrollTo(0,0);
 }
 
+function renderPlayerPanel(){
+  const el = document.getElementById('player-panel');
+  if(!el || !G.player) return;
+  const rows = G.traits.map(t =>
+    `<tr>
+      <td class="td-name">${t.name}</td>
+      <td class="td-geno">${genoStr(G.player.geno[t.id])}</td>
+      <td class="td-pheno">${getPhenotype(t, G.player.geno[t.id])}</td>
+    </tr>`
+  ).join('');
+  el.innerHTML = `
+    <div>
+      ${alienSVG(G.player, 72)}
+    </div>
+    <div style="flex:1;">
+      <div class="screen-title-bar" style="margin-bottom:0.45rem;">YOUR SPECIMEN — ${G.player.name}</div>
+      <table class="geno-table">${rows}</table>
+    </div>`;
+}
+
 function renderPartnerGrid(){
+  renderPlayerPanel();
   const grid=document.getElementById('partner-grid');
   grid.innerHTML='';
   G.candidates.forEach((c,i)=>{
@@ -1780,8 +1857,8 @@ function renderGameScreen(){
   document.getElementById('gh-round').textContent=G.round;
   document.getElementById('gh-total').textContent=G.rounds;
   const db=document.getElementById('gh-diff');
-  db.className='gh-diff '+G.diff;
-  db.textContent=G.diff.toUpperCase();
+  db.className='gh-diff';
+  db.textContent=G.traits.length+' TRAITS';
   document.getElementById('gh-score').textContent=G.score.toLocaleString();
   updateStreak();
 
@@ -1860,6 +1937,7 @@ function buildPredGrid(gridId, locked){
       <div class="prob-row">${probBtns}</div>
       <div class="fb-tag"></div>
       <div class="corr-ans"></div>`;
+    if(!locked) div.querySelector('select').addEventListener('change', checkPostReady);
     grid.appendChild(div);
   }
   if(!locked) checkPostReady();
@@ -1887,6 +1965,15 @@ function checkPostReady(){
 // PRE → FERTILIZE
 // ═══════════════════════════════════════════════════════
 function confirmPre(){
+  const preGrid = document.getElementById('pre-grid');
+  const incomplete = [...preGrid.querySelectorAll('.pred-item')].some(
+    item => !item.querySelector('select').value
+  );
+  if(incomplete){
+    preGrid.style.outline = '1px solid var(--danger)';
+    setTimeout(() => preGrid.style.outline = '', 1500);
+    return;
+  }
   document.getElementById('pre-panel').classList.add('hidden');
   document.getElementById('post-panel').classList.remove('hidden');
   document.getElementById('phase-bar').textContent='PHASE 2 — FERTILIZE & CONFIRM PREDICTION';
@@ -1949,7 +2036,12 @@ async function doFertilize(){
 // ═══════════════════════════════════════════════════════
 // SCORING
 // ═══════════════════════════════════════════════════════
-function diffMult(){return DIFF_MULT[G.diff]||1;}
+function diffMult(){
+  const n = G.traits.length;
+  if(n <= 4) return 1;
+  if(n <= 7) return 2;
+  return 3;  // 8–10 traits
+}
 function streakMult(){if(G.streak>=8)return 3;if(G.streak>=5)return 2;if(G.streak>=3)return 1.5;return 1;}
 function updateStreak(){
   const badge=document.getElementById('streak-badge');
@@ -2581,7 +2673,7 @@ function finishVigRound(){
 
   // Pre-generate candidates now so encounter can show their portraits + dialogue
   const gen = G.round;
-  G.candidates = [makeAlien(null,gen), makeAlien(null,gen), makeAlien(null,gen)];
+  G.candidates = [makeWeightedAlien(gen, currentBiomeKey(), adjacentBiomeKey()), makeWeightedAlien(gen, currentBiomeKey(), adjacentBiomeKey()), makeWeightedAlien(gen, currentBiomeKey(), adjacentBiomeKey())];
   G.selectedCandidate = null;
 
   setTimeout(() => showPartnerEncounter(), 500);
