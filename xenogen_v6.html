@@ -335,6 +335,15 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .vig-biome-node-turns{font-size:0.62rem;color:var(--text-dim);}
 .vig-biome-arrow{color:var(--text-dim);font-size:1.2rem;display:flex;align-items:center;}
 
+/* Partner encounter cards in vignette */
+.vig-encounter-candidate{background:var(--bg3);border:1px solid var(--border);border-radius:5px;
+  padding:0.85rem;min-width:170px;max-width:210px;text-align:center;flex:1;}
+.enc-svg-wrap{display:flex;justify-content:center;margin-bottom:0.4rem;}
+.enc-name{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.06em;
+  color:var(--accent3);margin-bottom:0.4rem;}
+.enc-dialogue{font-size:0.72rem;color:var(--text);line-height:1.55;font-style:italic;
+  min-height:4rem;border-left:2px solid var(--accent3);padding-left:0.5rem;text-align:left;}
+
 #screen-end{align-items:center;justify-content:center;padding:2rem;text-align:center;
   background:radial-gradient(ellipse at 50% 45%,rgba(123,47,255,0.07) 0%,transparent 60%);}
 .end-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.5rem,5vw,2.8rem);font-weight:900;
@@ -799,6 +808,132 @@ const EVENT_LIBRARY = [
    title:'Salt-Mineral Deposit',
    textPresent:'A forked tongue efficiently extracts key minerals from the salt deposit. +{pts} pts',
    textAbsent:'Single-tip tongue can\'t efficiently process the mineral density.'},
+
+  // ── EXTENDED CANOPY EVENTS ──────────────────────────
+  {id:'C06',biome:'canopy',cls:'windfall',trait:'skin',
+   title:'Chloro-Luminescent Bloom',
+   textPresent:'Your alien\'s green pigment syncs with a rare bloom, absorbing bonus nutrients. +{pts} pts',
+   textAbsent:'The bloom ignores dull-grey pigment entirely.'},
+  {id:'C07',biome:'canopy',cls:'hazard',trait:'fingers',
+   title:'Sticky Vine Web',
+   textPresent:'Five nimble fingers pick apart the vine web with precision. +{pts} pts',
+   textAbsent:'Three fingers can\'t separate the sticky strands fast enough. {pts} pts'},
+  {id:'C08',biome:'canopy',cls:'flavor',
+   title:'Xenobird Flock',
+   text:'A bright flock of six-winged xenobirds bursts from the canopy above — their calls echo for minutes.'},
+  {id:'C09',biome:'canopy',cls:'hazard',trait:'ears',
+   title:'Subsonic Predator Call',
+   textPresent:'Pointed ears register the low warning frequency — your alien freezes in time. +{pts} pts',
+   textAbsent:'Round ears miss the low-frequency call — the predator gets close before retreating. {pts} pts'},
+  {id:'C10',biome:'canopy',cls:'windfall',trait:'horns',
+   title:'Resonance Tree',
+   textPresent:'Your alien\'s horns vibrate with the ancient tree\'s frequency — pollen-nutrients released. +{pts} pts',
+   textAbsent:'The tree remains silent — just wood and bark.'},
+
+  // ── EXTENDED THERMAL EVENTS ──────────────────────────
+  {id:'T06',biome:'thermal',cls:'windfall',trait:'tail',
+   title:'Lava Flow Navigation',
+   textPresent:'A long tail sweeps a clear path through cooling lava crust. +{pts} pts',
+   textAbsent:'Without a long tail for balance, crossing takes much longer.'},
+  {id:'T07',biome:'thermal',cls:'hazard',trait:'fingers',
+   title:'Mineral Vent Lock',
+   textPresent:'Five dexterous fingers reach into a narrow vent to extract a mineral cache. +{pts} pts',
+   textAbsent:'Three fingers can\'t reach the deposit inside the narrow vent. {pts} pts'},
+  {id:'T08',biome:'thermal',cls:'flavor',
+   title:'Obsidian Mirror Field',
+   text:'Perfectly smooth obsidian plates reflect the sky — an unsettling hall of mirrors in the heat.'},
+  {id:'T09',biome:'thermal',cls:'hazard',trait:'tongue',
+   title:'Acrid Gas Cloud',
+   textPresent:'A forked tongue rapidly samples the gas composition — your alien detects the safe route. +{pts} pts',
+   textAbsent:'Without chemical sampling ability, your alien navigates by guesswork. {pts} pts'},
+  {id:'T10',biome:'thermal',cls:'windfall',trait:'eyes',
+   title:'Infrared Cache',
+   textPresent:'Three eyes detect infrared gradients revealing a buried resource node. +{pts} pts',
+   textAbsent:'A single eye can\'t triangulate the heat source precisely.'},
+
+  // ── EXTENDED CAVERNS EVENTS ──────────────────────────
+  {id:'V06',biome:'caverns',cls:'windfall',trait:'tail',
+   title:'Narrow Tunnel',
+   textPresent:'A long tail acts as a rope — your alien pulls itself through the tightest section. +{pts} pts',
+   textAbsent:'Without a long tail, your alien squeezes through on pure effort.'},
+  {id:'V07',biome:'caverns',cls:'hazard',trait:'wings',
+   title:'Pressure Inversion',
+   textPresent:'Wings absorb the sudden pressure wave — your alien braces and recovers fast. +{pts} pts',
+   textAbsent:'The shockwave sends your alien tumbling. {pts} pts'},
+  {id:'V08',biome:'caverns',cls:'flavor',
+   title:'Underground River',
+   text:'A silent underground river flows through ancient stone channels — the sound of deep time.'},
+  {id:'V09',biome:'caverns',cls:'hazard',trait:'skin',
+   title:'Phosphor Mold Spore',
+   textPresent:'Glowing skin pigment neutralizes the mold spore on contact. +{pts} pts',
+   textAbsent:'Dull skin absorbs the mold spore — mild infection sets in. {pts} pts'},
+  {id:'V10',biome:'caverns',cls:'windfall',trait:'tongue',
+   title:'Mineral Spring',
+   textPresent:'A forked tongue processes dissolved minerals with high efficiency. +{pts} pts',
+   textAbsent:'Straight tongue absorbs some minerals but misses the complex compounds.'},
+
+  // ── EXTENDED MARSH EVENTS ──────────────────────────
+  {id:'M06',biome:'marsh',cls:'hazard',trait:'ant',
+   title:'Electromagnetic Pulse Plant',
+   textPresent:'Curled antennae deflect the pulse — your alien passes unaffected. +{pts} pts',
+   textAbsent:'Straight antennae act as antenna rods — the pulse stings. {pts} pts'},
+  {id:'M07',biome:'marsh',cls:'windfall',trait:'wings',
+   title:'Pollen Cloud Ride',
+   textPresent:'Wings let your alien ride the pollen cloud to a rich feeding grove. +{pts} pts',
+   textAbsent:'Without wings, the cloud drifts past unreachably high.'},
+  {id:'M08',biome:'marsh',cls:'flavor',
+   title:'Ghost Lily Field',
+   text:'Semi-transparent lilies float on still black water — their roots glow electric blue beneath the surface.'},
+  {id:'M09',biome:'marsh',cls:'hazard',trait:'fingers',
+   title:'Adhesive Pod Trap',
+   textPresent:'Five fingers peel away the pod adhesive without triggering the collapse. +{pts} pts',
+   textAbsent:'Three fingers catch in the adhesive — your alien wrenches free painfully. {pts} pts'},
+  {id:'M10',biome:'marsh',cls:'windfall',trait:'horns',
+   title:'Resonance Pad',
+   textPresent:'Your alien\'s horns vibrate the floating resonance pad, which releases a dense nutrient cloud. +{pts} pts',
+   textAbsent:'No vibration response — the pad remains dormant.'},
+
+  // ── EXTENDED CANALS EVENTS ──────────────────────────
+  {id:'A06',biome:'canals',cls:'windfall',trait:'tail',
+   title:'Current Boost',
+   textPresent:'A long flexible tail sculls efficiently, doubling your alien\'s speed through the canal. +{pts} pts',
+   textAbsent:'Without a tail rudder, your alien paddles laboriously.'},
+  {id:'A07',biome:'canals',cls:'hazard',trait:'legs',
+   title:'Bridge Grid Collapse',
+   textPresent:'Six limbs distribute weight across multiple contact points — the grid holds. +{pts} pts',
+   textAbsent:'Four-limbed weight concentration causes the grid to buckle. {pts} pts'},
+  {id:'A08',biome:'canals',cls:'flavor',
+   title:'Spore Lantern Procession',
+   text:'Thousands of slow-drifting spore lanterns move upstream in a silent, luminous procession.'},
+  {id:'A09',biome:'canals',cls:'hazard',trait:'horns',
+   title:'Resonance Lock Gate',
+   textPresent:'Your alien\'s horns emit the correct frequency — the gate cycles open. +{pts} pts',
+   textAbsent:'Without horn resonance, the gate requires manual brute-force. {pts} pts'},
+  {id:'A10',biome:'canals',cls:'windfall',trait:'biolum',
+   title:'Dark Passage Signal',
+   textPresent:'Your alien\'s bioluminescence acts as a beacon — a guide creature leads the way through. +{pts} pts',
+   textAbsent:'No bioluminescence — the dark passage must be navigated blind.'},
+
+  // ── EXTENDED SHORE EVENTS ──────────────────────────
+  {id:'S06',biome:'shore',cls:'windfall',trait:'wings',
+   title:'Storm Updraft',
+   textPresent:'Wings catch the storm updraft — your alien vaults far ahead of the surge. +{pts} pts',
+   textAbsent:'Without wings, the updraft is just wind — no advantage gained.'},
+  {id:'S07',biome:'shore',cls:'hazard',trait:'legs',
+   title:'Sinking Sand Flats',
+   textPresent:'Six limbs spread pressure wide enough to skim across the surface. +{pts} pts',
+   textAbsent:'Four limbs concentrate weight — your alien sinks to the ankles. {pts} pts'},
+  {id:'S08',biome:'shore',cls:'flavor',
+   title:'Tide Script',
+   text:'Ancient tide markings cover the stones — a record of organisms that crossed here before your alien.'},
+  {id:'S09',biome:'shore',cls:'hazard',trait:'biolum',
+   title:'Photosensitive Predator',
+   textPresent:'Your alien\'s controlled glow can be dimmed at will — it douses the signal to slip past. +{pts} pts',
+   textAbsent:'No bioluminescence either way — predator ignores your alien. Neutral.'},
+  {id:'S10',biome:'shore',cls:'windfall',trait:'ant',
+   title:'Chemical Gradient Current',
+   textPresent:'Curled antennae parse the nutrient gradient in the tidal current — your alien extracts minerals. +{pts} pts',
+   textAbsent:'Straight antennae register the current but can\'t parse the gradient.'},
 ];
 
 // ─── DIALOGUE LIBRARY STUB ──────────────────────────────
@@ -833,6 +968,30 @@ const DIALOGUE_LIBRARY = [
   {trait:'tongue',zygosity:'homDom',text:'My forked tongue — [PARENT] had the same. It\'s been in our family as long as anyone remembers.'},
   {trait:'tongue',zygosity:'het',text:'[PARENT] had a forked tongue like mine, but the other parent had a straight one. Mixed signals.'},
   {trait:'tongue',zygosity:'homRec',text:'Straight tongue, like [PARENT]. Forked is unusual for us.'},
+  // ears
+  {trait:'ears',zygosity:'homDom',text:'Pointed ears — [PARENT] had them. We hear things others completely miss.'},
+  {trait:'ears',zygosity:'het',text:'[PARENT] had pointed ears like mine, but the other parent had round ones. I can hear either way.'},
+  {trait:'ears',zygosity:'homRec',text:'Round ears, same as [PARENT]. Pointed would be unusual for our family.'},
+  // tex
+  {trait:'tex',zygosity:'homDom',text:'Smooth skin — [PARENT] had it too. Scales are rare on our side of the family.'},
+  {trait:'tex',zygosity:'het',text:'I\'m smooth like [PARENT], but the other parent was quite scaly. Interesting combination.'},
+  {trait:'tex',zygosity:'homRec',text:'Scaly, like [PARENT]. Both sides of my family are the same.'},
+  // fingers
+  {trait:'fingers',zygosity:'homDom',text:'Five fingers — [PARENT] had them. Our whole family is very dexterous.'},
+  {trait:'fingers',zygosity:'het',text:'I have five fingers, but [PARENT] only had three. I got the better hand.'},
+  {trait:'fingers',zygosity:'homRec',text:'Three fingers, like [PARENT]. Fine motor work takes practice, but we manage.'},
+  // nose
+  {trait:'nose',zygosity:'homDom',text:'My nose shape comes directly from [PARENT]. Both sides of the family have the same form.'},
+  {trait:'nose',zygosity:'het',text:'[PARENT] had a different nose shape than the other parent. I ended up somewhere in between.'},
+  {trait:'nose',zygosity:'homRec',text:'[PARENT] had no nose at all — same as me. We rely on other senses.'},
+  // horns
+  {trait:'horns',zygosity:'homDom',text:'[PARENT] had the same horn formation. Both sides share it — must be deeply fixed.'},
+  {trait:'horns',zygosity:'het',text:'My horns are somewhere between [PARENT] and my other parent. Neither quite matched.'},
+  {trait:'horns',zygosity:'homRec',text:'No horns, like [PARENT]. That phenotype runs clean through our line.'},
+  // biolum
+  {trait:'biolum',zygosity:'homDom',text:'I glow, [PARENT] glowed — both sides of my family do. It\'s just what we are.'},
+  {trait:'biolum',zygosity:'het',text:'[PARENT] had the same glow pattern I do. The other parent didn\'t glow at all.'},
+  {trait:'biolum',zygosity:'homRec',text:'No glow — [PARENT] was the same. Neither parent showed bioluminescence.'},
 ];
 
 // ═══════════════════════════════════════════════════════
@@ -1536,29 +1695,35 @@ function startBiomeTraversal(){
   document.getElementById('vig-event-card').classList.add('hidden');
   document.getElementById('vig-overlay').classList.add('hidden');
   G.vigEventIdx = 0;
-  G.vigRunning = true;
-  // Phase 2 will start the canvas loop here; for now start the event sequence
+  G.vigRunning = false; // startVigCanvas() will set true after sprite loads
   startVigCanvas();
 }
 
 // ═══════════════════════════════════════════════════════
 // VIGNETTE → PARTNER SELECT
 // ═══════════════════════════════════════════════════════
-function completeVignette(){
+function completeVignette(preSelectedIdx){
   stopVigLoop();
 
-  // Generate 3 candidates for this round
-  const gen = G.round;
-  G.candidates=[makeAlien(null,gen),makeAlien(null,gen),makeAlien(null,gen)];
-  G.selectedCandidate=null;
-
-  if(G.round === 1){
-    document.querySelector('.partner-header h1').textContent = 'SELECT A PARTNER';
-  } else {
-    document.querySelector('.partner-header h1').textContent = 'SELECT A PARTNER — GEN '+G.round;
+  // Candidates may already be set by finishVigRound; generate only if needed (skip path)
+  if(!G.candidates || G.candidates.length === 0){
+    const gen = G.round;
+    G.candidates = [makeAlien(null,gen), makeAlien(null,gen), makeAlien(null,gen)];
   }
+  if(preSelectedIdx !== undefined && preSelectedIdx !== null){
+    G.selectedCandidate = preSelectedIdx;
+  } else {
+    G.selectedCandidate = null;
+  }
+
+  document.querySelector('.partner-header h1').textContent =
+    G.round === 1 ? 'SELECT A PARTNER' : 'SELECT A PARTNER — GEN ' + G.round;
   renderPartnerGrid();
-  document.getElementById('partner-confirm-btn').disabled=true;
+  document.getElementById('partner-confirm-btn').disabled = (G.selectedCandidate === null);
+  if(G.selectedCandidate !== null){
+    // Pre-highlight the selected candidate card (rendered in renderPartnerGrid but pre-select after)
+    setTimeout(() => selectCandidate(G.selectedCandidate), 50);
+  }
   showScreen('screen-partner');
   window.scrollTo(0,0);
 }
@@ -1901,6 +2066,88 @@ function renderLineage(){
 }
 
 // ═══════════════════════════════════════════════════════
+// PARTNER ENCOUNTER DIALOGUE
+// ═══════════════════════════════════════════════════════
+function showPartnerEncounter(){
+  // Build encounter HTML and show in vignette overlay
+  const overlay = document.getElementById('vig-overlay');
+  const eventCard = document.getElementById('vig-event-card');
+  const introCard = document.getElementById('vig-intro-card');
+  eventCard.classList.add('hidden');
+  introCard.classList.add('hidden');
+
+  // Build encounter content dynamically
+  let cardsHtml = G.candidates.map((c, i) => {
+    const dialogue = generateDialogue(c);
+    return `
+    <div class="vig-encounter-candidate" id="enc-card-${i}">
+      <div class="enc-svg-wrap">${alienSVG(c, 70)}</div>
+      <div class="enc-name">${c.name}</div>
+      <div class="enc-dialogue">"${dialogue}"</div>
+      <button class="x-btn x-btn-accent3" style="width:100%;margin-top:0.6rem;font-size:0.68rem;"
+        onclick="completeVignette(${i})">SELECT ${c.name.toUpperCase()} →</button>
+    </div>`;
+  }).join('');
+
+  // Inject a temporary encounter card div
+  const tempId = 'vig-encounter-temp';
+  let encDiv = document.getElementById(tempId);
+  if(!encDiv){
+    encDiv = document.createElement('div');
+    encDiv.id = tempId;
+    encDiv.className = 'vig-intro-card'; // reuse intro card styles
+    encDiv.style.maxWidth = '820px';
+    encDiv.style.padding = '1.5rem';
+    overlay.appendChild(encDiv);
+  }
+  encDiv.innerHTML = `
+    <div class="vig-intro-title" style="font-size:0.95rem;">POTENTIAL PARTNERS FOUND</div>
+    <div class="vig-intro-sub" style="margin-bottom:1rem;">Each candidate has something to say. Listen for genetic clues.</div>
+    <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;margin-bottom:1rem;">
+      ${cardsHtml}
+    </div>
+    <button class="x-btn x-btn-sec" style="font-size:0.68rem;" onclick="completeVignette()">SKIP ENCOUNTER — CHOOSE IN LAB →</button>
+  `;
+  encDiv.classList.remove('hidden');
+  overlay.classList.remove('hidden');
+}
+
+function generateDialogue(candidate){
+  // Pick 1–2 traits from candidate's genotype and build a hint line
+  const eligibleTraits = G.traits.filter(t => {
+    // Find a dialogue entry for this trait
+    return DIALOGUE_LIBRARY.some(d => d.trait === t.id);
+  });
+
+  if(eligibleTraits.length === 0) return 'I\'ve traveled far to find a compatible partner for this cycle.';
+
+  // Pick 1 random trait
+  const t = eligibleTraits[Math.floor(Math.random() * eligibleTraits.length)];
+  const geno = candidate.geno[t.id];
+  const zygosity = getZygosity(t, geno);
+
+  const matches = DIALOGUE_LIBRARY.filter(d => d.trait === t.id && d.zygosity === zygosity);
+  if(matches.length === 0) return 'My lineage has interesting traits — you\'ll see them in our offspring.';
+
+  const entry = matches[Math.floor(Math.random() * matches.length)];
+  return entry.text.replace(/\[PARENT\]/g, randName()).replace(/\[TRAIT\]/g, t.name);
+}
+
+function getZygosity(t, geno){
+  const [a1, a2] = geno;
+  if(t.type === 'dr'){
+    const domAllele = t.alleles[0];
+    if(a1 === domAllele && a2 === domAllele) return 'homDom';
+    if(a1 !== domAllele && a2 !== domAllele) return 'homRec';
+    return 'het';
+  } else {
+    // Multiple allele
+    if(a1 === a2) return 'homDom'; // homozygous any allele — classify as homDom for lookup
+    return 'het';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
 // BIOME MANAGEMENT
 // ═══════════════════════════════════════════════════════
 function initBiomes(){
@@ -1964,27 +2211,50 @@ function drawRoundVigEvents(){
 }
 
 // ═══════════════════════════════════════════════════════
-// VIGNETTE CANVAS ENGINE (Phase 2 — stub)
+// VIGNETTE CANVAS ENGINE
 // ═══════════════════════════════════════════════════════
 function startVigCanvas(){
   const canvas = document.getElementById('vig-canvas');
-  const ctx = canvas.getContext('2d');
-
-  // Resize canvas to fill wrapper
   resizeVigCanvas(canvas);
 
-  // Stub: draw static biome background then fire events
-  drawStaticBiomeBg(ctx, canvas, currentBiomeKey());
-  drawPlayerAlienOnCanvas(ctx, canvas);
+  const W = canvas.width;
 
-  // Start event sequence after short delay
-  G.vigRunning = true;
-  setTimeout(() => fireNextVigEvent(), 800);
+  // Compute event trigger x positions — spread events across canvas width
+  G.vigEventTriggers = G.vigRoundEvents.map((_, i) => {
+    const span = 0.65;
+    const start = 0.18;
+    return Math.floor(W * (start + (i / (G.vigRoundEvents.length)) * span));
+  });
+
+  // Alien start position and initial target
+  G.vigAlienX     = 50;
+  G.vigAlienTarget = G.vigEventTriggers[0] || W - 80;
+  G.vigScrollX    = 0;
+  G.vigPaused     = false;
+  G.vigAlienImg   = null;
+
+  // Pre-render alien SVG → Image for canvas draw
+  const svgStr = alienSVG(G.player, 80);
+  const blob = new Blob([svgStr], {type:'image/svg+xml'});
+  const url  = URL.createObjectURL(blob);
+  const img  = new Image();
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    G.vigAlienImg = img;
+    G.vigRunning  = true;
+    G.vigAnimFrame = requestAnimationFrame(ts => vigLoop(ts, ts));
+  };
+  img.onerror = () => {
+    // Fallback: start loop without sprite image
+    G.vigRunning   = true;
+    G.vigAnimFrame = requestAnimationFrame(ts => vigLoop(ts, ts));
+  };
+  img.src = url;
 }
 
 function resizeVigCanvas(canvas){
   const wrap = canvas.parentElement;
-  canvas.width  = wrap.clientWidth  || 900;
+  canvas.width  = Math.max(wrap.clientWidth  || 900, 600);
   canvas.height = Math.min(wrap.clientHeight || 400, 420);
 }
 
@@ -1993,81 +2263,205 @@ function stopVigLoop(){
   G.vigRunning = false;
 }
 
-function drawStaticBiomeBg(ctx, canvas, biomeKey){
+// ─── MAIN rAF LOOP ────────────────────────────────────
+function vigLoop(ts, lastTs){
+  if(!G.vigRunning) return;
+
+  const canvas = document.getElementById('vig-canvas');
+  const ctx    = canvas.getContext('2d');
+  const dt     = Math.min(ts - lastTs, 50); // cap delta at 50ms
+
+  // Move alien toward target when not paused
+  if(!G.vigPaused && G.vigAlienX < G.vigAlienTarget){
+    const speed = 1.8 * (dt / 16);
+    G.vigAlienX   = Math.min(G.vigAlienX + speed, G.vigAlienTarget);
+    G.vigScrollX += speed * 0.7;
+
+    // Reached target?
+    if(G.vigAlienX >= G.vigAlienTarget){
+      if(G.vigEventIdx < G.vigRoundEvents.length){
+        // At an event trigger
+        G.vigPaused = true;
+        const evIdx = G.vigEventIdx;
+        setTimeout(() => showVigEventCard(G.vigRoundEvents[evIdx]), 220);
+      } else {
+        // Reached end of canvas — round complete
+        G.vigPaused = true;
+        setTimeout(() => finishVigRound(), 400);
+      }
+    }
+  }
+
+  // ── RENDER ──────────────────────────────────────────
+  drawParallaxBg(ctx, canvas, currentBiomeKey(), G.vigScrollX, ts);
+  drawEventMarkers(ctx, canvas, G.vigEventTriggers, G.vigEventIdx);
+  drawAlienSprite(ctx, canvas, G.vigAlienX, ts, G.vigPaused);
+  drawHUD(ctx, canvas, currentBiomeKey());
+
+  G.vigAnimFrame = requestAnimationFrame(nextTs => vigLoop(nextTs, ts));
+}
+
+// ─── PARALLAX BACKGROUND ─────────────────────────────
+function drawParallaxBg(ctx, canvas, biomeKey, scrollX, ts){
   const pal = BIOME_PALETTES[biomeKey] || BIOME_PALETTES.canopy;
   const W = canvas.width, H = canvas.height;
+  const groundY = Math.floor(H * 0.72);
 
-  // Sky gradient
-  const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+  // Layer 0: sky gradient (static)
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, groundY);
   skyGrad.addColorStop(0, pal.sky);
   skyGrad.addColorStop(1, pal.mid);
   ctx.fillStyle = skyGrad;
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(0, 0, W, groundY);
 
-  // Ground band
-  ctx.fillStyle = pal.ground;
-  ctx.fillRect(0, H * 0.72, W, H);
+  // Layer 1: distant flora (parallax factor 0.12)
+  drawFloraLayer(ctx, W, H, groundY, pal, scrollX * 0.12, ts, 0.55, 0.38, 18, 12, 8);
 
-  // Ground horizon line glow
+  // Layer 2: mid flora (parallax factor 0.38)
+  drawFloraLayer(ctx, W, H, groundY, pal, scrollX * 0.38, ts, 0.75, 0.55, 28, 16, 6);
+
+  // Ground band with gradient
+  const gndGrad = ctx.createLinearGradient(0, groundY, 0, H);
+  gndGrad.addColorStop(0, pal.flora);
+  gndGrad.addColorStop(0.2, pal.ground);
+  gndGrad.addColorStop(1, '#000');
+  ctx.fillStyle = gndGrad;
+  ctx.fillRect(0, groundY, W, H - groundY);
+
+  // Ground horizon accent line
   ctx.strokeStyle = pal.accent;
-  ctx.globalAlpha = 0.25;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, H * 0.72);
-  ctx.lineTo(W, H * 0.72);
-  ctx.stroke();
+  ctx.globalAlpha = 0.3;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(W, groundY); ctx.stroke();
   ctx.globalAlpha = 1;
 
-  // Flora silhouettes (simple shapes)
-  ctx.fillStyle = pal.flora;
-  for(let i = 0; i < 12; i++){
-    const x = (i / 12) * W + (W / 24);
-    const h = 30 + Math.sin(i * 2.7) * 18;
-    ctx.fillRect(x - 3, H * 0.72 - h, 6, h);
-    // Cap
-    ctx.beginPath();
-    ctx.arc(x, H * 0.72 - h, 9 + Math.sin(i) * 3, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  // Layer 3: near flora (parallax factor 0.82)
+  drawFloraLayer(ctx, W, H, groundY, pal, scrollX * 0.82, ts, 0.92, 0.72, 40, 22, 5);
 
-  // Subtle grid/scan overlay
-  ctx.strokeStyle = pal.accent;
-  ctx.globalAlpha = 0.04;
-  ctx.lineWidth = 1;
-  for(let y = 0; y < H; y += 40){
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-  }
-  for(let x = 0; x < W; x += 60){
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-  }
-  ctx.globalAlpha = 1;
-
-  // Biome name watermark
-  ctx.font = '700 0.7rem "Share Tech Mono", monospace';
-  ctx.fillStyle = pal.accent;
-  ctx.globalAlpha = 0.18;
-  ctx.textAlign = 'right';
-  ctx.fillText(BIOME_NAMES[biomeKey], W - 12, H - 12);
-  ctx.globalAlpha = 1;
-  ctx.textAlign = 'left';
+  // Scan-line overlay (subtle)
+  ctx.fillStyle = 'rgba(0,0,0,0.06)';
+  for(let y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 2);
 }
 
-function drawPlayerAlienOnCanvas(ctx, canvas){
-  // Render alien SVG to an Image and draw onto canvas
-  const W = canvas.width, H = canvas.height;
+function drawFloraLayer(ctx, W, H, groundY, pal, offsetX, ts, alphaBase, alphaFlora, maxH, capR, count){
+  const period = W / count;
+  ctx.fillStyle = pal.flora;
+  ctx.globalAlpha = alphaFlora;
+
+  for(let i = -1; i < count + 2; i++){
+    // Tile flora using pseudo-random seed based on index
+    const seed  = ((i * 31337) & 0xffff) / 0xffff;
+    const x     = ((i * period - (offsetX % (period * (count + 1)))) + W * 2) % (W + period * 2) - period;
+    const hBase = maxH * (0.5 + seed * 0.5);
+    const wobble= Math.sin(ts * 0.001 + i * 1.3) * 2;
+
+    // Stem
+    ctx.fillRect(x - 2, groundY - hBase, 4, hBase);
+
+    // Cap (biome-specific shape)
+    const cx = x, cy = groundY - hBase + wobble;
+    const r  = capR * (0.6 + seed * 0.6);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ─── EVENT MARKERS ──────────────────────────────────
+function drawEventMarkers(ctx, canvas, triggers, currentIdx){
+  const H = canvas.height;
+  const groundY = Math.floor(H * 0.72);
+
+  triggers.forEach((tx, i) => {
+    if(i < currentIdx){
+      // Already done — faint tick
+      ctx.strokeStyle = '#44ffaa';
+      ctx.globalAlpha = 0.3;
+    } else if(i === currentIdx){
+      // Current — bright pulse
+      ctx.strokeStyle = '#00fff0';
+      ctx.globalAlpha = 0.9;
+    } else {
+      // Upcoming — dim
+      ctx.strokeStyle = '#7b2fff';
+      ctx.globalAlpha = 0.5;
+    }
+    ctx.lineWidth = i === currentIdx ? 2 : 1;
+    ctx.setLineDash(i === currentIdx ? [] : [4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(tx, groundY - 50);
+    ctx.lineTo(tx, groundY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+
+    // Diamond marker
+    const my = groundY - 54;
+    ctx.fillStyle = i < currentIdx ? '#44ffaa' : (i === currentIdx ? '#00fff0' : '#7b2fff');
+    ctx.globalAlpha = i < currentIdx ? 0.4 : 0.9;
+    ctx.beginPath();
+    ctx.moveTo(tx, my - 6); ctx.lineTo(tx + 5, my);
+    ctx.lineTo(tx, my + 6); ctx.lineTo(tx - 5, my);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Event number
+    ctx.fillStyle = i === currentIdx ? '#00fff0' : '#5a7a96';
+    ctx.font = '600 9px "Share Tech Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(i + 1, tx, my + 3);
+    ctx.textAlign = 'left';
+  });
+}
+
+// ─── ALIEN SPRITE ───────────────────────────────────
+function drawAlienSprite(ctx, canvas, alienX, ts, paused){
+  const H = canvas.height;
+  const groundY = Math.floor(H * 0.72);
   const size = 80;
-  const svgStr = alienSVG(G.player, size);
-  const blob = new Blob([svgStr], {type:'image/svg+xml'});
-  const url  = URL.createObjectURL(blob);
-  const img  = new Image();
-  img.onload = () => {
-    // Draw on ground level, roughly 1/4 from left
-    const x = Math.floor(W * 0.22);
-    const y = Math.floor(H * 0.72) - size + 10;
-    ctx.drawImage(img, x, y, size, size);
-    URL.revokeObjectURL(url);
-  };
-  img.src = url;
+  const bobY = paused ? 0 : Math.sin(ts * 0.005) * 3;
+
+  if(G.vigAlienImg){
+    ctx.drawImage(G.vigAlienImg, alienX - size/2, groundY - size + bobY, size, size);
+  } else {
+    // Fallback: simple circle placeholder
+    ctx.fillStyle = '#00fff0';
+    ctx.globalAlpha = 0.7;
+    ctx.beginPath();
+    ctx.arc(alienX, groundY - 20 + bobY, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // Walk dust particles when moving
+  if(!paused && G.vigAlienX < G.vigAlienTarget){
+    ctx.fillStyle = '#7b2fff';
+    for(let p = 0; p < 3; p++){
+      const px = alienX - size/2 + Math.random() * size * 0.5;
+      const py = groundY + Math.random() * 4;
+      ctx.globalAlpha = 0.25 + Math.random() * 0.25;
+      ctx.beginPath();
+      ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ─── HUD (biome label, score) ────────────────────────
+function drawHUD(ctx, canvas, biomeKey){
+  const pal = BIOME_PALETTES[biomeKey] || BIOME_PALETTES.canopy;
+  const W = canvas.width, H = canvas.height;
+
+  ctx.font = '700 11px "Share Tech Mono", monospace';
+  ctx.fillStyle = pal.accent;
+  ctx.globalAlpha = 0.22;
+  ctx.textAlign = 'right';
+  ctx.fillText(BIOME_NAMES[biomeKey], W - 14, H - 14);
+  ctx.textAlign = 'left';
+  ctx.globalAlpha = 1;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2164,25 +2558,33 @@ function dismissVigEvent(){
   G.vigEventIdx++;
   document.getElementById('vig-overlay').classList.add('hidden');
 
-  // Update progress
+  // Update progress bar
   const pct = Math.round((G.vigEventIdx / G.vigRoundEvents.length) * 100);
   document.getElementById('vig-progress-fill').style.width = pct + '%';
 
-  // Redraw background to animate alien advancing (stub: just redraw static bg)
+  // Set next movement target
   const canvas = document.getElementById('vig-canvas');
-  const ctx = canvas.getContext('2d');
-  drawStaticBiomeBg(ctx, canvas, currentBiomeKey());
-  drawPlayerAlienOnCanvas(ctx, canvas);
+  if(G.vigEventIdx < G.vigEventTriggers.length){
+    G.vigAlienTarget = G.vigEventTriggers[G.vigEventIdx];
+  } else {
+    // Walk to end of canvas
+    G.vigAlienTarget = canvas.width - 70;
+  }
 
-  setTimeout(() => fireNextVigEvent(), 400);
+  // Resume alien movement
+  G.vigPaused = false;
 }
 
 function finishVigRound(){
-  // All 5 events done — update progress to 100%
   document.getElementById('vig-progress-fill').style.width = '100%';
   G.vigRunning = false;
-  // Proceed to partner select
-  setTimeout(() => completeVignette(), 500);
+
+  // Pre-generate candidates now so encounter can show their portraits + dialogue
+  const gen = G.round;
+  G.candidates = [makeAlien(null,gen), makeAlien(null,gen), makeAlien(null,gen)];
+  G.selectedCandidate = null;
+
+  setTimeout(() => showPartnerEncounter(), 500);
 }
 
 // ═══════════════════════════════════════════════════════
