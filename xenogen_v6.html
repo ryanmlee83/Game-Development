@@ -1265,14 +1265,14 @@ function buildRefTable(){
 // Indexed by (skinGreen?4:0)+(longTail?2:0)+(scaly?1:0)
 // Each entry: [BODY, BODY_H, BODY_S, LINE, TAIL_C, TAIL_L, ACCENT]
 const PALETTE_LIST = [
-  ['#3a3060','#524878','#1a1230','#9080d0','#8855cc','#cc88ff','#bb66ff'], // 0: gray/short/smooth → indigo-purple
-  ['#2c3850','#3e5068','#141c28','#7090b8','#4488aa','#88ccee','#44bbff'], // 1: gray/short/scaly  → steel-blue
-  ['#4a2870','#643898','#221038','#b070e0','#cc44aa','#ff88dd','#ff55cc'], // 2: gray/long/smooth  → dark violet
-  ['#1a2248','#283060','#0a0e22','#5868c0','#335599','#6688dd','#4466ff'], // 3: gray/long/scaly   → midnight navy
+  ['#3a3060','#524878','#1a1230','#9080d0','#8855cc','#cc88ff','#bb66ff'], // 0: gray/short/smooth → deep indigo-purple
+  ['#4a2870','#6a3898','#221038','#c080ee','#9944cc','#dd88ff','#ee77ff'], // 1: gray/short/scaly  → mid violet
+  ['#582050','#782870','#2c1028','#dd66cc','#aa3388','#ee88dd','#ff66cc'], // 2: gray/long/smooth  → rose-purple
+  ['#3a1a5a','#562880','#1c0a2c','#9966dd','#7733aa','#bb88ee','#cc77ff'], // 3: gray/long/scaly   → grape-purple
   ['#1e7a30','#26a040','#0d4018','#5dff80','#c87800','#ffaa22','#ffee44'], // 4: green/short/smooth → emerald
-  ['#4a7a10','#6aa018','#203808','#aaee22','#cc8800','#ffcc00','#ffff44'], // 5: green/short/scaly  → lime
-  ['#0e6858','#128870','#06302a','#22eecc','#886600','#ddaa00','#ffcc22'], // 6: green/long/smooth  → teal
-  ['#10724a','#189260','#083422','#22ffaa','#cc6600','#ff8822','#ffaa44'], // 7: green/long/scaly   → mint
+  ['#1a5c22','#22782c','#0c2c10','#44dd66','#aa7700','#ddbb22','#ffdd44'], // 5: green/short/scaly  → forest green
+  ['#387010','#508818','#1a3408','#aafe44','#bb8800','#ffdd00','#ffff44'], // 6: green/long/smooth  → lime-green
+  ['#107040','#189252','#083820','#33ff88','#cc7700','#ffaa00','#ffcc44'], // 7: green/long/scaly   → spring green
 ];
 // ═══════════════════════════════════════════════════════
 function alienSVG(alien, size){
@@ -1298,7 +1298,7 @@ function alienSVG(alien, size){
 
   const _pi = (skinPh==='Glowing Green'?4:0)+(tailPh==='Long Tail'?2:0)+(texPh==='Scaly Skin'?1:0);
   const [BODY, BODY_H, BODY_S, LINE, TAIL_C, TAIL_L, ACCENT] = PALETTE_LIST[_pi];
-  const SW  = Math.max(2, size * 0.025);
+  const SW  = Math.max(1.4, size * 0.0175);
   const uid = Math.random().toString(36).slice(2,7);
 
   const threeEyes = eyesPh === 'Three Eyes';
@@ -1317,7 +1317,7 @@ function alienSVG(alien, size){
   const FULL    = s > 100;
   const MINIMAL = s <= 65;
   const cx = s * 0.5;
-  const cy = s * 0.52;  // unified torso center for both limb counts
+  const cy = s * 0.63;  // shifted down; viewBox pans up to expose antennae
 
   // Layout landmarks
   const headCY  = cy - s*0.295;
@@ -1428,58 +1428,79 @@ function alienSVG(alien, size){
     }
   }
 
-  // ARMS + FINGERS
-  const armEndLx = cx - bodyRX - s*0.11;
-  const armEndRx = cx + bodyRX + s*0.11;
-  const armEndY  = armY + s*0.095;
-  d += `<line x1="${cx-bodyRX}" y1="${armY}" x2="${armEndLx}" y2="${armEndY}" stroke="${LINE}" stroke-width="${SW*1.2}" stroke-linecap="round"/>`;
-  d += `<line x1="${cx+bodyRX}" y1="${armY}" x2="${armEndRx}" y2="${armEndY}" stroke="${LINE}" stroke-width="${SW*1.2}" stroke-linecap="round"/>`;
-  const fW = SW * 0.85;
-  if(MINIMAL){
-    d+=`<ellipse cx="${armEndLx}" cy="${armEndY+s*0.038}" rx="${s*0.048}" ry="${s*0.032}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.7}"/>`;
-    d+=`<ellipse cx="${armEndRx}" cy="${armEndY+s*0.038}" rx="${s*0.048}" ry="${s*0.032}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.7}"/>`;
-  } else {
-    const fSpread = s * 0.036;
+  // ARMS + FINGERS — two-segment arm with elbow, palm blob, fanned fingers
+  const elbowLx = cx - bodyRX - s*0.06, elbowRx = cx + bodyRX + s*0.06;
+  const elbowY  = armY + s*0.05;
+  const armEndLx = elbowLx - s*0.07, armEndRx = elbowRx + s*0.07;
+  const armEndY  = elbowY  + s*0.065;
+  const armW = SW * 1.1;
+  // Upper arm
+  d += `<line x1="${cx-bodyRX}" y1="${armY}" x2="${elbowLx}" y2="${elbowY}" stroke="${LINE}" stroke-width="${armW*1.1}" stroke-linecap="round"/>`;
+  d += `<line x1="${cx+bodyRX}" y1="${armY}" x2="${elbowRx}" y2="${elbowY}" stroke="${LINE}" stroke-width="${armW*1.1}" stroke-linecap="round"/>`;
+  // Forearm
+  d += `<line x1="${elbowLx}" y1="${elbowY}" x2="${armEndLx}" y2="${armEndY}" stroke="${LINE}" stroke-width="${armW}" stroke-linecap="round"/>`;
+  d += `<line x1="${elbowRx}" y1="${elbowY}" x2="${armEndRx}" y2="${armEndY}" stroke="${LINE}" stroke-width="${armW}" stroke-linecap="round"/>`;
+  // Elbow joint dot
+  if(!MINIMAL){
+    d += `<circle cx="${elbowLx}" cy="${elbowY}" r="${s*0.020}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.6}"/>`;
+    d += `<circle cx="${elbowRx}" cy="${elbowY}" r="${s*0.020}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.6}"/>`;
+  }
+  // Palm
+  d+=`<ellipse cx="${armEndLx}" cy="${armEndY+s*0.022}" rx="${s*0.040}" ry="${s*0.028}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.75}"/>`;
+  d+=`<ellipse cx="${armEndRx}" cy="${armEndY+s*0.022}" rx="${s*0.040}" ry="${s*0.028}" fill="${BODY_S}" stroke="${LINE}" stroke-width="${SW*0.75}"/>`;
+  const fW = SW * 0.8;
+  if(!MINIMAL){
+    const fSpread = s * 0.032;
     for(let f=0;f<nF;f++){
       const fi = f-(nF-1)/2;
-      d+=`<line x1="${armEndLx}" y1="${armEndY}" x2="${armEndLx+fi*fSpread}" y2="${armEndY+s*0.075}" stroke="${LINE}" stroke-width="${fW}" stroke-linecap="round"/>`;
-      d+=`<line x1="${armEndRx}" y1="${armEndY}" x2="${armEndRx+fi*fSpread}" y2="${armEndY+s*0.075}" stroke="${LINE}" stroke-width="${fW}" stroke-linecap="round"/>`;
+      d+=`<line x1="${armEndLx+fi*fSpread*0.5}" y1="${armEndY+s*0.030}" x2="${armEndLx+fi*fSpread}" y2="${armEndY+s*0.082}" stroke="${LINE}" stroke-width="${fW}" stroke-linecap="round"/>`;
+      d+=`<line x1="${armEndRx+fi*fSpread*0.5}" y1="${armEndY+s*0.030}" x2="${armEndRx+fi*fSpread}" y2="${armEndY+s*0.082}" stroke="${LINE}" stroke-width="${fW}" stroke-linecap="round"/>`;
     }
   }
 
   // HEAD
   d += `<ellipse cx="${cx}" cy="${headCY}" rx="${headRX}" ry="${headRY}" fill="url(#hg${uid})" stroke="${LINE}" stroke-width="${SW}"/>`;
 
-  // EARS
+  // EARS — human-proportioned: taller than wide, overlapping head edge slightly
+  const earCY = headCY + headRY * 0.12;  // vertically centred near mid-face
   if(pEars){
-    const earBaseY1 = headCY - headRY * 0.38;
-    const earBaseY2 = headCY + headRY * 0.22;
-    const earTipY   = headCY - headRY * 0.20;
-    d += `<polygon points="${cx-headRX*0.94},${earBaseY1} ${cx-headRX*1.82},${earTipY} ${cx-headRX*0.94},${earBaseY2}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
-    d += `<polygon points="${cx+headRX*0.94},${earBaseY1} ${cx+headRX*1.82},${earTipY} ${cx+headRX*0.94},${earBaseY2}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+    // Pointed (elf) ears: narrow triangle attached at head edge, tip pointing outward
+    const earBase1Y = earCY - headRY * 0.38;
+    const earBase2Y = earCY + headRY * 0.28;
+    const earTipX_L = cx - headRX * 1.45;
+    const earTipX_R = cx + headRX * 1.45;
+    const earTipY   = earCY - headRY * 0.10;
+    d += `<polygon points="${cx-headRX*0.92},${earBase1Y} ${earTipX_L},${earTipY} ${cx-headRX*0.92},${earBase2Y}" fill="url(#hg${uid})" stroke="${LINE}" stroke-width="${SW}"/>`;
+    d += `<polygon points="${cx+headRX*0.92},${earBase1Y} ${earTipX_R},${earTipY} ${cx+headRX*0.92},${earBase2Y}" fill="url(#hg${uid})" stroke="${LINE}" stroke-width="${SW}"/>`;
   } else {
-    // Round ears: eccentric (wide) ovals placed on the outer edge of the head
-    d += `<ellipse cx="${cx-headRX*1.26}" cy="${headCY+headRY*0.08}" rx="${headRX*0.52}" ry="${headRY*0.22}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
-    d += `<ellipse cx="${cx+headRX*1.26}" cy="${headCY+headRY*0.08}" rx="${headRX*0.52}" ry="${headRY*0.22}" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`;
+    // Round ears: upright oval, overlapping head rim like a human ear
+    const erx = headRX * 0.22, ery = headRY * 0.40;  // taller than wide
+    d += `<ellipse cx="${cx-headRX*0.96}" cy="${earCY}" rx="${erx}" ry="${ery}" fill="url(#hg${uid})" stroke="${LINE}" stroke-width="${SW}"/>`;
+    d += `<ellipse cx="${cx+headRX*0.96}" cy="${earCY}" rx="${erx}" ry="${ery}" fill="url(#hg${uid})" stroke="${LINE}" stroke-width="${SW}"/>`;
+    // Inner ear canal line (subtle detail, skipped in MINIMAL mode)
+    if(!MINIMAL){
+      d += `<ellipse cx="${cx-headRX*0.92}" cy="${earCY+ery*0.08}" rx="${erx*0.45}" ry="${ery*0.50}" fill="none" stroke="${LINE}" stroke-width="${SW*0.5}" opacity="0.6"/>`;
+      d += `<ellipse cx="${cx+headRX*0.92}" cy="${earCY+ery*0.08}" rx="${erx*0.45}" ry="${ery*0.50}" fill="none" stroke="${LINE}" stroke-width="${SW*0.5}" opacity="0.6"/>`;
+    }
   }
 
   // ANTENNAE
   const antL = cx - headRX*0.44;
   const antR = cx + headRX*0.44;
-  const antTipY = headCY - headRY - s*0.17;   // straight antenna tip height
-  const curlTop = headCY - headRY - s*0.34;   // curly antenna goes twice as high
-  const curlR   = s * 0.10;                    // radius of the curl loop
+  const antTipY = headCY - headRY - s*0.14;   // straight antenna tip height
+  const curlTop = headCY - headRY - s*0.22;   // curled antenna (1.6× taller than straight)
+  const curlR   = s * 0.08;                    // radius of the curl loop
   if(curled){
-    // Left: curvy stem going up-left, then a full circular loop at the top
-    const lcx = antL - s*0.18, lcy = curlTop + curlR;  // loop center
-    d += `<path d="M${antL} ${antBase} C${antL-s*0.06} ${antBase-s*0.15},${antL-s*0.22} ${curlTop+s*0.26},${lcx+curlR} ${lcy}" stroke="${LINE}" stroke-width="${SW}" fill="none" stroke-linecap="round"/>`;
+    // Left: curvy stem going up-left, then a circular loop at the top
+    const lcx = antL - s*0.15, lcy = curlTop + curlR;  // loop center
+    d += `<path d="M${antL} ${antBase} C${antL-s*0.05} ${antBase-s*0.12},${antL-s*0.18} ${curlTop+s*0.18},${lcx+curlR} ${lcy}" stroke="${LINE}" stroke-width="${SW}" fill="none" stroke-linecap="round"/>`;
     d += `<circle cx="${lcx}" cy="${lcy}" r="${curlR}" fill="none" stroke="${LINE}" stroke-width="${SW}"/>`;
-    d += `<circle cx="${lcx}" cy="${lcy}" r="${s*0.028}" fill="${LINE}"/>`;
+    d += `<circle cx="${lcx}" cy="${lcy}" r="${s*0.022}" fill="${LINE}"/>`;
     // Right: mirrored
-    const rcx = antR + s*0.18, rcy = curlTop + curlR;
-    d += `<path d="M${antR} ${antBase} C${antR+s*0.06} ${antBase-s*0.15},${antR+s*0.22} ${curlTop+s*0.26},${rcx-curlR} ${rcy}" stroke="${LINE}" stroke-width="${SW}" fill="none" stroke-linecap="round"/>`;
+    const rcx = antR + s*0.15, rcy = curlTop + curlR;
+    d += `<path d="M${antR} ${antBase} C${antR+s*0.05} ${antBase-s*0.12},${antR+s*0.18} ${curlTop+s*0.18},${rcx-curlR} ${rcy}" stroke="${LINE}" stroke-width="${SW}" fill="none" stroke-linecap="round"/>`;
     d += `<circle cx="${rcx}" cy="${rcy}" r="${curlR}" fill="none" stroke="${LINE}" stroke-width="${SW}"/>`;
-    d += `<circle cx="${rcx}" cy="${rcy}" r="${s*0.028}" fill="${LINE}"/>`;
+    d += `<circle cx="${rcx}" cy="${rcy}" r="${s*0.022}" fill="${LINE}"/>`;
   } else {
     d += `<line x1="${antL}" y1="${antBase}" x2="${antL-s*0.055}" y2="${antTipY}" stroke="${LINE}" stroke-width="${SW}" stroke-linecap="round"/>`;
     d += `<circle cx="${antL-s*0.055}" cy="${antTipY}" r="${s*0.035}" fill="${LINE}"/>`;
@@ -1568,7 +1589,8 @@ function alienSVG(alien, size){
   }
 
   const defs=`<defs><radialGradient id="bg${uid}" cx="38%" cy="30%" r="68%"><stop offset="0%" stop-color="${BODY_H}"/><stop offset="100%" stop-color="${BODY_S}"/></radialGradient><radialGradient id="hg${uid}" cx="35%" cy="28%" r="68%"><stop offset="0%" stop-color="${BODY_H}"/><stop offset="100%" stop-color="${BODY_S}"/></radialGradient></defs>`;
-  return `<svg viewBox="0 0 ${s} ${s}" width="${s}" height="${s}" xmlns="http://www.w3.org/2000/svg">${defs}${d}</svg>`;
+  // viewBox panned up by 10%: antennae fully visible, feet may clip slightly at bottom
+  return `<svg viewBox="0 ${(-s*0.10).toFixed(1)} ${s} ${s}" width="${s}" height="${s}" xmlns="http://www.w3.org/2000/svg">${defs}${d}</svg>`;
 }
 
 
