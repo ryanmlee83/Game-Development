@@ -211,11 +211,14 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .prob-btn:hover{border-color:var(--accent2);color:var(--accent2);}
 .prob-btn.sel{background:rgba(0,180,255,0.12);border-color:var(--accent2);color:var(--accent2);}
 .pred-item.cor{border-color:var(--success);background:rgba(57,255,138,0.04);}
+.pred-item.par{border-color:var(--warn);background:rgba(255,184,0,0.04);}
 .pred-item.inc{border-color:var(--danger);background:rgba(255,58,110,0.04);}
 .fb-tag{display:none;font-size:0.68rem;margin-top:0.22rem;}
 .pred-item.cor .fb-tag{display:block;color:var(--success);}
+.pred-item.par .fb-tag{display:block;color:var(--warn);}
 .pred-item.inc .fb-tag{display:block;color:var(--danger);}
 .corr-ans{display:none;font-size:0.7rem;color:var(--success);margin-top:0.15rem;}
+.pred-item.par .corr-ans{display:block;}
 .pred-item.inc .corr-ans{display:block;}
 .pred-note{font-size:0.74rem;color:var(--text-dim);margin-bottom:0.5rem;padding:0.35rem 0.5rem;
   background:rgba(255,184,0,0.05);border:1px solid rgba(255,184,0,0.15);border-radius:2px;}
@@ -641,24 +644,7 @@ function refOverlayClick(e){
 }
 
 function buildRefTable(){
-  const ALL_TRAITS = [
-    {id:'skin',   name:'Skin Color',    alleles:['G','g'], dom:'Glowing Green',    rec:'Dull Gray',          type:'dr'},
-    {id:'eyes',   name:'Eye Number',    alleles:['E','e'], dom:'Three Eyes',        rec:'One Eye',            type:'dr'},
-    {id:'ant',    name:'Antenna Shape', alleles:['A','a'], dom:'Curled Antennae',   rec:'Straight Antennae',  type:'dr'},
-    {id:'legs',   name:'Limb Number',   alleles:['L','l'], dom:'Six Limbs',         rec:'Four Limbs',         type:'dr'},
-    {id:'tex',    name:'Body Texture',  alleles:['S','s'], dom:'Smooth Skin',       rec:'Scaly Skin',         type:'dr'},
-    {id:'tail',   name:'Tail Type',     alleles:['T','t'], dom:'Long Tail',         rec:'Short Tail',        type:'dr'},
-    {id:'ears',   name:'Ear Shape',     alleles:['P','p'], dom:'Pointed Ears',      rec:'Round Ears',         type:'dr'},
-    {id:'tongue', name:'Tongue Shape',  alleles:['B','b'], dom:'Forked Tongue',     rec:'Straight Tongue',    type:'dr'},
-    {id:'fingers',name:'Finger Number', alleles:['F','f'], dom:'Five Fingers',      rec:'Three Fingers',      type:'dr'},
-    {id:'wings',  name:'Wing Presence', alleles:['W','w'], dom:'Has Wings',         rec:'No Wings',           type:'dr'},
-    {id:'nose',   name:'Nose Shape',    alleles:['Nh','Nd','Nc','Nt'],
-      phenotypes:{Nh:'Square Nose',Nd:'No Nose',Nc:'Tubular Nose',Nt:'Triangular Nose'}, type:'ma'},
-    {id:'horns',  name:'Horns',         alleles:['Hh','Hd','Hc','Ht'],
-      phenotypes:{Hh:'Curved Horns',Hd:'Spiked Crest',Hc:'Glowing Antlers',Ht:'No Horns'}, type:'ma'},
-    {id:'biolum', name:'Bioluminescence',alleles:['Bh','Bd','Bc','Bt'],
-      phenotypes:{Bh:'Pulsating Glow',Bd:'Patterned Glow',Bc:'Multi-Color Glow',Bt:'No Glow'}, type:'ma'},
-  ];
+  const ALL_TRAITS = TRAITS.slice();
 
   const drTraits = ALL_TRAITS.filter(t=>t.type==='dr');
   const maTraits = ALL_TRAITS.filter(t=>t.type==='ma');
@@ -1128,12 +1114,15 @@ async function spinTrait(tid, fast){
 }
 
 async function spinAll(){
+  const btn = document.querySelector('.spin-all-btn');
+  btn.disabled = true;
   for(const t of G.traits){
     if(!G.buildGeno[t.id]){
       spinTrait(t.id, false);
       await new Promise(r=>setTimeout(r,80));
     }
   }
+  btn.disabled = false;
 }
 
 function updateBuildPreview(){
@@ -1155,13 +1144,14 @@ function goToPartnerSelect(){
   // Finalize player alien — fill any unspun traits (shouldn't happen if btn only enables when all spun)
   const finalGeno={};
   for(const t of G.traits) finalGeno[t.id]=G.buildGeno[t.id]||randomGeno(t);
-  G.player={name:G._buildName,gen:0,geno:finalGeno};
+  G.player={name:G._buildName,gen:1,geno:finalGeno};
   G.lineage=[G.player];
 
   // Generate 3 candidates
   G.candidates=[makeAlien(null,1),makeAlien(null,1),makeAlien(null,1)];
   G.selectedCandidate=null;
 
+  document.querySelector('.partner-header h1').textContent='SELECT A PARTNER — GEN 1';
   renderPartnerGrid();
   document.getElementById('partner-confirm-btn').disabled=true;
   showScreen('screen-partner');
@@ -1205,8 +1195,6 @@ function selectCandidate(idx){
 function confirmPartner(){
   if(G.selectedCandidate===null) return;
   G.partner=G.candidates[G.selectedCandidate];
-  // Only set round to 1 on first selection (not mid-game returns)
-  if(G.round===undefined || G.round<1) G.round=1;
   renderGameScreen();
   showScreen('screen-game');
 }
@@ -1425,9 +1413,10 @@ function submitPredictions(){
     pts=Math.round(pts*sm);
     roundPts+=pts;
     if(!(pC&&prC)) allCorrect=false;
-    item.classList.add(pC&&prC?'cor':'inc');
-    item.querySelector('.fb-tag').textContent=pC&&prC?`✓ CORRECT +${pts}pts`:'✗ INCORRECT';
-    if(!pC||!prC) item.querySelector('.corr-ans').textContent=`→ ${correctPheno} (${correctProb}%)`;
+    const cls = pC&&prC ? 'cor' : (pC||prC ? 'par' : 'inc');
+    item.classList.add(cls);
+    item.querySelector('.fb-tag').textContent = pC&&prC ? `✓ CORRECT +${pts}pts` : (pC||prC ? `~ PARTIAL +${pts}pts` : '✗ INCORRECT');
+    if(!(pC&&prC)) item.querySelector('.corr-ans').textContent=`→ ${correctPheno} (${correctProb}%)`;
     bk.push({name:t.name,pts,pC,prC});
   });
 
