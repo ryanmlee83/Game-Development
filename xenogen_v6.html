@@ -1006,7 +1006,7 @@ const DIALOGUE_LIBRARY = [
 // To re-enable codominant traits, swap TRAITS_DR usage in initG().
 // ═══════════════════════════════════════════════════════
 const TRAITS_ALL = [
-  {id:'skin',   name:'Skin Color',    alleles:['G','g'], dom:'Glowing Green',   rec:'Dull Gray',       type:'dr'},
+  {id:'skin',   name:'Skin Color',    alleles:['G','g'], dom:'Green',           rec:'Purple',          type:'dr'},
   {id:'eyes',   name:'Eye Number',    alleles:['E','e'], dom:'Three Eyes',       rec:'One Eye',         type:'dr'},
   {id:'ant',    name:'Antenna Shape', alleles:['A','a'], dom:'Curled Antennae', rec:'Straight Antennae',type:'dr'},
   {id:'legs',   name:'Limb Number',   alleles:['L','l'], dom:'Six Limbs',        rec:'Four Limbs',       type:'dr'},
@@ -1160,7 +1160,7 @@ function refOverlayClick(e){
 
 function buildRefTable(){
   const ALL_TRAITS = [
-    {id:'skin',   name:'Skin Color',    alleles:['G','g'], dom:'Glowing Green',    rec:'Dull Gray',          type:'dr'},
+    {id:'skin',   name:'Skin Color',    alleles:['G','g'], dom:'Green',            rec:'Purple',             type:'dr'},
     {id:'eyes',   name:'Eye Number',    alleles:['E','e'], dom:'Three Eyes',        rec:'One Eye',            type:'dr'},
     {id:'ant',    name:'Antenna Shape', alleles:['A','a'], dom:'Curled Antennae',   rec:'Straight Antennae',  type:'dr'},
     {id:'legs',   name:'Limb Number',   alleles:['L','l'], dom:'Six Limbs',         rec:'Four Limbs',         type:'dr'},
@@ -1265,7 +1265,7 @@ function buildRefTable(){
 // Indexed by (skinGreen?4:0)+(longTail?2:0)+(scaly?1:0)
 // Each entry: [BODY, BODY_H, BODY_S, LINE, TAIL_C, TAIL_L, ACCENT]
 const PALETTE_LIST = [
-  ['#3a3060','#524878','#1a1230','#9080d0','#8855cc','#cc88ff','#bb66ff'], // 0: gray/short/smooth → deep indigo-purple
+  ['#4a2a80','#6a3aa8','#20104a','#b888ff','#8855cc','#cc88ff','#dd99ff'], // 0: purple/short/smooth → vivid purple
   ['#4a2870','#6a3898','#221038','#c080ee','#9944cc','#dd88ff','#ee77ff'], // 1: gray/short/scaly  → mid violet
   ['#582050','#782870','#2c1028','#dd66cc','#aa3388','#ee88dd','#ff66cc'], // 2: gray/long/smooth  → rose-purple
   ['#3a1a5a','#562880','#1c0a2c','#9966dd','#7733aa','#bb88ee','#cc77ff'], // 3: gray/long/scaly   → grape-purple
@@ -1296,7 +1296,7 @@ function alienSVG(alien, size){
   const nosePh    = gp('nose');
   const biolumPh  = gp('biolum');
 
-  const _pi = (skinPh==='Glowing Green'?4:0)+(tailPh==='Long Tail'?2:0)+(texPh==='Scaly Skin'?1:0);
+  const _pi = (skinPh==='Green'?4:0)+(tailPh==='Long Tail'?2:0)+(texPh==='Scaly Skin'?1:0);
   const [BODY, BODY_H, BODY_S, LINE, TAIL_C, TAIL_L, ACCENT] = PALETTE_LIST[_pi];
   const SW  = Math.max(1.4, size * 0.0175);
   const uid = Math.random().toString(36).slice(2,7);
