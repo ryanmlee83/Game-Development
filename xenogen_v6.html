@@ -1589,8 +1589,9 @@ function alienSVG(alien, size){
   }
 
   const defs=`<defs><radialGradient id="bg${uid}" cx="38%" cy="30%" r="68%"><stop offset="0%" stop-color="${BODY_H}"/><stop offset="100%" stop-color="${BODY_S}"/></radialGradient><radialGradient id="hg${uid}" cx="35%" cy="28%" r="68%"><stop offset="0%" stop-color="${BODY_H}"/><stop offset="100%" stop-color="${BODY_S}"/></radialGradient></defs>`;
-  // viewBox panned up by 10%: antennae fully visible, feet may clip slightly at bottom
-  return `<svg viewBox="0 ${(-s*0.10).toFixed(1)} ${s} ${s}" width="${s}" height="${s}" xmlns="http://www.w3.org/2000/svg">${defs}${d}</svg>`;
+  // viewBox: 10% headroom above for antennae, 20% extra below for legs/tail; element is taller than wide
+  const vbH = (s * 1.20).toFixed(1);
+  return `<svg viewBox="0 ${(-s*0.10).toFixed(1)} ${s} ${vbH}" width="${s}" height="${vbH}" xmlns="http://www.w3.org/2000/svg">${defs}${d}</svg>`;
 }
 
 
