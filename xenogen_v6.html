@@ -323,6 +323,52 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .nb-summary-gen{font-size:0.48rem;color:var(--text-dim);letter-spacing:0.06em;margin-top:0.2rem;font-family:'Share Tech Mono',monospace;}
 
 /* ══════════════════════
+   TRAIT TEST
+══════════════════════ */
+/* Budget button on partner screen */
+.tt-btn{background:rgba(24,202,255,0.07);border:1px solid var(--accent2);border-radius:3px;color:var(--accent2);font-family:'Share Tech Mono',monospace;font-size:0.7rem;padding:0.35rem 0.9rem;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s;text-transform:uppercase;}
+.tt-btn:hover:not(:disabled){background:rgba(24,202,255,0.15);box-shadow:0 0 14px rgba(24,202,255,0.2);}
+.tt-btn:disabled{opacity:0.3;cursor:not-allowed;}
+/* Notebook budget badge */
+.nb-test-badge{background:rgba(24,202,255,0.15);border:1px solid var(--accent2);border-radius:2px;padding:0.05rem 0.25rem;font-size:0.6rem;color:var(--accent2);margin-left:0.3rem;display:inline-block;}
+/* Overlay */
+.tt-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:700;display:none;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
+.tt-overlay.show{display:flex;}
+.tt-box{background:var(--panel);border:1px solid var(--accent2);border-radius:6px;padding:1.5rem;width:100%;max-width:680px;position:relative;}
+.tt-box-hdr{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:1.2rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+.tt-box-hdr h2{font-family:'Share Tech Mono',monospace;font-size:0.82rem;letter-spacing:0.12em;color:var(--accent2);}
+.tt-budget-disp{font-size:0.72rem;color:var(--text-dim);white-space:nowrap;}
+.tt-budget-disp strong{color:var(--accent2);}
+.tt-step-label{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:var(--accent3);margin-bottom:0.6rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border2);}
+/* Partner thumbnails */
+.tt-thumb-row{display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;}
+.tt-thumb{background:var(--bg3);border:2px solid var(--border);border-radius:4px;padding:0.6rem;text-align:center;width:140px;cursor:pointer;transition:all 0.2s;}
+.tt-thumb:hover:not(.tested-out){border-color:var(--accent3);box-shadow:0 0 14px rgba(123,47,255,0.2);}
+.tt-thumb.selected{border-color:var(--accent3);box-shadow:0 0 20px rgba(123,47,255,0.3);}
+.tt-thumb.tested-out{opacity:0.35;cursor:not-allowed;pointer-events:none;}
+.tt-thumb-id{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;color:var(--accent3);margin-bottom:0.35rem;}
+/* Trait select */
+.tt-select{background:var(--bg3);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.78rem;padding:0.4rem 0.6rem;outline:none;cursor:pointer;width:100%;max-width:320px;transition:border-color 0.15s;}
+.tt-select:focus{border-color:var(--accent2);}
+/* Results: allele reference panel */
+.tt-allele-row{display:flex;gap:2rem;flex-wrap:wrap;margin-bottom:1.2rem;padding:0.75rem;background:var(--bg3);border:1px solid var(--border);border-radius:3px;}
+.tt-allele-block{text-align:center;}
+.tt-allele-label{font-size:0.65rem;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:0.25rem;}
+.tt-allele-val{font-family:'Share Tech Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--accent2);}
+/* Punnett grid */
+.tt-punnett-wrap{margin-bottom:0.75rem;}
+.tt-punnett-grid{display:grid;grid-template-columns:40px 72px 72px;gap:3px;width:fit-content;}
+.tt-corner{width:40px;height:40px;}
+.tt-ph{display:flex;align-items:center;justify-content:center;height:40px;font-family:'Share Tech Mono',monospace;font-size:0.78rem;font-weight:700;}
+.tt-punnett-input{width:70px;height:40px;background:var(--bg2);border:1px solid var(--border);border-radius:3px;color:var(--accent2);font-family:'Share Tech Mono',monospace;font-size:0.88rem;font-weight:700;text-align:center;text-transform:uppercase;outline:none;transition:border-color 0.15s;}
+.tt-punnett-input:focus{border-color:var(--accent2);box-shadow:0 0 8px rgba(24,202,255,0.2);}
+.tt-punnett-cell{display:flex;align-items:center;justify-content:center;height:56px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:0.9rem;font-weight:700;color:var(--text-dim);transition:all 0.2s;}
+.tt-punnett-cell.filled{border-color:var(--accent);color:var(--accent);background:rgba(0,255,231,0.06);box-shadow:inset 0 0 8px rgba(0,255,231,0.05);}
+/* Tested indicator on partner card */
+.partner-candidate.tested{border-color:rgba(0,255,231,0.35);}
+.partner-candidate.tested .pc-id::after{content:' · TESTED';color:var(--accent);font-size:0.62rem;}
+
+/* ══════════════════════
    VIGNETTE SCREEN
 ══════════════════════ */
 #screen-vignette{flex-direction:column;padding:0;background:var(--bg);}
@@ -516,13 +562,18 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <p>CHOOSE ONE ALIEN TO BREED WITH YOUR SPECIMEN</p>
     <div style="display:flex;gap:0.5rem;justify-content:center;margin-top:0.75rem;">
       <button class="ref-btn" onclick="toggleRef()" style="font-size:0.5rem;">⊞ TRAIT REFERENCE</button>
-      <button class="nb-btn" onclick="toggleNotebook()" style="font-size:0.5rem;">📓 NOTEBOOK</button>
+      <button class="nb-btn" onclick="toggleNotebook()" style="font-size:0.5rem;">📓 NOTEBOOK <span id="nb-test-badge" class="nb-test-badge"></span></button>
     </div>
   </div>
   <!-- Player alien info strip -->
   <div id="player-panel" class="player-panel-strip"></div>
   <div class="partner-grid" id="partner-grid"></div>
-  <div style="margin-top:1.25rem;">
+  <div id="tt-budget-row" style="margin-top:1rem;text-align:center;">
+    <button id="tt-run-btn" class="tt-btn" onclick="openTTModal()">
+      ⚗ RUN TRAIT TEST — <span id="tt-remaining-lbl">5</span> REMAINING
+    </button>
+  </div>
+  <div style="margin-top:1rem;">
     <button class="x-btn x-btn-accent3" id="partner-confirm-btn" onclick="confirmPartner()" disabled>PROCEED TO LAB →</button>
   </div>
 </div>
@@ -711,8 +762,46 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+  TRAIT TEST OVERLAY
+══════════════════════════════════════ -->
+<div class="tt-overlay" id="tt-overlay" onclick="ttOverlayClick(event)">
+  <div class="tt-box" id="tt-box">
+    <div class="tt-box-hdr">
+      <h2>// TRAIT TEST</h2>
+      <span class="tt-budget-disp">BUDGET: <strong id="tt-budget-disp-val">5</strong> REMAINING</span>
+      <button class="ref-close" onclick="closeTTModal()">✕ CLOSE</button>
+    </div>
+
+    <!-- Setup view: pick partner + pick trait -->
+    <div id="tt-setup">
+      <div class="tt-step-label">SELECT PARTNER</div>
+      <div class="tt-thumb-row" id="tt-thumb-row"></div>
+      <div class="tt-step-label" style="margin-top:1.1rem;">SELECT TRAIT</div>
+      <select id="tt-trait-select" class="tt-select">
+        <option value="">— choose a trait —</option>
+      </select>
+      <div style="margin-top:1.25rem;">
+        <button class="x-btn x-btn-primary" id="tt-confirm-btn" onclick="ttRunTest()" disabled>RUN TEST →</button>
+      </div>
+    </div>
+
+    <!-- Results view (hidden until RUN TEST clicked) -->
+    <div id="tt-results" class="hidden">
+      <div id="tt-results-inner"></div>
+      <div style="margin-top:1.25rem;">
+        <button class="x-btn x-btn-success" id="tt-close-btn" onclick="closeTTModal()" disabled>CLOSE ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════
+// TRAIT TEST CONFIG
+// ═══════════════════════════════════════════════════════
+const TRAIT_TEST_BUDGET = 5; // Global test budget — change here to adjust default
+
 // VIGNETTE CONFIG
 // ═══════════════════════════════════════════════════════
 const VIG_CFG = {
@@ -1116,6 +1205,9 @@ function initG(){
     roundSubmitted:false,
     // Notebook
     notebook:{ pages:[], activePage:0 },
+    // Trait tests
+    traitTestBudget: TRAIT_TEST_BUDGET,
+    traitTestsThisRound: [],
     // Vignette state
     vigScore:0,
     biomeSeq:[],     // 3 biome keys selected at init
@@ -1341,6 +1433,7 @@ function nbCreateGenPage(round){
     partnerGeno: null,
     partnerName: null,
     traitTests: null,
+    traitTestResults: [],
     offspringGeno: null,
     notes: '',
   });
@@ -1418,7 +1511,17 @@ function nbRenderGenPage(page){
     </table>
   </div>`;
 
-  // Section 2: Partner
+  // Section 2: Trait test results (from modal — before partner confirmed)
+  if(page.traitTestResults && page.traitTestResults.length > 0){
+    html+=`<div class="nb-section">
+      <div class="nb-section-title">TRAIT TESTS</div>
+      <div style="display:flex;flex-wrap:wrap;">
+        ${page.traitTestResults.map(r=>nbRenderTraitTestResult(r)).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Section 3: Partner
   if(page.partnerGeno){
     html+=`<div class="nb-section">
       <div class="nb-section-title">PARTNER: ${page.partnerName}</div>
@@ -1521,6 +1624,201 @@ function nbRenderSummary(){
     </div>`;
   }
   return html;
+}
+
+// ═══════════════════════════════════════════════════════
+// TRAIT TEST MODAL
+// ═══════════════════════════════════════════════════════
+let ttState = { partnerIdx: -1, traitId: null };
+
+function openTTModal(){
+  if(!G.traitTestBudget || G.traitTestBudget <= 0) return;
+  ttState = { partnerIdx: -1, traitId: null };
+  document.getElementById('tt-budget-disp-val').textContent = G.traitTestBudget;
+  document.getElementById('tt-setup').classList.remove('hidden');
+  document.getElementById('tt-results').classList.add('hidden');
+  ttBuildSetupView();
+  document.getElementById('tt-overlay').classList.add('show');
+}
+
+function closeTTModal(){
+  // If results view is visible a test was run — save it
+  if(!document.getElementById('tt-results').classList.contains('hidden')){
+    ttSaveToNotebook();
+  }
+  document.getElementById('tt-overlay').classList.remove('show');
+  renderPartnerGrid();
+  updateTTButton();
+}
+
+function ttOverlayClick(e){
+  if(e.target === document.getElementById('tt-overlay')) closeTTModal();
+}
+
+function ttBuildSetupView(){
+  // Partner thumbnails
+  const row = document.getElementById('tt-thumb-row');
+  row.innerHTML = '';
+  G.candidates.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'tt-thumb' +
+      (G.traitTestsThisRound.includes(i) ? ' tested-out' : '') +
+      (ttState.partnerIdx === i ? ' selected' : '');
+    div.onclick = () => ttSelectPartner(i);
+    div.innerHTML = `<div class="tt-thumb-id">SPECIMEN #${String(i+1).padStart(2,'0')}</div>${alienSVG(c,70)}`;
+    row.appendChild(div);
+  });
+
+  // Trait dropdown
+  const sel = document.getElementById('tt-trait-select');
+  sel.innerHTML = '<option value="">— choose a trait —</option>' +
+    G.traits.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+  sel.value = ttState.traitId || '';
+  sel.onchange = () => { ttState.traitId = sel.value || null; ttUpdateConfirmBtn(); };
+
+  ttUpdateConfirmBtn();
+}
+
+function ttSelectPartner(idx){
+  if(G.traitTestsThisRound.includes(idx)) return;
+  ttState.partnerIdx = idx;
+  document.querySelectorAll('.tt-thumb').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+  ttUpdateConfirmBtn();
+}
+
+function ttUpdateConfirmBtn(){
+  document.getElementById('tt-confirm-btn').disabled = (ttState.partnerIdx < 0 || !ttState.traitId);
+}
+
+function ttRunTest(){
+  if(ttState.partnerIdx < 0 || !ttState.traitId) return;
+  if(!G.traitTestBudget || G.traitTestBudget <= 0) return;
+
+  // Deduct budget and mark partner as tested this round
+  G.traitTestBudget--;
+  G.traitTestsThisRound.push(ttState.partnerIdx);
+
+  // Transition to results view
+  document.getElementById('tt-setup').classList.add('hidden');
+  document.getElementById('tt-results').classList.remove('hidden');
+  document.getElementById('tt-close-btn').disabled = true;
+  ttBuildResultsView();
+}
+
+function ttBuildResultsView(){
+  const t       = G.traits.find(x => x.id === ttState.traitId);
+  const partner = G.candidates[ttState.partnerIdx];
+  const pa      = G.player.geno[t.id];
+  const pb      = partner.geno[t.id];
+
+  document.getElementById('tt-results-inner').innerHTML = `
+    <div class="nb-section-title" style="margin-bottom:0.75rem;">
+      ${t.name.toUpperCase()} — PARTNER: ${partner.name}
+    </div>
+    <div class="tt-allele-row">
+      <div class="tt-allele-block">
+        <div class="tt-allele-label">YOUR ALLELES</div>
+        <div class="tt-allele-val">${genoStr(pa)}</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:0.15rem;">${getPhenotype(t,pa)}</div>
+      </div>
+      <div class="tt-allele-block">
+        <div class="tt-allele-label">PARTNER ALLELES</div>
+        <div class="tt-allele-val">${genoStr(pb)}</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:0.15rem;">${getPhenotype(t,pb)}</div>
+      </div>
+    </div>
+    <div style="font-size:0.72rem;color:var(--text-dim);margin-bottom:0.75rem;">
+      Fill in the row headers (your alleles) and column headers (partner alleles) to complete the square.
+    </div>
+    <div class="tt-punnett-wrap">
+      <div class="tt-punnett-grid">
+        <div class="tt-corner"></div>
+        <input class="tt-punnett-input" id="tt-ci-0" maxlength="2" placeholder="${pb[0]}" oninput="ttCellUpdate()">
+        <input class="tt-punnett-input" id="tt-ci-1" maxlength="2" placeholder="${pb[1]}" oninput="ttCellUpdate()">
+        <input class="tt-punnett-input" id="tt-ri-0" maxlength="2" placeholder="${pa[0]}" oninput="ttCellUpdate()">
+        <div class="tt-punnett-cell" id="tt-cell-00"></div>
+        <div class="tt-punnett-cell" id="tt-cell-01"></div>
+        <input class="tt-punnett-input" id="tt-ri-1" maxlength="2" placeholder="${pa[1]}" oninput="ttCellUpdate()">
+        <div class="tt-punnett-cell" id="tt-cell-10"></div>
+        <div class="tt-punnett-cell" id="tt-cell-11"></div>
+      </div>
+    </div>`;
+}
+
+function ttCellUpdate(){
+  const r0v = document.getElementById('tt-ri-0').value.trim();
+  const r1v = document.getElementById('tt-ri-1').value.trim();
+  const c0v = document.getElementById('tt-ci-0').value.trim();
+  const c1v = document.getElementById('tt-ci-1').value.trim();
+  const t   = G.traits.find(x => x.id === ttState.traitId);
+
+  const fillCell = (id, rowA, colA) => {
+    const cell = document.getElementById(id);
+    if(rowA && colA){
+      // Dominant first for DR traits
+      let p = [rowA.toUpperCase(), colA.toUpperCase()];
+      if(t.type === 'dr' && p[1] === t.alleles[0] && p[0] !== t.alleles[0]) p = [p[1], p[0]];
+      cell.textContent = p.join('');
+      cell.classList.add('filled');
+    } else {
+      cell.textContent = '';
+      cell.classList.remove('filled');
+    }
+  };
+
+  fillCell('tt-cell-00', r0v, c0v);
+  fillCell('tt-cell-01', r0v, c1v);
+  fillCell('tt-cell-10', r1v, c0v);
+  fillCell('tt-cell-11', r1v, c1v);
+
+  // Enable CLOSE ✓ once all headers filled
+  document.getElementById('tt-close-btn').disabled = ![r0v, r1v, c0v, c1v].every(v => v.length > 0);
+}
+
+function ttSaveToNotebook(){
+  if(!G.notebook || ttState.partnerIdx < 0 || !ttState.traitId) return;
+  const page = G.notebook.pages.find(p => p.round === G.round);
+  if(!page) return;
+  // Guard: don't duplicate if closed and reopened without running a new test
+  const already = page.traitTestResults.find(
+    r => r.partnerIdx === ttState.partnerIdx && r.traitId === ttState.traitId
+  );
+  if(already) return;
+  const t       = G.traits.find(x => x.id === ttState.traitId);
+  const partner = G.candidates[ttState.partnerIdx];
+  page.traitTestResults.push({
+    partnerIdx:     ttState.partnerIdx,
+    partnerName:    partner.name,
+    traitId:        ttState.traitId,
+    traitName:      t.name,
+    playerAlleles:  [...G.player.geno[t.id]],
+    partnerAlleles: [...partner.geno[t.id]],
+  });
+}
+
+function nbRenderTraitTestResult(r){
+  const t = G.traits.find(x => x.id === r.traitId);
+  if(!t) return '';
+  const tt = { trait:t, pa:r.playerAlleles, pb:r.partnerAlleles,
+    probs:calcProbs(t, r.playerAlleles, r.partnerAlleles) };
+  return `<div style="margin-right:1.5rem;margin-bottom:0.75rem;">
+    <div style="font-size:0.65rem;color:var(--text-dim);letter-spacing:0.06em;margin-bottom:0.2rem;">
+      ${r.partnerName} — ${r.traitName}
+    </div>
+    ${nbRenderPunnett(tt)}
+  </div>`;
+}
+
+function updateTTButton(){
+  const btn   = document.getElementById('tt-run-btn');
+  const lbl   = document.getElementById('tt-remaining-lbl');
+  const badge = document.getElementById('nb-test-badge');
+  const n     = G.traitTestBudget != null ? G.traitTestBudget : 0;
+  if(lbl)   lbl.textContent = n;
+  if(badge) badge.textContent = n + ' tests left';
+  if(btn)   btn.disabled = (n <= 0);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2087,6 +2385,8 @@ function completeVignette(preSelectedIdx){
     // Pre-highlight the selected candidate card (rendered in renderPartnerGrid but pre-select after)
     setTimeout(() => selectCandidate(G.selectedCandidate), 50);
   }
+  G.traitTestsThisRound = [];
+  updateTTButton();
   showScreen('screen-partner');
   window.scrollTo(0,0);
 }
@@ -2133,6 +2433,7 @@ function renderPartnerGrid(){
       <div class="pc-svg-wrap">${alienSVG(c,90)}</div>
       <div class="pc-traits">${traitRows}</div>
       <button class="pc-select-btn">SELECT PARTNER</button>`;
+    if(G.traitTestsThisRound && G.traitTestsThisRound.includes(i)) card.classList.add('tested');
     grid.appendChild(card);
   });
 }
