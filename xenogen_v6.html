@@ -284,6 +284,43 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .ref-btn{background:rgba(0,255,240,0.06);border:1px solid var(--accent);border-radius:3px;color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:0.7rem;padding:0.3rem 0.7rem;cursor:pointer;letter-spacing:0.05em;transition:all 0.2s;text-transform:uppercase;}
 .ref-btn:hover{background:rgba(0,255,240,0.14);box-shadow:0 0 12px rgba(0,255,240,0.15);}
 
+/* ══════════════════════
+   NOTEBOOK BUTTON
+══════════════════════ */
+.nb-btn{background:rgba(255,184,0,0.07);border:1px solid var(--warn);border-radius:3px;color:var(--warn);font-family:'Share Tech Mono',monospace;font-size:0.7rem;padding:0.3rem 0.7rem;cursor:pointer;letter-spacing:0.05em;transition:all 0.2s;text-transform:uppercase;}
+.nb-btn:hover{background:rgba(255,184,0,0.15);box-shadow:0 0 12px rgba(255,184,0,0.15);}
+
+/* ══════════════════════
+   NOTEBOOK OVERLAY
+══════════════════════ */
+.nb-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:600;display:none;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
+.nb-overlay.show{display:flex;}
+.nb-box{background:var(--panel);border:1px solid var(--accent);border-radius:6px;padding:1.5rem;width:100%;max-width:920px;position:relative;}
+.nb-box-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+.nb-box-hdr h2{font-family:'Share Tech Mono',monospace;font-size:0.82rem;letter-spacing:0.12em;color:var(--accent);}
+.nb-tabs{display:flex;gap:0.3rem;margin-bottom:1rem;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:0.5rem;}
+.nb-tab{background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:0.68rem;padding:0.25rem 0.6rem;cursor:pointer;letter-spacing:0.05em;transition:all 0.15s;text-transform:uppercase;}
+.nb-tab:hover{border-color:var(--text-dim);color:var(--text);}
+.nb-tab.active{border-color:var(--accent);color:var(--accent);background:rgba(0,255,231,0.07);}
+.nb-section{margin-bottom:1.2rem;}
+.nb-section-title{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:var(--accent3);margin-bottom:0.5rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border2);}
+/* Punnett square */
+.nb-punnett-wrap{display:inline-block;margin-right:1.25rem;margin-bottom:0.75rem;vertical-align:top;}
+.nb-punnett-label{font-size:0.68rem;color:var(--text-dim);letter-spacing:0.04em;margin-bottom:0.25rem;}
+.nb-punnett-grid{display:grid;grid-template-columns:28px 52px 52px;gap:2px;width:fit-content;}
+.nb-punnett-grid .nb-corner{width:28px;height:28px;}
+.nb-punnett-grid .nb-pa{display:flex;align-items:center;justify-content:center;height:28px;font-family:'Share Tech Mono',monospace;font-size:0.75rem;font-weight:700;}
+.nb-punnett-grid .nb-pc{display:flex;align-items:center;justify-content:center;height:40px;background:var(--bg3);border:1px solid var(--border2);border-radius:2px;font-family:'Share Tech Mono',monospace;font-size:0.72rem;font-weight:700;cursor:default;}
+.nb-punnett-grid .nb-pc.dom{border-color:var(--accent);color:var(--accent);}
+.nb-punnett-grid .nb-pc.rec{border-color:var(--text-dim);color:var(--text-dim);}
+.nb-probs{font-size:0.68rem;color:var(--text-dim);margin-top:0.3rem;}
+/* Notes textarea */
+.nb-notes-area{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.78rem;padding:0.5rem;resize:vertical;min-height:80px;outline:none;transition:border-color 0.2s;}
+.nb-notes-area:focus{border-color:var(--accent2);}
+/* Summary lineage strip */
+.nb-summary-strip{display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;}
+.nb-summary-alien{text-align:center;}
+.nb-summary-gen{font-size:0.48rem;color:var(--text-dim);letter-spacing:0.06em;margin-top:0.2rem;font-family:'Share Tech Mono',monospace;}
 
 /* ══════════════════════
    VIGNETTE SCREEN
@@ -430,7 +467,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
       <div class="vig-title-bar">// TRAVERSE — BIOME: <em id="vig-biome-name">—</em></div>
     </div>
     <div class="vig-round-label">ROUND <em id="vig-round-lbl">1</em> / <em id="vig-total-lbl">5</em></div>
-    <div class="vig-score-badge">TRAVERSE: +<span id="vig-score-display">0</span></div>
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <div class="vig-score-badge">TRAVERSE: +<span id="vig-score-display">0</span></div>
+      <button class="nb-btn" onclick="toggleNotebook()">📓 NOTEBOOK</button>
+    </div>
   </div>
   <div class="vig-progress-wrap">
     <div class="vig-progress-bar"><div id="vig-progress-fill"></div></div>
@@ -474,7 +514,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   <div class="partner-header">
     <h1>SELECT A PARTNER</h1>
     <p>CHOOSE ONE ALIEN TO BREED WITH YOUR SPECIMEN</p>
-    <button class="ref-btn" onclick="toggleRef()" style="margin-top:0.75rem;font-size:0.5rem;">⊞ TRAIT REFERENCE</button>
+    <div style="display:flex;gap:0.5rem;justify-content:center;margin-top:0.75rem;">
+      <button class="ref-btn" onclick="toggleRef()" style="font-size:0.5rem;">⊞ TRAIT REFERENCE</button>
+      <button class="nb-btn" onclick="toggleNotebook()" style="font-size:0.5rem;">📓 NOTEBOOK</button>
+    </div>
   </div>
   <!-- Player alien info strip -->
   <div id="player-panel" class="player-panel-strip"></div>
@@ -496,6 +539,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
       <span class="streak-badge hidden" id="streak-badge">🔥 ×<span id="streak-mult">1</span></span>
     </div>
     <div class="gh-right">
+      <button class="nb-btn" onclick="toggleNotebook()">📓 NOTEBOOK</button>
       <button class="ref-btn" onclick="toggleRef()">⊞ TRAIT REF</button>
       <div class="gh-score-block">
         <span class="gh-score-label">SCORE</span>
@@ -650,6 +694,20 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
       <button class="ref-close" onclick="toggleRef()">✕ CLOSE</button>
     </div>
     <div id="ref-content"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  NOTEBOOK OVERLAY
+══════════════════════════════════════ -->
+<div class="nb-overlay" id="nb-overlay" onclick="nbOverlayClick(event)">
+  <div class="nb-box" id="nb-box">
+    <div class="nb-box-hdr">
+      <h2>// XENOGENUS NOTEBOOK</h2>
+      <button class="ref-close" onclick="toggleNotebook()">✕ CLOSE</button>
+    </div>
+    <div class="nb-tabs" id="nb-tabs"></div>
+    <div class="nb-content" id="nb-content"></div>
   </div>
 </div>
 
@@ -1056,6 +1114,8 @@ function initG(){
     buildGeno:{}, buildSpun:0,
     candidates:[], selectedCandidate:null,
     roundSubmitted:false,
+    // Notebook
+    notebook:{ pages:[], activePage:0 },
     // Vignette state
     vigScore:0,
     biomeSeq:[],     // 3 biome keys selected at init
@@ -1256,6 +1316,211 @@ function buildRefTable(){
       <strong style="color:var(--accent3)">COD</strong> = Codominant (both alleles expressed simultaneously) &nbsp;|&nbsp;
       <strong style="color:var(--accent3)">HOM</strong> = Homozygous codominant (single phenotype expressed)
     </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// NOTEBOOK
+// ═══════════════════════════════════════════════════════
+function toggleNotebook(){
+  const ov=document.getElementById('nb-overlay');
+  if(!ov.classList.contains('show')) nbBuildContent();
+  ov.classList.toggle('show');
+}
+
+function nbOverlayClick(e){
+  if(e.target===document.getElementById('nb-overlay')) toggleNotebook();
+}
+
+function nbCreateGenPage(round){
+  if(!G.notebook || !G.player) return;
+  if(G.notebook.pages.find(p=>p.round===round)) return;
+  G.notebook.pages.push({
+    round,
+    playerGeno: JSON.parse(JSON.stringify(G.player.geno)),
+    playerName: G.player.name,
+    partnerGeno: null,
+    partnerName: null,
+    traitTests: null,
+    offspringGeno: null,
+    notes: '',
+  });
+}
+
+function nbUpdatePartner(){
+  if(!G.notebook || !G.partner) return;
+  const page=G.notebook.pages.find(p=>p.round===G.round);
+  if(!page) return;
+  page.partnerGeno=JSON.parse(JSON.stringify(G.partner.geno));
+  page.partnerName=G.partner.name;
+  page.traitTests=G.traits.map(t=>({
+    trait:t,
+    pa:G.player.geno[t.id],
+    pb:G.partner.geno[t.id],
+    probs:calcProbs(t,G.player.geno[t.id],G.partner.geno[t.id]),
+  }));
+}
+
+function nbUpdateOffspring(){
+  if(!G.notebook || !G.offGeno) return;
+  const page=G.notebook.pages.find(p=>p.round===G.round);
+  if(!page) return;
+  page.offspringGeno=JSON.parse(JSON.stringify(G.offGeno));
+}
+
+function nbSwitchPage(idx){
+  G.notebook.activePage=idx;
+  nbBuildContent();
+}
+
+function nbBuildContent(){
+  if(!G.notebook) return;
+  const tabs=document.getElementById('nb-tabs');
+  tabs.innerHTML='';
+  const addTab=(label,idx)=>{
+    const btn=document.createElement('button');
+    btn.className='nb-tab'+(G.notebook.activePage===idx?' active':'');
+    btn.textContent=label;
+    btn.onclick=()=>nbSwitchPage(idx);
+    tabs.appendChild(btn);
+  };
+  addTab('SUMMARY',0);
+  G.notebook.pages.forEach((p,i)=>addTab('GEN '+p.round,i+1));
+
+  const content=document.getElementById('nb-content');
+  if(G.notebook.activePage===0){
+    content.innerHTML=nbRenderSummary();
+  } else {
+    const page=G.notebook.pages[G.notebook.activePage-1];
+    if(page) content.innerHTML=nbRenderGenPage(page);
+  }
+
+  const ta=content.querySelector('.nb-notes-area');
+  if(ta){
+    ta.addEventListener('input',()=>{
+      const page=G.notebook.pages[G.notebook.activePage-1];
+      if(page) page.notes=ta.value;
+    });
+  }
+}
+
+function nbRenderGenPage(page){
+  let html='';
+
+  // Section 1: Player alien
+  html+=`<div class="nb-section">
+    <div class="nb-section-title">GENERATION ${page.round} — YOUR ALIEN: ${page.playerName}</div>
+    <table class="geno-table" style="max-width:420px;">
+      ${G.traits.map(tr=>`<tr>
+        <td class="td-name">${tr.name}</td>
+        <td class="td-geno">${genoStr(page.playerGeno[tr.id])}</td>
+        <td class="td-pheno">${getPhenotype(tr,page.playerGeno[tr.id])}</td>
+      </tr>`).join('')}
+    </table>
+  </div>`;
+
+  // Section 2: Partner
+  if(page.partnerGeno){
+    html+=`<div class="nb-section">
+      <div class="nb-section-title">PARTNER: ${page.partnerName}</div>
+      <table class="geno-table" style="max-width:420px;">
+        ${G.traits.map(tr=>`<tr>
+          <td class="td-name">${tr.name}</td>
+          <td class="td-geno">${genoStr(page.partnerGeno[tr.id])}</td>
+          <td class="td-pheno">${getPhenotype(tr,page.partnerGeno[tr.id])}</td>
+        </tr>`).join('')}
+      </table>
+    </div>`;
+  } else {
+    html+=`<div class="nb-section"><div class="nb-section-title">PARTNER</div>
+      <div style="font-size:0.74rem;color:var(--text-dim);">— not yet selected —</div></div>`;
+  }
+
+  // Section 3: Punnett squares
+  if(page.traitTests){
+    html+=`<div class="nb-section">
+      <div class="nb-section-title">TRAIT ANALYSIS — PUNNETT SQUARES</div>
+      <div style="display:flex;flex-wrap:wrap;">
+        ${page.traitTests.map(tt=>nbRenderPunnett(tt)).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Section 4: Offspring
+  if(page.offspringGeno){
+    html+=`<div class="nb-section">
+      <div class="nb-section-title">OFFSPRING GENOTYPE</div>
+      <table class="geno-table" style="max-width:420px;">
+        ${G.traits.map(tr=>`<tr>
+          <td class="td-name">${tr.name}</td>
+          <td class="td-geno">${genoStr(page.offspringGeno[tr.id])}</td>
+          <td class="td-pheno">${getPhenotype(tr,page.offspringGeno[tr.id])}</td>
+        </tr>`).join('')}
+      </table>
+    </div>`;
+  } else {
+    html+=`<div class="nb-section"><div class="nb-section-title">OFFSPRING</div>
+      <div style="font-size:0.74rem;color:var(--text-dim);">— not yet fertilized —</div></div>`;
+  }
+
+  // Section 5: Notes
+  html+=`<div class="nb-section">
+    <div class="nb-section-title">NOTES</div>
+    <textarea class="nb-notes-area" placeholder="Add your observations here...">${page.notes}</textarea>
+  </div>`;
+
+  return html;
+}
+
+function nbRenderPunnett(tt){
+  const {trait:tr,pa,pb,probs}=tt;
+  const cellHtml=(a1,a2)=>{
+    const ph=getPhenotype(tr,[a1,a2]);
+    const isDom=tr.type==='dr'?(a1===tr.alleles[0]||a2===tr.alleles[0]):true;
+    return `<div class="nb-pc ${isDom?'dom':'rec'}" title="${ph}">${a1}${a2}</div>`;
+  };
+  const probLines=Object.entries(probs).map(([ph,p])=>
+    `<span style="margin-right:0.6rem;">${ph}: <strong style="color:var(--accent)">${p}%</strong></span>`
+  ).join('');
+  return `<div class="nb-punnett-wrap">
+    <div class="nb-punnett-label">${tr.name}</div>
+    <div class="nb-punnett-grid">
+      <div class="nb-corner"></div>
+      <div class="nb-pa" style="text-align:center;color:var(--accent3);">${pb[0]}</div>
+      <div class="nb-pa" style="text-align:center;color:var(--accent3);">${pb[1]}</div>
+      <div class="nb-pa" style="color:var(--accent2);">${pa[0]}</div>
+      ${cellHtml(pa[0],pb[0])}${cellHtml(pa[0],pb[1])}
+      <div class="nb-pa" style="color:var(--accent2);">${pa[1]}</div>
+      ${cellHtml(pa[1],pb[0])}${cellHtml(pa[1],pb[1])}
+    </div>
+    <div class="nb-probs">${probLines}</div>
+  </div>`;
+}
+
+function nbRenderSummary(){
+  const totalRounds=G.rounds||'—';
+  const traitCount=G.traits?G.traits.length:'—';
+  const completedRounds=G.notebook.pages.filter(p=>p.offspringGeno!==null).length;
+  let html=`<div class="nb-section">
+    <div class="nb-section-title">EXPERIMENT SUMMARY</div>
+    <div style="font-size:0.78rem;color:var(--text-dim);display:flex;gap:2rem;flex-wrap:wrap;margin-bottom:1rem;">
+      <span>ACTIVE TRAITS: <strong style="color:var(--accent)">${traitCount}</strong></span>
+      <span>TOTAL ROUNDS: <strong style="color:var(--accent)">${totalRounds}</strong></span>
+      <span>GENERATIONS COMPLETED: <strong style="color:var(--success)">${completedRounds}</strong></span>
+    </div>
+  </div>`;
+  if(G.lineage&&G.lineage.length>0){
+    html+=`<div class="nb-section">
+      <div class="nb-section-title">LINEAGE</div>
+      <div class="nb-summary-strip">
+        ${G.lineage.map(a=>`
+          <div class="nb-summary-alien">
+            ${alienSVG(a,52)}
+            <div class="nb-summary-gen">GEN ${a.gen}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+  return html;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1747,6 +2012,7 @@ function goToVignette(){
   document.getElementById('vig-progress-fill').style.width = '0%';
 
   showScreen('screen-vignette');
+  nbCreateGenPage(G.round);
 
   // Show biome intro overlay first
   showBiomeIntro();
@@ -1884,6 +2150,7 @@ function selectCandidate(idx){
 function confirmPartner(){
   if(G.selectedCandidate===null) return;
   G.partner=G.candidates[G.selectedCandidate];
+  nbUpdatePartner();
   // Only set round to 1 on first selection (not mid-game returns)
   if(G.round===undefined || G.round<1) G.round=1;
   renderGameScreen();
@@ -2048,6 +2315,7 @@ function copyPreToPost(){
 async function doFertilize(){
   document.getElementById('btn-fert').disabled=true;
   G.offGeno=crossAliens(G.player, G.partner);
+  nbUpdateOffspring();
   const disp=document.getElementById('egg-disp');
   disp.innerHTML='';
   document.getElementById('egg-body').setAttribute('fill','url(#egGA)');
