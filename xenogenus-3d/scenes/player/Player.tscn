@@ -1,0 +1,31 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/player/interact_range.gd" id="2"]
+[ext_resource type="Material" path="res://resources/materials/glow_pink.tres" id="3"]
+
+[sub_resource type="CapsuleShape3D" id="1"]
+radius = 0.35
+height = 1.6
+
+[sub_resource type="SphereShape3D" id="2"]
+radius = 1.8
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.8, 0)
+shape = SubResource("1")
+
+[node name="Body" type="CSGCylinder3D" parent="."]
+position = Vector3(0, 0.7, 0)
+radius = 0.35
+height = 1.4
+material = ExtResource("3")
+
+[node name="InteractRange" type="Area3D" parent="."]
+script = ExtResource("2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractRange"]
+shape = SubResource("2")
