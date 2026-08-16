@@ -4,11 +4,18 @@ extends CharacterBody3D
 ## flattened basis, so "up" always means "away from camera" regardless of
 ## which room's framing is active. No gravity — locomotion is confined to
 ## the XZ plane, matching the constrained-plane dungeon-crawler brief.
+##
+## camera_rig/interact_range are intentionally left untyped (dynamic)
+## rather than typed as their base engine classes (Node3D/Area3D) — those
+## base classes don't know about the extra methods (get_flat_forward,
+## try_examine) defined on the scripts actually attached to them, and
+## GDScript's static checker only sees the declared type, not the
+## runtime script, so a static type here would reject valid calls.
 
 const SPEED := 4.0
 
-@onready var camera_rig: Node3D = get_tree().get_first_node_in_group("camera_rig")
-@onready var interact_range: Area3D = $InteractRange
+@onready var camera_rig = get_tree().get_first_node_in_group("camera_rig")
+@onready var interact_range = $InteractRange
 
 func _ready() -> void:
 	add_to_group("player")
@@ -17,8 +24,8 @@ func _physics_process(_delta: float) -> void:
 	if Input.is_action_just_pressed("interact"):
 		interact_range.try_examine()
 
-	var forward := camera_rig.get_flat_forward() if camera_rig else Vector3.FORWARD
-	var right := camera_rig.get_flat_right() if camera_rig else Vector3.RIGHT
+	var forward: Vector3 = camera_rig.get_flat_forward() if camera_rig else Vector3.FORWARD
+	var right: Vector3 = camera_rig.get_flat_right() if camera_rig else Vector3.RIGHT
 
 	var move_dir := Vector3.ZERO
 	if Input.is_action_pressed("move_forward"):

@@ -10,6 +10,6 @@ func _ready() -> void:
 
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player"):
-		var rig := get_tree().get_first_node_in_group("camera_rig")
+		var rig = get_tree().get_first_node_in_group("camera_rig")
 		if rig:
 			rig.activate_room(global_position)

@@ -6,6 +6,6 @@ extends Node3D
 ## start on every engine version.
 
 func _ready() -> void:
-	var rig := get_tree().get_first_node_in_group("camera_rig")
+	var rig = get_tree().get_first_node_in_group("camera_rig")
 	if rig:
 		rig.activate_room(Vector3(0, 0, 0))
