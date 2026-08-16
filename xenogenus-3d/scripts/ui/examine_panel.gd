@@ -6,7 +6,7 @@ extends CanvasLayer
 
 @onready var prompt_label: Control = $PromptLabel
 @onready var text_panel: Control = $TextPanel
-@onready var text_label: Label = $TextPanel/TextLabel
+@onready var text_label: RichTextLabel = $TextPanel/TextLabel
 
 func _ready() -> void:
 	prompt_label.visible = false
