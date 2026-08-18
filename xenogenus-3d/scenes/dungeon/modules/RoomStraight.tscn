@@ -22,6 +22,7 @@ material = ExtResource("1")
 use_collision = true
 
 [node name="Ceiling" type="CSGBox3D" parent="."]
+visible = false
 position = Vector3(0, 3.1, 0)
 size = Vector3(4, 0.2, 4)
 material = ExtResource("2")
