@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Material" path="res://resources/materials/mat_floor.tres" id="1"]
 [ext_resource type="Material" path="res://resources/materials/mat_wall.tres" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="Material" path="res://resources/materials/glow_purple.tres" id="4"]
 [ext_resource type="Script" path="res://scripts/dungeon/room_zone.gd" id="5"]
 [ext_resource type="Script" path="res://scripts/dungeon/examine_target.gd" id="6"]
+[ext_resource type="Material" path="res://resources/materials/glow_green.tres" id="7"]
 
 [sub_resource type="BoxShape3D" id="1"]
 size = Vector3(4, 3, 4)
@@ -81,3 +82,17 @@ position = Vector3(-1.2, 0.45, -1.2)
 radius = 0.3
 height = 0.9
 material = ExtResource("4")
+
+[node name="ExamineTarget2" type="Area3D" parent="."]
+position = Vector3(1.2, 1, -1.2)
+script = ExtResource("6")
+flavor_text = "CORE SHARD — a fist-sized crystal that pulses in slow rhythm with no external light source. Aliens with the Bioluminescence trait seem to pulse in sync with it after a few seconds of contact."
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ExamineTarget2"]
+shape = SubResource("2")
+
+[node name="ExamineProp2" type="CSGCylinder3D" parent="."]
+position = Vector3(1.2, 0.45, -1.2)
+radius = 0.3
+height = 0.9
+material = ExtResource("7")
