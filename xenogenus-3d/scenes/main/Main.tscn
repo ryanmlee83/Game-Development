@@ -1,0 +1,42 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/camera/CameraRig.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/modules/RoomChamber.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/modules/RoomStraight.tscn" id="4"]
+[ext_resource type="Material" path="res://resources/materials/mat_wall.tres" id="5"]
+[ext_resource type="Script" path="res://scripts/main.gd" id="6"]
+
+[sub_resource type="Environment" id="1"]
+glow_enabled = true
+glow_intensity = 0.9
+glow_strength = 1.1
+glow_bloom = 0.05
+
+[node name="Main" type="Node3D"]
+script = ExtResource("6")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("1")
+
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-55, -25, 0)
+light_color = Color(0.65, 0.72, 0.95, 1)
+light_energy = 0.4
+
+[node name="CameraRig" parent="." instance=ExtResource("1")]
+
+[node name="Player" parent="." instance=ExtResource("2")]
+
+[node name="DungeonModules" type="Node3D" parent="."]
+
+[node name="RoomChamber" parent="DungeonModules" instance=ExtResource("3")]
+
+[node name="RoomStraight" parent="DungeonModules" instance=ExtResource("4")]
+position = Vector3(0, 0, 4)
+
+[node name="EndCap" type="CSGBox3D" parent="DungeonModules"]
+position = Vector3(0, 1.5, 6)
+size = Vector3(4, 3, 0.2)
+material = ExtResource("5")
+use_collision = true

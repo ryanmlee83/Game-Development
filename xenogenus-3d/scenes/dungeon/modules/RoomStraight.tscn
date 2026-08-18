@@ -1,0 +1,46 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Material" path="res://resources/materials/mat_floor.tres" id="1"]
+[ext_resource type="Material" path="res://resources/materials/mat_wall.tres" id="2"]
+[ext_resource type="Material" path="res://resources/materials/glow_pink.tres" id="3"]
+[ext_resource type="Script" path="res://scripts/dungeon/room_zone.gd" id="4"]
+
+[sub_resource type="BoxShape3D" id="1"]
+size = Vector3(4, 3, 4)
+
+[node name="RoomStraight" type="Node3D"]
+
+[node name="Floor" type="CSGBox3D" parent="."]
+position = Vector3(0, -0.1, 0)
+size = Vector3(4, 0.2, 4)
+material = ExtResource("1")
+use_collision = true
+
+[node name="Ceiling" type="CSGBox3D" parent="."]
+position = Vector3(0, 3.1, 0)
+size = Vector3(4, 0.2, 4)
+material = ExtResource("2")
+
+[node name="WallEast" type="CSGBox3D" parent="."]
+position = Vector3(2, 1.5, 0)
+size = Vector3(0.2, 3, 4)
+material = ExtResource("2")
+use_collision = true
+
+[node name="WallWest" type="CSGBox3D" parent="."]
+position = Vector3(-2, 1.5, 0)
+size = Vector3(0.2, 3, 4)
+material = ExtResource("2")
+use_collision = true
+
+[node name="AccentStrip" type="CSGBox3D" parent="."]
+position = Vector3(1.95, 0.05, 0)
+size = Vector3(0.05, 0.08, 3.8)
+material = ExtResource("3")
+
+[node name="RoomZone" type="Area3D" parent="."]
+script = ExtResource("4")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RoomZone"]
+position = Vector3(0, 1.5, 0)
+shape = SubResource("1")
