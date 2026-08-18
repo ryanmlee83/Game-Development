@@ -36,7 +36,7 @@ version match matters more than usual for a clean first open.
    straight into the game.
 3. Click Start (or press Space/Enter, since the button holds focus) — it
    should fade to black and land you in the chamber, framed from a fixed
-   high-angle three-quarter view.
+   top-down view.
 
 ## What to check
 
@@ -50,9 +50,11 @@ version match matters more than usual for a clean first open.
 - **Movement:** WASD or arrow keys should move the alien-token (the pink
   glowing cylinder) 8-directionally, relative to the screen — "up" always
   means away from the camera, regardless of which room you're in.
-- **Camera:** walk from the chamber into the corridor (through the gap in
-  the north wall). The camera should cut/snap to reframe the new room —
-  it should never follow you continuously mid-room.
+- **Camera:** framing is top-down — you should be looking almost straight
+  down at the room and clearly see the character on the floor, not a
+  three-quarter angled view. Walk from the chamber into the corridor
+  (through the gap in the north wall). The camera should cut/snap to
+  reframe the new room — it should never follow you continuously mid-room.
 - **Examine (3 objects now):** the chamber has two pedestals in its south
   corners — purple and green — and the corridor has one amber pedestal on
   its west side. Walking up to any of them should show a "Press E to
