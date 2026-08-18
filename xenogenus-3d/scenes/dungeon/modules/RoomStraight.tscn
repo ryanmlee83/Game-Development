@@ -1,12 +1,17 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Material" path="res://resources/materials/mat_floor.tres" id="1"]
 [ext_resource type="Material" path="res://resources/materials/mat_wall.tres" id="2"]
 [ext_resource type="Material" path="res://resources/materials/glow_pink.tres" id="3"]
 [ext_resource type="Script" path="res://scripts/dungeon/room_zone.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/dungeon/examine_target.gd" id="5"]
+[ext_resource type="Material" path="res://resources/materials/glow_amber.tres" id="6"]
 
 [sub_resource type="BoxShape3D" id="1"]
 size = Vector3(4, 3, 4)
+
+[sub_resource type="SphereShape3D" id="2"]
+radius = 0.6
 
 [node name="RoomStraight" type="Node3D"]
 
@@ -17,6 +22,7 @@ material = ExtResource("1")
 use_collision = true
 
 [node name="Ceiling" type="CSGBox3D" parent="."]
+visible = false
 position = Vector3(0, 3.1, 0)
 size = Vector3(4, 0.2, 4)
 material = ExtResource("2")
@@ -44,3 +50,17 @@ script = ExtResource("4")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RoomZone"]
 position = Vector3(0, 1.5, 0)
 shape = SubResource("1")
+
+[node name="ExamineTarget" type="Area3D" parent="."]
+position = Vector3(-1.2, 1, 0)
+script = ExtResource("5")
+flavor_text = "DRIFT POD — a husk left behind by something that molted here recently. The inside is lined with fine amber dust; aliens with Scaly Texture brush it off without a reaction, others come away dusted gold."
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ExamineTarget"]
+shape = SubResource("2")
+
+[node name="ExamineProp" type="CSGCylinder3D" parent="."]
+position = Vector3(-1.2, 0.45, 0)
+radius = 0.3
+height = 0.9
+material = ExtResource("6")

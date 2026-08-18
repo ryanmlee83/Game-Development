@@ -6,14 +6,21 @@ bred alien's Mendelian traits gate which rooms/paths are survivable —
 aimed at working as an actual classroom genetics teaching tool, not just a
 reskin.
 
-## Status: Milestone 1 — camera + movement + visual-feel proof
+## Status: Milestone 1 + title screen and more interactables
 
-This is deliberately the smallest slice that can answer "does this feel
-right": two hand-placed rooms (a chamber and a straight corridor), the
-fixed-per-room camera system, 8-directional movement, the glow/material
-language, and one stub "examine" interaction. **No procedural generation
-and no genetics yet** — those are Milestones 2 and 3+, and won't start
-until this slice has been run and reacted to.
+Milestone 1 proved the core feel: two hand-placed rooms (a chamber and a
+straight corridor), the fixed-per-room camera system, 8-directional
+movement, and the glow/material language. This pass adds a real entry
+point and makes the existing space more legible before generation work
+begins: a title screen with a functional Start button, and two more
+interactive objects (three total now, one per color) so the "examine"
+system is exercised more than once.
+
+**No procedural generation and no genetics yet.** A full design for
+Milestone 2 (procedural maze generation with per-biome material/color
+skinning, ported from the 2D game's `BIOME_PALETTES`) exists but was
+deliberately deferred rather than built this pass — milestone order is
+staying flexible for now rather than locked to the original sequence.
 
 ## Requirements
 
@@ -25,27 +32,39 @@ version match matters more than usual for a clean first open.
 ## How to run it
 
 1. Open Godot, choose "Import," and select `project.godot` in this folder.
-2. Press Play (F5) — it should boot straight into the scene, no menu yet.
-3. You should see a small glowing chamber, framed from a fixed high-angle
-   three-quarter view.
+2. Press Play (F5) — it should boot into the title screen now, not
+   straight into the game.
+3. Click Start (or press Space/Enter, since the button holds focus) — it
+   should fade to black and land you in the chamber, framed from a fixed
+   top-down view.
 
 ## What to check
 
-- **Does the project open without import/version errors?** This is the
-  single biggest unknown — flag anything in the Output/Errors panel,
-  even warnings, by pasting the exact text back.
+- **Does the project open without import/version errors?** Still the
+  single biggest unknown, especially with new UI nodes — flag anything in
+  the Output/Errors panel, even warnings, by pasting the exact text back.
+- **Title screen:** boots first, shows "XENOGENUS 3D" and a styled cyan
+  Start button (not a default gray button). Both a mouse click and
+  keyboard confirm (Space/Enter) should trigger it exactly once — clicking
+  repeatedly shouldn't restart the fade or double-fire the scene change.
 - **Movement:** WASD or arrow keys should move the alien-token (the pink
   glowing cylinder) 8-directionally, relative to the screen — "up" always
   means away from the camera, regardless of which room you're in.
-- **Camera:** walk from the chamber into the corridor (through the gap in
-  the north wall). The camera should cut/snap to reframe the new room —
-  it should never follow you continuously mid-room.
-- **Examine:** walk up to the small purple pedestal in the chamber's
-  corner. A "Press E to examine" prompt should appear; press E (or Space)
-  to read its flavor text, press again to dismiss.
-- **Aesthetic:** near-black background, soft glow on the cyan/pink/purple
-  accent objects, dim ambient light on the walls/floor. Does it read as
-  "handcrafted sci-fi biology," matching the sibling games' style guide?
+- **Camera:** framing is top-down — you should be looking almost straight
+  down at the room and clearly see the character on the floor, not a
+  three-quarter angled view. Walk from the chamber into the corridor
+  (through the gap in the north wall). The camera should cut/snap to
+  reframe the new room — it should never follow you continuously mid-room.
+- **Examine (3 objects now):** the chamber has two pedestals in its south
+  corners — purple and green — and the corridor has one amber pedestal on
+  its west side. Walking up to any of them should show a "Press E to
+  examine" prompt; E or Space reads its own flavor text, pressing again
+  dismisses it. All three should read as clearly different colors, not
+  just "glowing blobs."
+- **Aesthetic:** near-black background, soft glow on the cyan/pink accent
+  strips and purple/green/amber pedestals, dim ambient light on the
+  walls/floor. Does it read as "handcrafted sci-fi biology," matching the
+  sibling games' style guide?
 
 Report back with a screenshot, a description, or (if anything looks
 wrong or throws errors) the exact Output panel text — that's what drives
@@ -66,6 +85,10 @@ robustness over polish:
   4×4m footprint) — per-module-type presets (per the original plan) will
   matter once module shapes actually diverge in Milestone 2.
 - The "examine" UI layout is a rough stub, not a tuned design pass.
+- The title screen's Start button is styled by hand (`StyleBoxFlat`
+  normal/hover/pressed states) rather than tuned live in the editor, same
+  caveat as everything else here — colors and spacing may need a real pass
+  once it's actually visible.
 
 None of that is meant to be permanent — it's what let a first, untestable
 pass be worth shipping. Once this runs cleanly locally, later milestones
@@ -74,6 +97,9 @@ can loosen these constraints.
 ## What's next (not built yet)
 
 See the project plan for the full milestone sequence: procedural maze
-generation (Milestone 2), the ported Punnett-square genetics engine
-(Milestone 3), a breeding UI (Milestone 4), and biome-trait room gating —
-the actual pedagogical payoff — in Milestone 5.
+generation with per-biome material/color skinning (Milestone 2), the
+ported Punnett-square genetics engine (Milestone 3), a breeding UI
+(Milestone 4), and biome-trait room gating — the actual pedagogical
+payoff — in Milestone 5. Milestone order is being kept flexible for now,
+so pieces of later milestones (like this pass's title screen) may land
+out of sequence.

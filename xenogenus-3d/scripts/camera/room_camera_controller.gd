@@ -1,16 +1,22 @@
 extends Node3D
-## Drives the single shared Camera3D into a fixed, high-angle three-quarter
-## framing of whichever room the player is currently in. Framing is computed
-## from the room's floor-center world position, not hand-placed per room —
-## this is what lets a fixed-per-room feel scale to procedurally generated
-## rooms later (Milestone 2+) instead of only working for hand-placed ones.
+## Drives the single shared Camera3D into a fixed, top-down framing of
+## whichever room the player is currently in. Framing is computed from the
+## room's floor-center world position, not hand-placed per room — this is
+## what lets a fixed-per-room feel scale to procedurally generated rooms
+## later (Milestone 2+) instead of only working for hand-placed ones.
+##
+## The offset is *not* exactly straight up (0, H, 0): Transform3D.looking_at()
+## is undefined when the look direction is exactly parallel to the up hint,
+## which is exactly what a perfectly vertical look direction is against
+## Vector3.UP. The small -Z nudge keeps the camera just off true vertical so
+## the transform stays well-defined while still reading as "from above."
 ##
 ## All rooms currently share one offset/look-target pair (every Milestone 1
 ## module uses the same 4x4 footprint). When module footprints start to vary
 ## in size, swap this for a per-module-type preset instead of one constant.
 
-const ROOM_OFFSET := Vector3(0, 5.5, -5.0)
-const LOOK_OFFSET := Vector3(0, 0.8, 0)
+const ROOM_OFFSET := Vector3(0, 10.0, -1.0)
+const LOOK_OFFSET := Vector3(0, 0.5, 0)
 
 @onready var camera: Camera3D = $Camera3D
 
